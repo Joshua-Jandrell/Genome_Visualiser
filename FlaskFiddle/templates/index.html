@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!--Scripts-->
+    <script>
+        const HREF = "http://127.0.0.1:5000"
+
+function getMatrix(form){
+    matrix_data = {
+        rows: form.rows.value,
+        cols: form.cols.value
+      };
+    console.log(matrix_data);
+    document.getElementById("start-msg").textContent = "Getting matrix...";
+    FetchServer(matrix_data,"/matrix").then((response) => {
+      console.log(response);
+    });
+}
+
+function FetchServer(input, path) {
+  return new Promise((resolve) => {
+    console.log(JSON.stringify(input));
+    fetch(HREF + path, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(input),
+    })
+      .then((resposne) => {
+        return resposne.json();
+      })
+      .then((json) => {
+        resolve(json);
+      });
+  });
+}
+    </script>
+</head>
+<body>
+    <form id="matrix_form" onsubmit="getMatrix(this); return false;">
+        <label for="rows">Rows:</label>
+        <input type="number" id="rows" name="rows">
+        <label for="cols">Columns:</label>
+        <input type="number" id="cols" name="cols">
+        <input type="submit" value="submit">
+    </form>
+    <br>
+    <div><p id="start-msg">ddd</p></div>
+</body>
+</html>
