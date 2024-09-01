@@ -4,8 +4,10 @@ import customtkinter as ctk # For general application features
 import tkinter as tk
 import tkinter.ttk as ttk
 
-from menu import TopMenuBar
+from UI.menu import TopMenuBar
+from UI.viewPanel import ViewPanel
 
+from Plot.dummyPlotter import make_plot
 
 # Constants
 DEFAULT_WIDTH = 800
@@ -44,33 +46,48 @@ class MainFrame(ctk.CTkFrame):
         # Make views
         self.left = SidePane(self,ctk.RIGHT)
         self.right = RightFrame(self)
-        self.main = ViewFrame(self)
+        self.view = ViewPanel(self)
 
         # Pack the views into window
         self.left.pack(side = ctk.LEFT, fill=ctk.Y)
         self.right.pack(side = ctk.RIGHT, fill=ctk.Y)
-        self.main.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
+        self.view.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
+
+        # make plot button
+        self.left.plot_button = ctk.CTkButton(self.left,text="Plot",command=self.makePlot)
+        self.left.plot_button.pack()
+
+    def makePlot(self):
+        fig = make_plot()
+        self.view.set_plot(fig)
 
 
 
 
 
-# class MainFrame(ttk.PanedWindow):
-#     def __init__(self, master):
-#         super().__init__(master=master, orient="horizontal")
+class MainFrame1(ttk.PanedWindow):
+    def __init__(self, master):
+        super().__init__(master=master, orient="horizontal")
 
-#         # Pack the views in
-#         self.left = LeftFrame(self)
-#         self.add(self.left, weight=0)
+        # Pack the views in
+        self.left = LeftFrame(self)
+        self.add(self.left, weight=0)
 
-#         self.view = ViewFrame(self)
-#         self.add(self.view, weight=1)
+        self.view = ViewPanel(self)
+        self.add(self.view, weight=1)
 
-#         self.right = RightFrame(self)
-#         self.add(self.right, weight=0)
+        self.right = RightFrame(self)
+        self.add(self.right, weight=0)
 
-#         #hb = HideButton(self.view, )
+        
+        # make plot button
+        self.left.plot_button = ctk.CTkButton(self.left,text="Plot",command=self.makePlot)
+        self.left.plot_button.pack()
 
+    def makePlot(self):
+        fig = make_plot()
+        self.view.set_plot(fig)
+        
 class LeftFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, width=PANEL_WIDTH)
@@ -100,7 +117,7 @@ class SidePane(ctk.CTkFrame):
 # Creates a button that can hide/remove a panel when pressed
 class HideButton(ctk.CTkButton):
     def __init__(self, master, target:ctk.CTkFrame, pack_side, pack_fill, visible=True):
-        super().__init__(master, text=">", command=self.toggle_target, width=HIDE_BAR_WIDTH)
+        super().__init__(master, text=".", command=self.toggle_target, width=HIDE_BAR_WIDTH)
         self.target = target
         self.visible = visible
         self.pack_side = pack_side
