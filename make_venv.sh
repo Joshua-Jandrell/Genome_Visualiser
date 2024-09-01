@@ -12,6 +12,7 @@ fi
 
 # Add depandancies
 #python -m pip3 install customtkinter # For dashbaord app creation
-python -m pip install Flask
+#python -m pip install Flask
 python -m pip install numpy
 python -m pip install customtkinter
+python -m pip install matplotlib
