@@ -47,25 +47,7 @@ class FileMenu(tk.Menu):
         self.add_command(label='Close')
         self.add_separator()
 
-# # add a submenu
-# sub_menu = Menu(file_menu, tearoff=0)
-# sub_menu.add_command(label='Keyboard Shortcuts')
-# sub_menu.add_command(label='Color Themes')
 
-# # add the File menu to the menubar
-# file_menu.add_cascade(
-#     label="Preferences",
-#     menu=sub_menu
-# )
-
-# # add Exit menu item
-# file_menu.add_separator()
-# file_menu.add_command(
-#     label='Exit',
-#     command=root.destroy
-# )
-# ===================================
-# -----------------------------------
 
 class LayoutWrapper(ctk.CTkFrame):
     def __init__(self, master):
