@@ -3,31 +3,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from matplotlib.colors import LogNorm
 from matplotlib.figure import Figure as Figure
+
+# Colors
+MUT_COLORS = []
 
 def make_plot()->Figure:
     # # Fixing random state for reproducibility
     # np.random.seed(19680801)
 
-    Z = np.random.rand(20, 100)
+    ref = np.random.random_integers(0, 4, (20,1))
 
-    # fig, (ax0, ax1) = plt.subplots(2, 1)
-
-    # c = ax0.pcolor(Z)
-    # ax0.set_title('default: no edges')
-
-    # c = ax1.pcolor(Z, edgecolors='k', linewidths=1)
-    # ax1.set_title('thick edges')
-
-    # fig.tight_layout()
-    # return fig
-    	# the figure that will contain the plot 
+    Z = np.random.random_integers(0, 2, (20,100))
     fig = Figure(figsize = (5, 5), 
 				dpi = 100) 
-
-	# list of squares 
-    y = [i**2 for i in range(101)] 
 
 	# adding the subplot 
     plot1 = fig.add_subplot(111) 

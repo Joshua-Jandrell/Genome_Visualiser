@@ -16,3 +16,7 @@ fi
 python -m pip install numpy
 python -m pip install customtkinter
 python -m pip install matplotlib
+python -m pip install cyvcf2
+python -m pip install scikit-allel
+
+# requires c++ version 14 or higher
