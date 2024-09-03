@@ -12,7 +12,7 @@ from UI.sidePanel import SidePane
 from UI.plotInfo import *
 from VCF.vcfTest import getData
 
-from UI.searchOptions import SearchPanel
+for UI.Se
 
 # Constants
 DEFAULT_WIDTH = 800
@@ -50,7 +50,7 @@ class MainFrame(ctk.CTkFrame):
 
         # Make views
         self.left = SidePane(self,ctk.RIGHT)
-        self.right = SidePane(self,ctk.LEFT)
+        self.right = RightFrame(self)
         self.view = ViewPanel(self)
 
         # Pack the views into window
@@ -58,25 +58,61 @@ class MainFrame(ctk.CTkFrame):
         self.right.pack(side = ctk.RIGHT, fill=ctk.Y)
         self.view.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
-        # Make left panel
-        self.search_panel = SearchPanel(self.left.content)
-        self.search_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
-
         # make plot button
-        self.left.plot_button = ctk.CTkButton(self.search_panel.button_panel,text="Plot",command=self.makePlot)
-        self.left.plot_button.pack(fill=ctk.BOTH)
-
-        # Configure canvas and plot info 
-        self.plot_info = PlotInfo()
+        self.left.plot_button = ctk.CTkButton(self.left.content,text="Plot",command=self.makePlot)
+        self.left.plot_button.pack()
 
     def makePlot(self):
+        print("bbom")
         data = getData()
         wrapped_data = VcfDataWrapper(data)
-        show_alt = self.search_panel.search_options.displayData.show_alt.get()
-        show_ref = self.search_panel.search_options.displayData.show_ref.get()
-        show_labels = self.search_panel.search_options.displayData.show_labels.get()
-        self.plot_info.configure(show_ref, show_alt, show_labels)
+        self.plot_info = PlotInfo()
         self.view.set_plot(self.plot_info.plot_data(wrapped_data))
+
+
+
+
+
+class MainFrame1(ttk.PanedWindow):
+    def __init__(self, master):
+        super().__init__(master=master, orient="horizontal")
+
+        # Pack the views in
+        self.left = LeftFrame(self)
+        self.add(self.left, weight=0)
+
+        self.view = ViewPanel(self)
+        self.add(self.view, weight=1)
+
+        self.right = RightFrame(self)
+        self.add(self.right, weight=0)
+
+        
+        # make plot button
+        self.left.plot_button = ctk.CTkButton(self.left,text="Plot",command=self.makePlot)
+        self.left.plot_button.pack()
+
+    def makePlot(self):
+        #fig = make_plot()
+        data = getData()
+        wrapped_data = VcfDataWrapper(data)
+        self.plotInfo = PlotInfo()
+        self.view.set_plot(PlotInfo.plot_data(wrapped_data))
+        
+class LeftFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, width=PANEL_WIDTH)
+
+        #self.content = ctk.CTkFrame(self, fg_color="blue", width=PANEL_WIDTH)
+        #self.hideButton = HideButton(self,self.content,)
+
+class RightFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="red", width=PANEL_WIDTH)
+
+class ViewFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="green")
 
 # Make app if run as main
 if __name__ == "__main__":

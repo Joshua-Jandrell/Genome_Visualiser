@@ -31,8 +31,8 @@ class VcfDataWrapper:
 
         # Tmp data size constriants
         # TODO REMOVE THESE
-        max_vars = 20
-        max_samples = 50
+        max_vars = 50
+        max_samples = 30
 
         vcf_data[SAMPLES] = vcf_data[SAMPLES][:max_samples]
         vcf_data[DATA] = vcf_data[DATA][:max_vars,:max_samples,]
@@ -42,6 +42,7 @@ class VcfDataWrapper:
         
         # ------------------------
         self.data = vcf_data
+        self.gt_data = GTArr(self.data[DATA])
         self.n_samples = len(vcf_data[SAMPLES])
         self.n_variants = len(vcf_data[ID])
 
@@ -54,7 +55,7 @@ class VcfDataWrapper:
     # 0 = no mutation, 1 = heterozygous, 2 = homozygous mutation, -1 = no-data
     def get_zygosity(self):
         if self._zygos is None: # zygosity not pre-computed
-            gt_data = GTArr(self.data[DATA])
+            gt_data = self.gt_data
             self._zygos = gt_data.is_hom_alt()*2 + gt_data.is_het()*1 + gt_data.is_missing()*(-1)
         return self._zygos.transpose()[::-1,:] # Flip order so that firs entry is on the top
     
@@ -100,9 +101,10 @@ VAR_MIN = -1
 class PlotInfo:
     REF_LABEL = "Ref."
     ALT_LABEL = "Alt."
-    def __init__(self,plot_ref:bool=True, plot_alt:bool=True):
+    def __init__(self,plot_ref:bool=True, plot_alt:bool=True, plot_labels:bool=True):
         self.plot_ref = plot_ref # If set to true the ref. alleles will be plotted
         self.plot_alt = plot_alt # If set true the alt. alleles will be plotted
+        self.plot_labels = plot_labels
 
         self.mut_cols = MUT_COLORS
         self.allele_cols = ALLELE_COLORS
@@ -119,39 +121,86 @@ class PlotInfo:
     
     # Generates a mathplotlib plot 
     def make_plot(self)->Figure:
-        n_subplots = 3
-        gs = GridSpec(3, 1, height_ratios=[1, 1, self._data.n_samples])
+
+        # Determine number of sub_plots and their weights
+        height_ratios = []
+        n_subplots = 1
+
+        if(self.plot_ref):
+            height_ratios.append(1)
+            n_subplots += 1
+        if(self.plot_alt):
+            height_ratios.append(self._data.get_alt().shape[0])
+            n_subplots +=1 
+
+        height_ratios.append(self._data.n_samples)
+
+        gs = GridSpec(n_subplots, 1, height_ratios=height_ratios)
 
         # Create figure
         self.fig = Figure(figsize = (5, 5), dpi = 100)
-        # Add subplots
-        self.ref = self.fig.add_subplot(gs[0])
-        self.alt = self.fig.add_subplot(gs[1], sharex=self.ref)
-        self.main = self.fig.add_subplot(gs[2], sharex=self.ref)
 
-        self.make_ref_plot(self.ref)
-        self.make_alt_plot(self.alt)
+        # Create main plot
+        n_subplots -= 1
+        self.main = self.fig.add_subplot(gs[n_subplots])
+
+        # Create optional subplots
+        if(self.plot_ref):
+            n_subplots -= 1
+            self.ref = self.fig.add_subplot(gs[n_subplots], sharex=self.main)
+            self.make_ref_plot(self.ref)
+        else:
+            self.ref = None
+
+        if(self.plot_alt):
+            n_subplots -= 1
+            self.alt = self.fig.add_subplot(gs[n_subplots], sharex=self.main)
+            self.make_alt_plot(self.alt)
+        else:
+            self.alt = None
+        
+
         self.make_zygosity_polt(self.main)
         
         # Remove spacing between plots
         self.fig.subplots_adjust(hspace=0, wspace=0)
         return self.fig
+    
+    # updates the plotting settings
+    def configure(self,plot_ref:bool=None, plot_alt:bool=None, plot_labels:bool=None):
+        if plot_ref is not None:
+            self.plot_ref = plot_ref
+        if plot_alt is not None:
+            self.plot_alt = plot_alt
+        if plot_labels is not None:
+            self.plot_labels = plot_labels
+
 
         
     # Generates the data for a ref/alt variant type plot
     def make_ref_plot(self,ref_ax:Axes):
-        self.make_allele_plot(ref_ax, np.matrix(self._data.get_ref()),self.REF_LABEL)
+        self.make_allele_plot(ref_ax, np.matrix(self._data.get_ref()),self.REF_LABEL, self._data.data[REF])
 
     def make_alt_plot(self,ref_ax:Axes):
-        self.make_allele_plot(ref_ax, np.matrix(self._data.get_alt()),self.ALT_LABEL)
+        self.make_allele_plot(ref_ax, np.matrix(self._data.get_alt()),self.ALT_LABEL,self._data.data[ALT])
 
-    def make_allele_plot(self, axis:Axes, data:np.matrix, label:str):
+    def make_allele_plot(self, axis:Axes, data:np.matrix, label:str, data_labels):
         axis.pcolor(data,linewidth=1,edgecolors="k",cmap=self.allele_cols, vmin=VAR_MIN, vmax=VAR_MAX)
         # Remove tick labels
         axis.set_xticks([])
         axis.set_yticks([])
         # Label y-axis
         axis.set_ylabel(label, rotation=0, va="center", ha="right")
+
+        # Add annotations
+        if self.plot_labels:
+            for y in range(data.shape[0]):
+                for x in range(data.shape[1]):
+                    axis.annotate(f"{data_labels[x][y]}", 
+                                  xy=(x+0.5,y+0.5),
+                                  horizontalalignment='center',
+                                  verticalalignment='center', 
+                                  fontsize=8)
 
     def make_zygosity_polt(self, axis:Axes):
         axis.pcolor(np.matrix(self._data.get_zygosity()), linewidth=1,edgecolors="k", cmap=self.mut_cols, vmax=2, vmin=-1)
