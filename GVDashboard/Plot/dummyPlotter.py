@@ -94,5 +94,4 @@ def make_plot()->Figure:
 
     # Forat the figure
     fig.subplots_adjust(hspace=0, wspace=0)
-
     return fig

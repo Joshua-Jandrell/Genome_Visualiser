@@ -31,8 +31,8 @@ class VcfDataWrapper:
 
         # Tmp data size constriants
         # TODO REMOVE THESE
-        max_vars = 50
-        max_samples = 30
+        max_vars = 500
+        max_samples = 300
 
         vcf_data[SAMPLES] = vcf_data[SAMPLES][:max_samples]
         vcf_data[DATA] = vcf_data[DATA][:max_vars,:max_samples,]
@@ -145,19 +145,19 @@ class PlotInfo:
         self.main = self.fig.add_subplot(gs[n_subplots])
 
         # Create optional subplots
-        if(self.plot_ref):
-            n_subplots -= 1
-            self.ref = self.fig.add_subplot(gs[n_subplots], sharex=self.main)
-            self.make_ref_plot(self.ref)
-        else:
-            self.ref = None
-
         if(self.plot_alt):
             n_subplots -= 1
             self.alt = self.fig.add_subplot(gs[n_subplots], sharex=self.main)
             self.make_alt_plot(self.alt)
         else:
             self.alt = None
+
+        if(self.plot_ref):
+            n_subplots -= 1
+            self.ref = self.fig.add_subplot(gs[n_subplots], sharex=self.main)
+            self.make_ref_plot(self.ref)
+        else:
+            self.ref = None
         
 
         self.make_zygosity_polt(self.main)
@@ -203,4 +203,7 @@ class PlotInfo:
                                   fontsize=8)
 
     def make_zygosity_polt(self, axis:Axes):
-        axis.pcolor(np.matrix(self._data.get_zygosity()), linewidth=1,edgecolors="k", cmap=self.mut_cols, vmax=2, vmin=-1)
+        #axis.pcolor(np.matrix(self._data.get_zygosity()), linewidth=1,edgecolors="k", cmap=self.mut_cols, vmax=2, vmin=-1)
+        #axis.pcolor(np.matrix(self._data.get_zygosity()),cmap=self.mut_cols, vmax=2, vmin=-1)
+        #axis.pcolorfast(np.matrix(self._data.get_zygosity()), cmap=self.mut_cols, vmax=2, vmin=-1)
+        axis.pcolormesh(np.matrix(self._data.get_zygosity()), cmap=self.mut_cols, vmax=2, vmin=-1)
