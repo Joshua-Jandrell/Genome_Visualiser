@@ -1,6 +1,6 @@
 # Placeholder script that generates random dummy plots for demonstrative purposes
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as mpl
 import numpy as np
 
 from matplotlib.figure import Figure as Figure
@@ -15,8 +15,8 @@ from VCF.vcfTest import getData
 MUT_COLORS = colors.ListedColormap(["#00000000","#002164", "g", "y"])
 ALLELE_COLORS = colors.ListedColormap(["#00000000","grey", "#29E838", "#E829D8", "#E89829", "#2979E8"])
 
-X_TAKE = 20
-Y_TAKE = 50
+X_TAKE = 5
+Y_TAKE = 10
 
 def allele_to_numb(a:str):
     if len(a) > 1:

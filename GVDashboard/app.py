@@ -7,7 +7,9 @@ import tkinter.ttk as ttk
 from UI.menu import TopMenuBar
 from UI.viewPanel import ViewPanel
 
-from Plot.dummyPlotter import make_plot
+#from Plot.dummyPlotter import make_plot
+from UI.plotInfo import *
+from VCF.vcfTest import getData
 
 # Constants
 DEFAULT_WIDTH = 800
@@ -58,8 +60,11 @@ class MainFrame(ctk.CTkFrame):
         self.left.plot_button.pack()
 
     def makePlot(self):
-        fig = make_plot()
-        self.view.set_plot(fig)
+        print("bbom")
+        data = getData()
+        wrapped_data = VcfDataWrapper(data)
+        self.plot_info = PlotInfo()
+        self.view.set_plot(self.plot_info.plot_data(wrapped_data))
 
 
 
@@ -85,8 +90,12 @@ class MainFrame1(ttk.PanedWindow):
         self.left.plot_button.pack()
 
     def makePlot(self):
-        fig = make_plot()
-        self.view.set_plot(fig)
+        #fig = make_plot()
+        print("bbom")
+        data = getData()
+        wrapped_data = VcfDataWrapper(data)
+        self.plotInfo = PlotInfo()
+        self.view.set_plot(PlotInfo.plot_data(wrapped_data))
         
 class LeftFrame(ctk.CTkFrame):
     def __init__(self, master):

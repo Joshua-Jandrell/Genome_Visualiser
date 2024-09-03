@@ -15,7 +15,7 @@ class ViewPanel(ctk.CTkFrame):
         self.plot = None
         self.toolbar = None
 
-    def set_plot(self, fig : Figure):
+    def set_plot(self, fig : Figure)->FigCanvas:
 
         # Destroy old plot and toolbar if any
         if self.plot is not None:
@@ -33,3 +33,9 @@ class ViewPanel(ctk.CTkFrame):
 
         self.toolbar.pack(side="top")
         self.plot.pack(side="top", fill="both", expand=True)
+
+        #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)
+        return self.canvas
+
+    # def on_mouse_move(self, event):
+    #     print(event)
