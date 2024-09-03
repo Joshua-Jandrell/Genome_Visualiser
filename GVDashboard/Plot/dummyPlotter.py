@@ -4,24 +4,84 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib.figure import Figure as Figure
+from matplotlib import colors
+from matplotlib.gridspec import GridSpec as GridSpec
+
+import allel as al
+
+from VCF.vcfTest import getData
 
 # Colors
-MUT_COLORS = []
+MUT_COLORS = colors.ListedColormap(["#00000000","#002164", "g", "y"])
+ALLELE_COLORS = colors.ListedColormap(["#00000000","grey", "#29E838", "#E829D8", "#E89829", "#2979E8"])
+
+X_TAKE = 20
+Y_TAKE = 10
+
+def allele_to_numb(a:str):
+    if len(a) > 1:
+        return 0
+    if a == "A":
+        return 1
+    elif a == "C":
+        return 2
+    elif a == "G":
+        return 3
+    elif a == "T":
+        return 4
+    else:
+        return -1
+    
+
+
+def allele_numbers(allels:np.array):
+    return np.matrix([allele_to_numb(a) for a in allels])
+    
+
+
 
 def make_plot()->Figure:
-    # # Fixing random state for reproducibility
-    # np.random.seed(19680801)
+    # Get BCF (trial) data 
+    data = getData()
 
-    ref = np.random.random_integers(0, 4, (20,1))
+    plot_data = al.GenotypeArray(data['calldata/GT'][0:X_TAKE, 0:Y_TAKE])
 
-    Z = np.random.random_integers(0, 2, (20,100))
+    ref = data['variants/REF'][0:X_TAKE]
+    plot_ref = allele_numbers(ref)
+
+    Z = plot_data.is_hom_alt() * 2 + plot_data.is_het() * 1 + plot_data.is_missing() * (-1)
+    Z = Z.transpose()
+
+    #Z = plot_data.to_haplotypes()
+    #Z = np.random.random_integers(-1, 2, (20,100))
+    rows,cols = Z.shape
+    gs = GridSpec(2, 1, height_ratios=[1, rows])
     fig = Figure(figsize = (5, 5), 
-				dpi = 100) 
+				dpi = 100)
 
-	# adding the subplot 
-    plot1 = fig.add_subplot(111) 
+	# adding the subplot
+    plot0 = fig.add_subplot(gs[0])
+    plot1 = fig.add_subplot(gs[1])
 
 	# plotting the graph 
-    plot1.set_title("Cool plot")
-    plot1.pcolor(Z, edgecolors='k', linewidths=0)
+    bounds=[-1,0,1,2]
+    plot1.pcolor(Z, linewidths=0, cmap=MUT_COLORS, vmax=2, vmin=-1)
+
+
+    # Plot the ref graph
+    plot0.pcolor(plot_ref,linewidth=1,edgecolors="k",cmap=ALLELE_COLORS, vmin=-1, vmax=4)
+    plot0.set_xticks([])
+    plot0.set_xticks([])
+    # Add text for each allel
+    for y in range(plot_ref.shape[0]):
+        for x in range(plot_ref.shape[1]):
+            plot0.text(x + 0.5, y + 0.5, f"{ref[x]}",
+                    horizontalalignment='center',
+                    verticalalignment='center',
+                    )
+            
+
+    # Forat the figure
+    fig.subplots_adjust(hspace=0, wspace=0)
+
     return fig
