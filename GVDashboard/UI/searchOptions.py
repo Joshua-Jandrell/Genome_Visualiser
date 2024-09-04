@@ -5,7 +5,7 @@ import tkinter as tk
 
 from UI.deafultSettings import Dimenations as Dims
 
-from Plot.plotSelect import OptionList, OptionCtrl
+from UI.optionPanel import OptionList, OptionCtrl
 
 
 class SearchPanel(ctk.CTkFrame):
