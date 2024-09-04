@@ -5,6 +5,8 @@ import tkinter as tk
 
 from UI.deafultSettings import Dimenations as Dims
 
+from Plot.plotSelect import OptionList, OptionCtrl
+
 
 class SearchPanel(ctk.CTkFrame):
     def __init__(self, master):
@@ -67,7 +69,8 @@ class SearchOptions(ctk.CTkTabview):
         self.filters = self.add("Filers")
         self.display = self.add("Display")
         self.testing = self.add("Testing")
-        self.set("Display")
+        self.plots = self.add("Plot")
+        self.set("Plot")
 
         # Add fetures to display
         self.displayData = DisplayData(self.display)
@@ -76,4 +79,11 @@ class SearchOptions(ctk.CTkTabview):
         # Add features to the testing panel
         no_vars = ctk.CTkTextbox(self.testing)
         no_vars.pack(expand=True, fill="both")
+        
+        pl = OptionList(self.plots)
+        pl.pack(fill=ctk.BOTH, expand=True)
+
+        oc = OptionCtrl(pl,"nice")
+        oc = OptionCtrl(pl,"cool")
+        
 

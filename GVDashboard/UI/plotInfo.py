@@ -31,8 +31,8 @@ class VcfDataWrapper:
 
         # Tmp data size constriants
         # TODO REMOVE THESE
-        max_vars = 500
-        max_samples = 300
+        max_vars = 50
+        max_samples = 30
 
         vcf_data[SAMPLES] = vcf_data[SAMPLES][:max_samples]
         vcf_data[DATA] = vcf_data[DATA][:max_vars,:max_samples,]
@@ -205,5 +205,5 @@ class PlotInfo:
     def make_zygosity_polt(self, axis:Axes):
         #axis.pcolor(np.matrix(self._data.get_zygosity()), linewidth=1,edgecolors="k", cmap=self.mut_cols, vmax=2, vmin=-1)
         #axis.pcolor(np.matrix(self._data.get_zygosity()),cmap=self.mut_cols, vmax=2, vmin=-1)
-        #axis.pcolorfast(np.matrix(self._data.get_zygosity()), cmap=self.mut_cols, vmax=2, vmin=-1)
-        axis.pcolormesh(np.matrix(self._data.get_zygosity()), cmap=self.mut_cols, vmax=2, vmin=-1)
+        p = axis.pcolorfast(np.matrix(self._data.get_zygosity()), cmap=self.mut_cols, vmax=2, vmin=-1)
+        #axis.pcolormesh(np.matrix(self._data.get_zygosity()), cmap=self.mut_cols, vmax=2, vmin=-1, shading='flat')
