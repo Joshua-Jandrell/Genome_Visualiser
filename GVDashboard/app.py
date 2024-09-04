@@ -9,11 +9,12 @@ from UI.viewPanel import ViewPanel
 from UI.sidePanel import SidePane
 
 #from Plot.dummyPlotter import make_plot
-from UI.plotInfo import *
+from VCF.dataWrapper import VcfDataWrapper
 from VCF.vcfTest import getData
 
 from UI.searchOptions import SearchPanel
 
+from Plot.plotInfo import ViewPlotter, ZygoteView
 # Constants
 DEFAULT_WIDTH = 800
 DEFAULT_HIGHT = 300
@@ -46,6 +47,7 @@ class App(ctk.CTk):
 # Class used to hold the main frame of the application
 class MainFrame(ctk.CTkFrame):
     def __init__(self, master):
+        self.data = getData()
         super().__init__(master=master)
 
         # Make views
@@ -67,16 +69,19 @@ class MainFrame(ctk.CTkFrame):
         self.left.plot_button.pack(fill=ctk.BOTH)
 
         # Configure canvas and plot info 
-        self.plot_info = PlotInfo()
+        self.view_plotter = ViewPlotter()
 
     def makePlot(self):
-        data = getData()
-        wrapped_data = VcfDataWrapper(data)
-        show_alt = self.search_panel.search_options.displayData.show_alt.get()
-        show_ref = self.search_panel.search_options.displayData.show_ref.get()
-        show_labels = self.search_panel.search_options.displayData.show_labels.get()
-        self.plot_info.configure(show_ref, show_alt, show_labels)
-        self.view.set_plot(self.plot_info.plot_data(wrapped_data))
+        assert(self.data is not None)
+        wrapped_data = VcfDataWrapper(self.data)
+        view_opts = self.search_panel.search_options.plots_options.get_opt_values()
+        self.view_plotter.configure(wrapped_data=wrapped_data,views=view_opts)
+        self.view.set_plot(self.view_plotter.plot_figure())
+        # show_alt = self.search_panel.search_options.displayData.show_alt.get()
+        # show_ref = self.search_panel.search_options.displayData.show_ref.get()
+        # show_labels = self.search_panel.search_options.displayData.show_labels.get()
+        # self.plot_info.configure(show_ref, show_alt, show_labels)
+        # self.view.set_plot(self.plot_info.plot_data(wrapped_data))
 
 # Make app if run as main
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import tkinter as tk
 from UI.deafultSettings import Dimenations as Dims
 
 from UI.optionPanel import OptionList, OptionCtrl
+from Plot.plotSelect import PlotOptionList
 
 
 class SearchPanel(ctk.CTkFrame):
@@ -80,10 +81,6 @@ class SearchOptions(ctk.CTkTabview):
         no_vars = ctk.CTkTextbox(self.testing)
         no_vars.pack(expand=True, fill="both")
         
-        pl = OptionList(self.plots)
-        pl.pack(fill=ctk.BOTH, expand=True)
-
-        oc = OptionCtrl(pl,"nice")
-        oc = OptionCtrl(pl,"cool")
-        
+        self.plots_options = PlotOptionList(self.plots)
+        self.plots_options.pack(fill=ctk.BOTH, expand=True)
 

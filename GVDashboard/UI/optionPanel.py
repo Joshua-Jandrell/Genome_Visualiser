@@ -14,7 +14,7 @@ class OptionPanel(ctk.CTkFrame):
     def __init__(self, master, option_ctrl, option_key:str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
-        assert(type(option_ctrl) is OptionCtrl)
+        assert(isinstance(option_ctrl,OptionCtrl))
 
         # Set local variables
         self.key = option_key
@@ -24,8 +24,6 @@ class OptionPanel(ctk.CTkFrame):
 
         # Create panels and buttons
         self.remove_button = ctk.CTkButton(self,text="x", command=self.deselect, width=self.BUTTON_W, height=self.BUTTON_H)
-        self.up_button = ctk.CTkButton(self,text="up", command=self.move_up, width=self.BUTTON_W, height=self.BUTTON_H)
-        self.down_button = ctk.CTkButton(self,text="d", command=self.move_down, width=self.BUTTON_W, height=self.BUTTON_H, background_corner_colors=None)
         # Create panel content
         self.content = ctk.CTkFrame(self,fg_color="transparent",width=0, height=self._desired_height-2*self.BUTTON_H) # set width and hight to avoid massive expansion
         # Create label
@@ -33,35 +31,16 @@ class OptionPanel(ctk.CTkFrame):
 
         # configure grid
         self.grid_rowconfigure(1,weight=1)
-        self.grid_columnconfigure(1,weight=1)
+        self.grid_columnconfigure(0,weight=1)
 
         # Pack items in grid
-        self.content.grid(row=1,column=0, rowspan=2,columnspan=2, sticky='nsew')
-        self.label.grid(row=0, column=1, sticky="w",ipadx=20)
-        self.remove_button.grid(row=0,column=0)
-        #self.remove_button.lift()
-        self.up_button.grid(row=0,column=2)
-        #self.up_button.lift()
-        self.down_button.grid(row=2,column=2)
-        #self.down_button.lift()
+        self.content.grid(row=1,column=0, rowspan=1,columnspan=2, sticky='nsew')
+        self.label.grid(row=0, column=0, sticky="w",ipadx=20)
+        self.remove_button.grid(row=0,column=1)
+
 
     def deselect(self):
         self.ctrl.deselect(self)
-
-    def move_up(self):
-        self.ctrl.move_panel_up(self)
-    def move_down(self):
-        pass
-    def set_up_button(self,active:bool):
-        if active:
-            self.up_button.config(state=ctk.ACTIVE)
-        else:
-            self.up_button.config(state=ctk.DISABLED)
-    def set_down_button(self,active:bool):
-        if active:
-            self.down_button.config(state=ctk.ACTIVE)
-        else:
-            self.down_button.config(state=ctk.DISABLED)
 
 
         
@@ -70,8 +49,9 @@ class OptionPanel(ctk.CTkFrame):
 # Class used to spawn in new option panels
 class OptionCtrl():
     def __init__(self,option_list,key):
-
-        assert(type(option_list) is OptionList)
+        # Constants 
+        self.H = 90
+        assert(isinstance(option_list,OptionList))
 
         self.option_list = option_list
         self.key = key
@@ -98,8 +78,9 @@ class OptionCtrl():
         return True
 
     # Designed to be overridden by descendants to customize option available
+    # Acts as a factory method for the option panel UI element 
     def make_option_panel(self)->OptionPanel:
-        return OptionPanel(self.option_list.content,self,self.key,self.key, height=90)
+        return OptionPanel(self.option_list.content,self,self.key,self.key, height=self.H)
     
     def move_panel_up(self,opt:OptionPanel):
         if opt.index != 0:
@@ -110,11 +91,13 @@ class OptionCtrl():
 
 
 class OptionList(ctk.CTkFrame):
-    ADD_TXT = "Add plot"
-    PLOT_TXT = "Options"
-    PAD = 5
     def __init__(self, master, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
+
+        # Class-level constants 
+        self.ADD_TXT = "Add plot"
+        self.PLOT_TXT = "Options"
+        self.PAD = 5
 
         # Coningure local valriables
         self.opts = {}
@@ -145,8 +128,8 @@ class OptionList(ctk.CTkFrame):
     def get_opt_values(self)->list[any]:
         vals = []
         for opt in self.active_opts:
-            if type(opt) is OptionPanel:
-                vals.append(opt.value)
+            assert(isinstance(opt,OptionPanel))
+            vals.append(opt.value)
         return vals
 
 
@@ -163,8 +146,8 @@ class OptionList(ctk.CTkFrame):
     def update_dropdown_opts(self):
         opt_txt = []
         for key,opt in self.opts.items():
-            if type(opt) is OptionCtrl and opt.is_selectable():
-                opt_txt.append(key)
+            assert(isinstance(opt, OptionCtrl))
+            opt_txt.append(key)
         
         # Update dropdown
         self.opt_button.configure(values=opt_txt)
@@ -207,22 +190,22 @@ class OptionList(ctk.CTkFrame):
         # shift all other options up one
         for i in range(target_index+1,len(self.active_opts)):
             opt = self.active_opts[i]
-            if type(opt) is OptionPanel:
-                opt.index -= 1
-                opt.grid_configure(row=opt.index)
+            assert(isinstance(opt,OptionPanel))
+            opt.index -= 1
+            opt.grid_configure(row=opt.index)
 
     # Shifts an option panel up one grid column 
     def swap_opts(self,index_1:int, index_2:int):
-        print(f"{index_1} to {index_2}")
         opt1 = self.active_opts[index_1]
         opt2 = self.active_opts[index_2]
         self.active_opts[index_1], self.active_opts[index_2] = self.active_opts[index_2], self.active_opts[index_1]
-        if type(opt1) is OptionPanel:
-            opt1.index = index_2
-            opt1.grid_configure(row=2*index_2)
-        if type(opt2) is OptionPanel:
-            opt2.index = index_1
-            opt2.grid_configure(row=2*index_1)
+        assert(isinstance(opt1,OptionPanel) and isinstance(opt2,OptionPanel))
+
+        opt1.index = index_2
+        opt1.grid_configure(row=2*index_2)
+
+        opt2.index = index_1
+        opt2.grid_configure(row=2*index_1)
 
 
     def _add_swap_button(self):
@@ -234,9 +217,9 @@ class OptionList(ctk.CTkFrame):
         self.swap_buttons.append(swap_button)
     
     def _remove_swap_button(self):
-        if len(self.swap_buttons > 0):
+        if len(self.swap_buttons) > 0:
             swap_button = self.swap_buttons.pop()
-            assert(type(swap_button) is ctk.CTkButton)
+            assert(isinstance(swap_button, ctk.CTkButton))
             swap_button.grid_forget()
             swap_button.destroy()
 
