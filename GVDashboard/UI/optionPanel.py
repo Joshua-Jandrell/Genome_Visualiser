@@ -91,7 +91,7 @@ class OptionCtrl():
 
 
 class OptionList(ctk.CTkFrame):
-    def __init__(self, master, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master, has_swaps:bool|None = True, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
         # Class-level constants 
@@ -104,6 +104,7 @@ class OptionList(ctk.CTkFrame):
         self.active_opts = []
         self.swap_buttons = []
         self.option_index = 0 # the row for the next option to be added 
+        self._has_swaps = has_swaps
 
         # Create top label
         self.make_title()
@@ -164,14 +165,12 @@ class OptionList(ctk.CTkFrame):
     # Function wich adds options to display. Should only be called from an OptionPanel object
     def _add_option_panel(self,option:OptionPanel):
         # add a swap button
-        if self.option_index != 0:
+        if self.option_index != 0 and self._has_swaps:
             self._add_swap_button()
 
-        option.grid(row=2*self.option_index, column=0, sticky="ew",pady=self.PAD, padx=self.PAD)
+        option.grid(row=self.get_opt_grid_row(self.option_index), column=0, sticky="ew",pady=self.PAD, padx=self.PAD)
         option.index = self.option_index
         self.active_opts.append(option)
-
-
 
         self.option_index += 1
 
@@ -182,17 +181,17 @@ class OptionList(ctk.CTkFrame):
         # Remove option from grid
         option.grid_forget()
 
+        # shift all other options up one
+        for i in range(target_index,len(self.active_opts)):
+            opt = self.active_opts[i]
+            assert(isinstance(opt,OptionPanel))
+            opt.index -= 1
+            opt.grid_configure(row=self.get_opt_grid_row(opt.index))
+
         # Remove swap button
         self._remove_swap_button()
 
         self.option_index -= 1
-
-        # shift all other options up one
-        for i in range(target_index+1,len(self.active_opts)):
-            opt = self.active_opts[i]
-            assert(isinstance(opt,OptionPanel))
-            opt.index -= 1
-            opt.grid_configure(row=opt.index)
 
     # Shifts an option panel up one grid column 
     def swap_opts(self,index_1:int, index_2:int):
@@ -202,10 +201,10 @@ class OptionList(ctk.CTkFrame):
         assert(isinstance(opt1,OptionPanel) and isinstance(opt2,OptionPanel))
 
         opt1.index = index_2
-        opt1.grid_configure(row=2*index_2)
+        opt1.grid_configure(row=self.get_opt_grid_row(index_2))
 
         opt2.index = index_1
-        opt2.grid_configure(row=2*index_1)
+        opt2.grid_configure(row=self.get_opt_grid_row(index_1))
 
 
     def _add_swap_button(self):
@@ -217,7 +216,7 @@ class OptionList(ctk.CTkFrame):
         self.swap_buttons.append(swap_button)
     
     def _remove_swap_button(self):
-        if len(self.swap_buttons) > 0:
+        if len(self.swap_buttons) > 0 and self._has_swaps:
             swap_button = self.swap_buttons.pop()
             assert(isinstance(swap_button, ctk.CTkButton))
             swap_button.grid_forget()
@@ -226,3 +225,6 @@ class OptionList(ctk.CTkFrame):
     # Function intended to be overriddedn for customisation
     def _make_swap_button(self):
         return ctk.CTkButton(self.content, text="swap", height=20)
+    def get_opt_grid_row(self,index:int)->int:
+        if self._has_swaps: return 2*index
+        else: return index
