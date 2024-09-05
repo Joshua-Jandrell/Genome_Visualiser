@@ -5,7 +5,7 @@ import tkinter as tk
 
 from UI.deafultSettings import Dimenations as Dims
 
-from UI.optionPanel import OptionList, OptionCtrl
+from UI.optionPanel import OptionPanel, OptionCtrl
 from Plot.plotSelect import PlotOptionList
 
 
@@ -67,7 +67,7 @@ class SearchOptions(ctk.CTkTabview):
     def __init__(self, master):
         super().__init__(master=master)
 
-        self.filters = self.add("Filers")
+        self.data = self.add("Data")
         self.display = self.add("Display")
         self.testing = self.add("Testing")
         self.plots = self.add("Plot")

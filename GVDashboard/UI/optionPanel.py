@@ -80,37 +80,28 @@ class OptionCtrl():
     # Designed to be overridden by descendants to customize option available
     # Acts as a factory method for the option panel UI element 
     def make_option_panel(self)->OptionPanel:
-        return OptionPanel(self.option_list.content,self,self.key,self.key, height=self.H)
+        return OptionPanel(self.option_list,self,self.key,self.key, height=self.H)
     
     def move_panel_up(self,opt:OptionPanel):
         if opt.index != 0:
             self.option_list.swap_opts(opt.index, opt.index-1)
 
-        
 
-
-
-class OptionList(ctk.CTkFrame):
+# Generic class that holds a list of options which can be added, removed and re-organized
+class OptionFrame(ctk.CTkFrame):
     def __init__(self, master, has_swaps:bool|None = True, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
         # Class-level constants 
         self.ADD_TXT = "Add plot"
         self.PLOT_TXT = "Options"
-        self.PAD = 5
-
-        # Coningure local valriables
-        self.opts = {}
-        self.active_opts = []
-        self.swap_buttons = []
-        self.option_index = 0 # the row for the next option to be added 
-        self._has_swaps = has_swaps
 
         # Create top label
         self.make_title()
         self.make_add_button()
         # Create content 
-        self.content = ctk.CTkFrame(self)
+        self.content = OptionList(self, has_swaps)
+        self.content.option_count.trace_add("write", self._on_list_opt_register)
 
         # Position objects in grid
         self.title_txt.grid(row=0,column=0,sticky="ew",padx=20)
@@ -122,17 +113,12 @@ class OptionList(ctk.CTkFrame):
         self.grid_columnconfigure(1,weight=3)
         self.grid_rowconfigure(1,weight=1)
 
-        # configure content grid layout
-        self.content.grid_columnconfigure(0,weight=1)
-
     # Returns list of all selected option values from the option list
     def get_opt_values(self)->list[any]:
-        vals = []
-        for opt in self.active_opts:
-            assert(isinstance(opt,OptionPanel))
-            vals.append(opt.value)
-        return vals
+        return self.content.get_opt_values()
 
+    def _on_list_opt_register(self,*args):
+        self.update_dropdown_opts()
 
     def make_title(self):
         self.title_txt = ctk.CTkLabel(master=self,
@@ -146,7 +132,7 @@ class OptionList(ctk.CTkFrame):
     # Updates the options available on the dropdown
     def update_dropdown_opts(self):
         opt_txt = []
-        for key,opt in self.opts.items():
+        for key,opt in self.content.opts.items():
             assert(isinstance(opt, OptionCtrl))
             opt_txt.append(key)
         
@@ -155,13 +141,47 @@ class OptionList(ctk.CTkFrame):
 
 
     def on_add_option_click(self, event):
-        self.opts[self.selected_opt.get()].select()
+        self.content.select_option(self.selected_opt.get())
         self.update_dropdown_opts()
 
     def register_option(self, option_ctrl:OptionCtrl):
-        self.opts[option_ctrl.key] = option_ctrl
+        self.content.register(option_ctrl)
         self.update_dropdown_opts()
 
+
+class OptionList(ctk.CTkFrame):
+    def __init__(self, master, has_swaps:bool = True, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+        super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
+        
+        # Coningure local valriables
+        self.PAD = 5
+        self.opts = {}
+        self.active_opts = []
+        self.swap_buttons = []
+        self.option_index = 0 # the row for the next option to be added 
+        self.option_count = ctk.IntVar(value=0)
+        self._has_swaps = has_swaps
+
+        # configure content grid layout
+        self.grid_columnconfigure(0,weight=1)
+
+    # Select and option and add it to the list
+    def select_option(self, key:str):
+        self.opts[key].select()
+
+    # Register an option a selectable
+    def register_option(self, option_ctrl:OptionCtrl):
+        self.opts[option_ctrl.key] = option_ctrl
+        self.option_count.set(self.option_count.get()+1)
+
+    # Returns list of all selected option values from the option list
+    def get_opt_values(self)->list[any]:
+        vals = []
+        for opt in self.active_opts:
+            assert(isinstance(opt,OptionPanel))
+            vals.append(opt.value)
+        return vals
+    
     # Function wich adds options to display. Should only be called from an OptionPanel object
     def _add_option_panel(self,option:OptionPanel):
         # add a swap button
@@ -224,7 +244,7 @@ class OptionList(ctk.CTkFrame):
 
     # Function intended to be overriddedn for customisation
     def _make_swap_button(self):
-        return ctk.CTkButton(self.content, text="swap", height=20)
+        return ctk.CTkButton(self, text="swap", height=20)
     def get_opt_grid_row(self,index:int)->int:
         if self._has_swaps: return 2*index
         else: return index
