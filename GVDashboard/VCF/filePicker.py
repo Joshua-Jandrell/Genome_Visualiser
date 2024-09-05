@@ -26,11 +26,19 @@ class FileFetcher:
             return DataFetcher.load_data(filename)
         
     
-class PathSelect(ctk.CTkOptionMenu):
+class PathSelect(ctk.CTkFrame):
     def __init__(self, master: Any, width: int = 140, height: int = 28, corner_radius: int | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, button_color: str | Tuple[str, str] | None = None, button_hover_color: str | Tuple[str, str] | None = None, text_color: str | Tuple[str, str] | None = None, text_color_disabled: str | Tuple[str, str] | None = None, dropdown_fg_color: str | Tuple[str, str] | None = None, dropdown_hover_color: str | Tuple[str, str] | None = None, dropdown_text_color: str | Tuple[str, str] | None = None, font: tuple | ctk.CTkFont | None = None, dropdown_font: tuple | ctk.CTkFont | None = None, values: list | None = None, variable: ctk.Variable | None = None, state: str =NORMAL, hover: bool = True, command: Callable[[str], Any] | None = None, dynamic_resizing: bool = True, anchor: str = "w", **kwargs):
         super().__init__(master, width, height, corner_radius, bg_color, fg_color, button_color, button_hover_color, text_color, text_color_disabled, dropdown_fg_color, dropdown_hover_color, dropdown_text_color, font, dropdown_font, values, variable, state, hover, command, dynamic_resizing, anchor, **kwargs)
         
         # Initialise constants
+        self.path_var = ctk.StringVar(value="Select Path")
+        self.label = ctk.CTkLabel(self,text="File:")
+        self.label._font.configure(weight="bold")
+        self.path_txt = ctk.CTkLabel(self,text="No path selected...")
+
+        self.path_var.trace_add('write',self.on_file_change)
+    def on_file_change(self, *args):
+         self.path_txt = ctk.CTkLabel(self,text="No path selected...")
     def UpdateOptions(self):
         self.configure(values=FileFetcher.FETCHED_FILES)
     

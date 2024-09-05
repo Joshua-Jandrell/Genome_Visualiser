@@ -1,0 +1,44 @@
+# Contains classes and data that can be used to filter, query and manage datasets
+
+# Class used to define how bcf filters should be applied
+# Acts as a base class for more advanced data filters
+class DataFilter_base():
+    def __init__(self) -> None:
+        pass
+    def get_filter_str(self):
+        return ""
+
+# Class used to store and apply various vcf filters
+class DataSet:
+    APPEND = "_subset"
+    def __init__(self,source_path:str,save_path:str|None = None,name:str=None) -> None:
+        self.filters = []
+        self.save_path = None
+        self.name = None
+        self.configure(source_path, save_path, name=name)
+        self._get_save_path()
+        self._get_dataset_name()
+        
+
+    def configure(self,source_path:str|None = None, save_path:str|None = None, filters:DataFilter_base|None = None, name:str|None = None):
+        if source_path is not None: self.source_path = source_path
+        if save_path is not None: self.save_path = save_path
+        if filters is not None: self.filters = filters
+
+    def add_filter(self,filter:DataFilter_base):
+        self.filters.append(filter)
+
+    def _get_save_path(self):
+        if self.save_path is None:
+            self.save_path = self._get_dataset_name()
+        return self.save_path
+
+    def _get_dataset_name(self)->str:
+        if self.name is None:
+            # Remove source path and append desired suffix 
+            self.name = self.source_path.rsplit('.')[0] + self.APPEND
+        return self.name
+    
+
+# ===================================================================
+# Class used to filter based b
