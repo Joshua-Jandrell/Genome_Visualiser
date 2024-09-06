@@ -7,82 +7,34 @@ from UI.deafultSettings import Dimenations as Dims
 
 from UI.optionPanel import OptionCard, OptionCtrl
 from Plot.plotSelect import PlotOptionList
-from GVDashboard.VCF.dataPanel import DataPanel
+from VCF.dataPanel import DataPanel
 
-
-class SearchPanel(ctk.CTkFrame):  ###TODO must be rerfactored 
+class SearchPanel(ctk.CTkFrame): 
     def __init__(self, master):
         super().__init__(master=master, width=Dims.PANEL_WIDTH)
 
         self.button_panel = ctk.CTkFrame(self,bg_color='transparent', height=Dims.BUTTON_PANEL_HIGHT)
         self.search_options = SearchOptions(self)
 
+        # Keep search options as it is used by other classes 
+        # TODO This should be refactored to remove this depndancy
         self.button_panel.pack(side=ctk.BOTTOM,fill=ctk.X)
         self.search_options.pack(side=ctk.BOTTOM, expand=True, fill=ctk.BOTH)
-
-# Class contains details for how plot should be displayed
-# TODO Will be depricated 
-class DisplayData(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master=master,)
-        self.show_ref = ctk.BooleanVar(value=True)
-        self.show_alt = ctk.BooleanVar(value=True)
-        self.show_labels = ctk.BooleanVar(value=True)
-        self.min_block_size = 20
-
-        # Add UI elements
-        # ==> Show reference checkbox
-        ref_label = ctk.CTkLabel(
-            master = self,
-            text="Display Sequence Information"
-        )
-        ref = ctk.CTkCheckBox(
-            master = self,
-            text = "Ref. Sequence",
-            variable=self.show_ref
-        )
-        # ==> Show alternatives checkbox 
-        alt = ctk.CTkCheckBox(
-            master = self,
-            text = "Alt. Sequence",
-            variable=self.show_alt
-        )
-        # ==> annotate refs
-        labels = ctk.CTkCheckBox(
-            master=self,
-            text="Show Labels",
-            variable=self.show_labels
-        )
-
-        # Pack UI elements 
-        ref_label.grid(row=0, column=0, columnspan=2)
-        ref.grid(row=1, column=0)
-        alt.grid(row=1, column=1)
-        labels.grid(row=2, column=0)
 
 
 class SearchOptions(ctk.CTkTabview):
     def __init__(self, master):
-        super().__init__(master=master)
+        super().__init__(master=master, width=Dims.PANEL_WIDTH)
 
         ## Adds tabs at the top of the Search Panel
         self.data = self.add("Datasets")
-        self.display = self.add("Display")
-        self.testing = self.add("Testing")
         self.plots = self.add("Plot")
         self.set("Datasets") #Selects which tab is active by default when Search Panel initially opens.
-
-        # Add fetures to display
-        self.displayData = DisplayData(self.display)
-        self.displayData.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Create dataset panel 
         self.data_panel = DataPanel(self.data)
         self.data_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
-        # Add features to the testing panel
-        no_vars = ctk.CTkTextbox(self.testing)
-        no_vars.pack(expand=True, fill="both")
-        
+
+        # Create features for the options pannel 
         self.plots_options = PlotOptionList(self.plots)
         self.plots_options.pack(fill=ctk.BOTH, expand=True)
-
