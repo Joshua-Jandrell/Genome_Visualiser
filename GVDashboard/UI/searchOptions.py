@@ -7,6 +7,7 @@ from UI.deafultSettings import Dimenations as Dims
 
 from UI.optionPanel import OptionPanel, OptionCtrl
 from Plot.plotSelect import PlotOptionList
+from VCF.dataSelect import DataPanel
 
 
 class SearchPanel(ctk.CTkFrame):
@@ -67,16 +68,19 @@ class SearchOptions(ctk.CTkTabview):
     def __init__(self, master):
         super().__init__(master=master)
 
-        self.data = self.add("Data")
+        self.data = self.add("Datasets")
         self.display = self.add("Display")
         self.testing = self.add("Testing")
         self.plots = self.add("Plot")
-        self.set("Plot")
+        self.set("Datasets")
 
         # Add fetures to display
         self.displayData = DisplayData(self.display)
         self.displayData.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
+        # Create dataset panel 
+        self.data_panel = DataPanel(self.data)
+        self.data_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
         # Add features to the testing panel
         no_vars = ctk.CTkTextbox(self.testing)
         no_vars.pack(expand=True, fill="both")

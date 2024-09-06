@@ -9,12 +9,13 @@ class DataFilter_base():
         return ""
 
 # Class used to store and apply various vcf filters
-class DataSet:
+class DataSetInfo:
     APPEND = "_subset"
-    def __init__(self,source_path:str,save_path:str|None = None,name:str=None) -> None:
+    def __init__(self,source_path:str|None = None,save_path:str|None = None,name:str=None) -> None:
         self.filters = []
-        self.save_path = None
-        self.name = None
+        self.source_path = source_path
+        self.save_path = save_path
+        self.name = name
         self.configure(source_path, save_path, name=name)
         self._get_save_path()
         self._get_dataset_name()
@@ -27,6 +28,10 @@ class DataSet:
 
     def add_filter(self,filter:DataFilter_base):
         self.filters.append(filter)
+
+    # Returns true if the given dataset is valid and can be created
+    def is_valid(self):
+        return self.source_path is not None # Assume that file type validation has already been done
 
     def _get_save_path(self):
         if self.save_path is None:

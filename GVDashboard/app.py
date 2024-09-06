@@ -24,15 +24,19 @@ PANEL_WIDTH = 200
 HIDE_BAR_WIDTH = 10
 MIN_VIEW_WIDTH = 400
 
-# Class used to create and run the visualizer app
-# Inherits from ctk.CTK class to get functionalities of native application
+# 
 class App(ctk.CTk):
+    """
+    Class used to create and run the visualizer app.\n
+    Inherits from `ctk.CTK` class to get functionalities of native application
+    """
+    
     def __init__(self):
         super().__init__()
 
-        self.title("Gnome Visualizer")
+        self.title("Genome Visualizer")
 
-        # set geometry of app
+        # set size app window
         self.geometry(f"{DEFAULT_WIDTH}x{DEFAULT_HIGHT}")
         self.minsize(MIN_WIDTH,MIN_HIGHT)
 
