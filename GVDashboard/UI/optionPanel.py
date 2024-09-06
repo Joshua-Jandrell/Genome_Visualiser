@@ -6,9 +6,9 @@ import tkinter as tk
 
 from UI.dropDown import DrowDown
 
-# An option panel that can be added to an option list  
-# This object must be a chid on a OptionList 
-class OptionPanel(ctk.CTkFrame):
+# An option card that can be displayed in an option list.
+# This object must be a child on an OptionList 
+class OptionCard(ctk.CTkFrame):
     BUTTON_W = 20
     BUTTON_H = 20
     def __init__(self, master, option_ctrl, option_key:str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
@@ -62,12 +62,12 @@ class OptionCtrl():
 
     # Select an option and add it to the option list
     def select(self):
-        opt = self.make_option_panel()
-        self.option_list._add_option_panel(opt)
+        opt = self.make_option_card()
+        self.option_list._add_option_card(opt)
         self.count += 1
 
-    def deselect(self,opt:OptionPanel):
-        self.option_list._remove_option_panel(opt)
+    def deselect(self,opt:OptionCard):
+        self.option_list._remove_option_card(opt)
         self.count -= 1
 
         # delete option permanently
@@ -79,16 +79,16 @@ class OptionCtrl():
 
     # Designed to be overridden by descendants to customize option available
     # Acts as a factory method for the option panel UI element 
-    def make_option_panel(self)->OptionPanel:
-        return OptionPanel(self.option_list,self,self.key,self.key, height=self.H)
+    def make_option_card(self)->OptionCard:
+        return OptionCard(self.option_list,self,self.key,self.key, height=self.H)
     
-    def move_panel_up(self,opt:OptionPanel):
+    def move_card_up(self,opt:OptionCard):
         if opt.index != 0:
             self.option_list.swap_opts(opt.index, opt.index-1)
 
 
 # Generic class that holds a list of options which can be added, removed and re-organized
-class OptionFrame(ctk.CTkFrame):
+class OptionPanel(ctk.CTkFrame):
     def __init__(self, master, has_swaps:bool|None = True, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
@@ -178,12 +178,12 @@ class OptionList(ctk.CTkFrame):
     def get_opt_values(self)->list[any]:
         vals = []
         for opt in self.active_opts:
-            assert(isinstance(opt,OptionPanel))
+            assert(isinstance(opt,OptionCard))
             vals.append(opt.value)
         return vals
     
     # Function wich adds options to display. Should only be called from an OptionPanel object
-    def _add_option_panel(self,option:OptionPanel):
+    def _add_option_card(self,option:OptionCard):
         # add a swap button
         if self.option_index != 0 and self._has_swaps:
             self._add_swap_button()
@@ -194,7 +194,7 @@ class OptionList(ctk.CTkFrame):
 
         self.option_index += 1
 
-    def _remove_option_panel(self,option:OptionPanel):
+    def _remove_option_card(self,option:OptionCard):
         target_index = option.index
         # Remove option from active options list
         self.active_opts.remove(option)
@@ -204,7 +204,7 @@ class OptionList(ctk.CTkFrame):
         # shift all other options up one
         for i in range(target_index,len(self.active_opts)):
             opt = self.active_opts[i]
-            assert(isinstance(opt,OptionPanel))
+            assert(isinstance(opt,OptionCard))
             opt.index -= 1
             opt.grid_configure(row=self.get_opt_grid_row(opt.index))
 
@@ -218,7 +218,7 @@ class OptionList(ctk.CTkFrame):
         opt1 = self.active_opts[index_1]
         opt2 = self.active_opts[index_2]
         self.active_opts[index_1], self.active_opts[index_2] = self.active_opts[index_2], self.active_opts[index_1]
-        assert(isinstance(opt1,OptionPanel) and isinstance(opt2,OptionPanel))
+        assert(isinstance(opt1,OptionCard) and isinstance(opt2,OptionCard))
 
         opt1.index = index_2
         opt1.grid_configure(row=self.get_opt_grid_row(index_2))

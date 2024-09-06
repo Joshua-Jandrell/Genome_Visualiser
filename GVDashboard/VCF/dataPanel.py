@@ -2,13 +2,13 @@
 from typing import Any, Tuple
 import customtkinter as ctk
 
-from UI.optionPanel import OptionPanel
+from UI.optionPanel import OptionCard
 from UI.optionPanel import OptionCtrl, OptionList
 
 from VCF.filterInfo import DataSetInfo
 from VCF.dataSetPanel import DataSetConfig
 
-# Panel used to add and remove option data
+# Panel used to add and remove Datasets and the filter options of each "Dataset".
 class DataPanel(ctk.CTkFrame):
     def __init__(self, master: Any, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
@@ -49,6 +49,6 @@ class DataPanel(ctk.CTkFrame):
 
 # Class used to create dataset option panels
 class DataOption(OptionCtrl):
-    def make_option_panel(self) -> OptionPanel:
-        op = super().make_option_panel()
+    def make_option_card(self) -> OptionCard:
+        op = super().make_option_card()
         return op

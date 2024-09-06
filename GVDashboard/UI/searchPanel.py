@@ -5,18 +5,14 @@ import tkinter as tk
 
 from UI.deafultSettings import Dimenations as Dims
 
-from UI.optionPanel import OptionPanel, OptionCtrl
+from UI.optionPanel import OptionCard, OptionCtrl
 from Plot.plotSelect import PlotOptionList
-from VCF.dataSelect import DataPanel
+from GVDashboard.VCF.dataPanel import DataPanel
 
 
-class SearchPanel(ctk.CTkFrame):
+class SearchPanel(ctk.CTkFrame):  ###TODO must be rerfactored 
     def __init__(self, master):
         super().__init__(master=master, width=Dims.PANEL_WIDTH)
-
-        # Configure the grid system
-        self.rowconfigure(0,weight=80)
-        self.rowconfigure(1,weight=20)
 
         self.button_panel = ctk.CTkFrame(self,bg_color='transparent', height=Dims.BUTTON_PANEL_HIGHT)
         self.search_options = SearchOptions(self)
@@ -25,6 +21,7 @@ class SearchPanel(ctk.CTkFrame):
         self.search_options.pack(side=ctk.BOTTOM, expand=True, fill=ctk.BOTH)
 
 # Class contains details for how plot should be displayed
+# TODO Will be depricated 
 class DisplayData(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master=master,)
@@ -68,11 +65,12 @@ class SearchOptions(ctk.CTkTabview):
     def __init__(self, master):
         super().__init__(master=master)
 
+        ## Adds tabs at the top of the Search Panel
         self.data = self.add("Datasets")
         self.display = self.add("Display")
         self.testing = self.add("Testing")
         self.plots = self.add("Plot")
-        self.set("Datasets")
+        self.set("Datasets") #Selects which tab is active by default when Search Panel initially opens.
 
         # Add fetures to display
         self.displayData = DisplayData(self.display)

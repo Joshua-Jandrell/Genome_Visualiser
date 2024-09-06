@@ -6,13 +6,13 @@ import tkinter.ttk as ttk
 
 from UI.menu import TopMenuBar
 from UI.viewPanel import ViewPanel
-from UI.sidePanel import SidePane
+from UI.sidePanel import SidePanel
 
 #from Plot.dummyPlotter import make_plot
 from VCF.dataWrapper import VcfDataWrapper
 from VCF.vcfTest import getData
 
-from UI.searchOptions import SearchPanel
+from UI.searchPanel import SearchPanel
 
 from Plot.plotInfo import ViewPlotter, ZygoteView
 # Constants
@@ -50,31 +50,35 @@ class App(ctk.CTk):
 
 # Class used to hold the main frame of the application
 class MainFrame(ctk.CTkFrame):
+    """Class used to hold the view-panels in the mainframe of the app.
+    """
     def __init__(self, master):
         self.data = getData()
         super().__init__(master=master)
 
-        # Make views
-        self.left = SidePane(self,ctk.RIGHT)
-        self.right = SidePane(self,ctk.LEFT)
+        # Make view-panels
+        self.left = SidePanel(self,ctk.RIGHT)
+        self.right = SidePanel(self,ctk.LEFT)
         self.view = ViewPanel(self)
 
-        # Pack the views into window
+        # Puts the view-panels into set positions in the app window
         self.left.pack(side = ctk.LEFT, fill=ctk.Y)
         self.right.pack(side = ctk.RIGHT, fill=ctk.Y)
         self.view.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
-        # Make left panel
+        # Makes the left panel
         self.search_panel = SearchPanel(self.left.content)
         self.search_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
-        # make plot button
+        # Makes plot button -- might get depricated
         self.left.plot_button = ctk.CTkButton(self.search_panel.button_panel,text="Plot",command=self.makePlot)
         self.left.plot_button.pack(fill=ctk.BOTH)
 
         # Configure canvas and plot info 
         self.view_plotter = ViewPlotter()
 
+
+## might get depricated --- into Data plotter
     def makePlot(self):
         assert(self.data is not None)
         wrapped_data = VcfDataWrapper(self.data)
@@ -87,7 +91,7 @@ class MainFrame(ctk.CTkFrame):
         # self.plot_info.configure(show_ref, show_alt, show_labels)
         # self.view.set_plot(self.plot_info.plot_data(wrapped_data))
 
-# Make app if run as main
+# Makes app if run as main
 if __name__ == "__main__":
     app = App()
     app.mainloop()

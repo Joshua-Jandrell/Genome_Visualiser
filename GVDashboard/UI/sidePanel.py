@@ -4,7 +4,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from UI.deafultSettings import Dimenations as Dims
 
-class SidePane(ctk.CTkFrame):
+class SidePanel(ctk.CTkFrame):
     def __init__(self, master, pack_side):
         super().__init__(master=master, width=Dims.PANEL_WIDTH)
         self.content = ctk.CTkFrame(self, width=Dims.PANEL_WIDTH-Dims.HIDE_BAR_WIDTH)
@@ -13,17 +13,22 @@ class SidePane(ctk.CTkFrame):
         # Pack elements
         self.hide_button.pack(side=pack_side, fill=ctk.Y)
         self.content.pack(side=pack_side, fill=ctk.Y)
-# Creates a button that can hide/remove a panel when pressed
+
 class HideButton(ctk.CTkButton):
+    """A button that can hide or remove a panel when pressed.
+    """
     def __init__(self, master, target:ctk.CTkFrame, pack_side, pack_fill, visible=True):
         super().__init__(master, text="", command=self.toggle_target, width=Dims.HIDE_BAR_WIDTH)
+        # Private variables:
         self.target = target
         self.visible = visible
         self.pack_side = pack_side
         self.pack_fill = pack_fill
 
-    # Hides / removes target based on visibility
+ 
     def toggle_target(self):
+        """Hides or shows `self.target` by toggling its visibility.
+        """
         if self.visible:
             self.hide_target()
         else:
