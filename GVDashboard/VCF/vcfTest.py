@@ -17,10 +17,10 @@ if __name__ == "__main__":
 
     # Construct a search query based on dataframe
     bool_search = (df["QUAL"].between(30, 35, inclusive = 'both'))
-    # this earch can be chained (useful)
+    # This search can be chained (useful)
     bool_search = bool_search &(df["POS"]<15000)
 
-    # then get a new dataframe by indexing useing the bool search
+    # Then get a new dataframe by indexing useing the bool search
     new_df = df[bool_search]
 
     # Dataframe can also be sorted like this 
@@ -29,10 +29,10 @@ if __name__ == "__main__":
     print(new_df)
 
     
-    # The idexes of a dataframe can be used to access and sored rows of a genotype array (or any numpy array/matrix)
+    # The indexes of a dataframe can be used to access and sored rows of a genotype array (or any numpy array/matrix)
     print(al.GenotypeArray(data['calldata/GT'])[new_df.index,:])
 
-    # get column of dtaframe
+    # get column of dataframe
     print(new_df["POS"])
 
     print(data['samples'])
