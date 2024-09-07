@@ -1,6 +1,6 @@
 # This script contains base the classes and functions for a plot type selection tkinter menu
 
-from typing import Tuple
+from typing import Tuple, Any, Callable
 import customtkinter as ctk
 import tkinter as tk
 
@@ -98,14 +98,12 @@ class OptionPanel(ctk.CTkFrame):
 
         # Create top label
         self.make_title()
-        self.make_add_button()
-        # Create content 
-        self.content = OptionList(self, has_swaps)
-        self.content.option_count.trace_add("write", self._on_list_opt_register)
-
-        # Position objects in grid
         self.title_txt.grid(row=0,column=0,sticky="ew",padx=20)
+        self.make_add_button()
         self.opt_button.grid(row=0,column=1,sticky="")
+        # Create content 
+        self.content = OptionList(self, has_swaps, opts_update_command=self._on_list_opt_register)
+        #self.content.option_count.trace_add("write", self._on_list_opt_register)
         self.content.grid(row=1,column=0,columnspan=2, sticky="nsew")
 
         # configure grid layout 
@@ -117,7 +115,7 @@ class OptionPanel(ctk.CTkFrame):
     def get_opt_values(self)->list[any]:
         return self.content.get_opt_values()
 
-    def _on_list_opt_register(self,*args):
+    def _on_list_opt_register(self):
         self.update_dropdown_opts()
 
     def make_title(self):
@@ -150,16 +148,16 @@ class OptionPanel(ctk.CTkFrame):
 
 
 class OptionList(ctk.CTkFrame):
-    def __init__(self, master, has_swaps:bool = True, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master, has_swaps:bool = True, opts_update_command:Callable[[],Any]|None=None, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
         
         # Coningure local valriables
         self.PAD = 5
         self.opts = {}
+        self.opts_update_command = opts_update_command
         self.active_opts = []
         self.swap_buttons = []
         self.option_index = 0 # the row for the next option to be added 
-        self.option_count = ctk.IntVar(value=0)
         self._has_swaps = has_swaps
 
         # configure content grid layout
@@ -172,7 +170,10 @@ class OptionList(ctk.CTkFrame):
     # Register an option a selectable
     def register_option(self, option_ctrl:OptionCtrl):
         self.opts[option_ctrl.key] = option_ctrl
-        self.option_count.set(self.option_count.get()+1)
+
+        # Invoke the command for option registration
+        if self.opts_update_command is not None:
+            self.opts_update_command()
 
     # Returns list of all selected option values from the option list
     def get_opt_values(self)->list[any]:
@@ -181,6 +182,9 @@ class OptionList(ctk.CTkFrame):
             assert(isinstance(opt,OptionCard))
             vals.append(opt.value)
         return vals
+    
+    def get_opt_count(self)->int:
+        return len(self.opts)
     
     # Function wich adds options to display. Should only be called from an OptionPanel object
     def _add_option_card(self,option:OptionCard):

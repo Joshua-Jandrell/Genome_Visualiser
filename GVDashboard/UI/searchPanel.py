@@ -36,5 +36,5 @@ class SearchOptions(ctk.CTkTabview):
         self.data_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Create features for the options pannel 
-        #self.plots_options = PlotOptionList(self.plots)
-        #self.plots_options.pack(fill=ctk.BOTH, expand=True)
+        self.plots_options = PlotOptionList(self.plots)
+        self.plots_options.pack(fill=ctk.BOTH, expand=True)
