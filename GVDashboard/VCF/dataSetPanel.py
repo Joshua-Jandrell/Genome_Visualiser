@@ -108,17 +108,25 @@ class DatasetNameEdit(ctk.CTkFrame):
         
     
 class DataSetConfig(ctk.CTkToplevel):
+    """
+    A top-level window that lets the user create and edit datasets and their filters
+    """
     WINDOW_WIDTH = 400
     WINDOW_HIGHT = 250
 
     dateset_count = 0
     datasets = []
-    def __init__(self, app:ctk.CTk, dataset:DataSetInfo|None = None,fg_color: str | Tuple[str] | None = None, **kwargs):
+    def __init__(self, app:ctk.CTk, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None,fg_color: str | Tuple[str] | None = None, **kwargs):
+        """
+        Creates a new `DataSetConfig` window.\n
+        NOTE: The `command` function must be a function that accepts a single positional argument of type `DataSetInfo`
+        """
         super().__init__(master=app,  fg_color=fg_color, **kwargs)
         # Assume that dataset is being edited
         self.dataset = dataset
         self.new_dataset = False
         action_text = "Update"
+        self.command = command
         if self.dataset is None:
             self.new_dataset = True
             self.dataset = DataSetInfo(name=f"Dataset_{self.dateset_count+1}")
@@ -138,15 +146,24 @@ class DataSetConfig(ctk.CTkToplevel):
 
         self.cancel_button = ctk.CTkButton(self, text="cancel", command=self._on_cancel)
         self.cancel_button.pack(side=ctk.RIGHT, padx=10, pady=5,anchor="se")
-        self.confirm_button = ctk.CTkButton(self, text=action_text)
+        self.confirm_button = ctk.CTkButton(self, text=action_text, command=self._on_create)
         self.confirm_button.pack(side=ctk.RIGHT, padx=10, pady=5,anchor="se")
 
     def _on_cancel(self):
         self.destroy()
 
     def _on_create(self):
+
+        # TODO Validate input
+        
+        # Update dataset according to settings
         self.name_text.update_dataset()
         self.file_picker.update_dataset()
+
+        # Execute creation command
+        if self.command is not None:
+            self.command(self.dataset)
+
         self.destroy()
 
     def _configure_title(self):

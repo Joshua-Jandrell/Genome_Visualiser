@@ -1,5 +1,5 @@
 # Contains classes and data that can be used to filter, query and manage datasets
-
+from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 # Class used to define how bcf filters should be applied
 # Acts as a base class for more advanced data filters
 class DataFilter_base():
@@ -25,6 +25,7 @@ class DataSetInfo:
         if source_path is not None: self.source_path = source_path
         if save_path is not None: self.save_path = save_path
         if filters is not None: self.filters = filters
+        if name is not None: self.name = name
 
     def add_filter(self,filter:DataFilter_base):
         self.filters.append(filter)
@@ -43,6 +44,9 @@ class DataSetInfo:
             # Remove source path and append desired suffix 
             self.name = self.source_path.rsplit('.')[0] + self.APPEND
         return self.name
+    
+    def get_data_wrapper()->DataWrapper:
+        """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
     
 
 # ===================================================================

@@ -33,6 +33,9 @@ class DataPanel(ctk.CTkFrame):
         self.grid_columnconfigure(1,weight=3)
         self.grid_rowconfigure(1,weight=1)
 
+        # Data option control used to create new dataset cards
+        self.data_opt_ctl = DataOptionCtrl(option_list=self.content,key="Add")
+
 
     def make_title(self):
         self.title_txt = ctk.CTkLabel(master=self,
@@ -45,10 +48,28 @@ class DataPanel(ctk.CTkFrame):
 
     def on_add_button_click(self):
         # Create file path selection dialog box
-        self.new_dataset = DataSetConfig(self)
+        self.new_dataset = DataSetConfig(self,command=self.on_data_select)
+
+    def on_data_select(self, dataset_info:DataSetInfo):
+        print(f"wot {dataset_info.name}")
+        self.data_opt_ctl.configure(dataset_info)
+        self.data_opt_ctl.select()
 
 # Class used to create dataset option panels
-class DataOption(OptionCtrl):
+class DataOptionCtrl(OptionCtrl):
+    """
+    An option card to represent a new dataset
+    """
+    def configure(self,dataset_info:DataSetInfo):
+        """
+        Set the dataset info that the next selected dataset will hold a reference to.
+        """
+        self.dataset_info = dataset_info
+
     def make_option_card(self) -> OptionCard:
+        print(type(self.dataset_info))
+        print(self.dataset_info.name)
+        assert(isinstance(self.dataset_info,DataSetInfo)) # Option should never be selected when info is not set
         op = super().make_option_card()
+        op.label.configure(text=self.dataset_info.name)
         return op
