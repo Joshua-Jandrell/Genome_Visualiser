@@ -18,8 +18,8 @@ class DataSetInfo:
         self.save_path = save_path
         self.name = name
         self.configure(source_path, save_path, name=name)
-        self._get_save_path()
-        self._get_dataset_name()
+        self.get_save_path()
+        self.get_dataset_name()
         print(f"Makde{self.name}")
 
     def __del__(self):
@@ -39,12 +39,12 @@ class DataSetInfo:
     def is_valid(self):
         return self.source_path is not None # Assume that file type validation has already been done
 
-    def _get_save_path(self):
+    def get_save_path(self):
         if self.save_path is None:
-            self.save_path = self._get_dataset_name()
+            self.save_path = self.get_dataset_name()
         return self.save_path
 
-    def _get_dataset_name(self)->str:
+    def get_dataset_name(self)->str:
         if self.name is None:
             # Remove source path and append desired suffix 
             self.name = self.source_path.rsplit('.')[0] + self.APPEND

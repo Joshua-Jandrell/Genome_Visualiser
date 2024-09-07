@@ -50,7 +50,6 @@ class DataPanel(ctk.CTkFrame):
         DataSetConfig(self,command=self.on_data_select)
 
     def on_data_select(self, dataset_info:DataSetInfo):
-        print(f"wot {dataset_info.name}")
         self.data_opt_ctl.configure(dataset_info)
         self.data_opt_ctl.select()
 
@@ -66,8 +65,6 @@ class DataOptionCtrl(OptionCtrl):
         self.dataset_info = dataset_info
 
     def make_option_card(self) -> OptionCard:
-        print(type(self.dataset_info))
-        print(self.dataset_info.name)
         assert(isinstance(self.dataset_info,DataSetInfo)) # Option should never be selected when info is not set
         op = super().make_option_card()
         op.label.configure(text=self.dataset_info.name)
