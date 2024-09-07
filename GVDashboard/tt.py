@@ -20,6 +20,9 @@ class App(customtkinter.CTk):
 
         self.toplevel_window = None
 
+    def __del__(self):
+        print("killed the app")
+
     def open_toplevel(self):
         if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
             self.toplevel_window = ToplevelWindow(self)  # create window if its None or destroyed

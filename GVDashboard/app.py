@@ -48,6 +48,9 @@ class App(ctk.CTk):
         self.main_frame = MainFrame(self)
         self.main_frame.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
+    def __del__(self):
+        print("killed the app")
+
 # Class used to hold the main frame of the application
 class MainFrame(ctk.CTkFrame):
     """Class used to hold the view-panels in the mainframe of the app.
@@ -56,14 +59,14 @@ class MainFrame(ctk.CTkFrame):
         self.data = getData()
         super().__init__(master=master)
 
-        # Make view-panels
+        # Make view-panels and put them in the app window
         self.left = SidePanel(self,ctk.RIGHT)
-        self.right = SidePanel(self,ctk.LEFT)
-        self.view = ViewPanel(self)
-
-        # Puts the view-panels into set positions in the app window
         self.left.pack(side = ctk.LEFT, fill=ctk.Y)
+
+        self.right = SidePanel(self,ctk.LEFT)
         self.right.pack(side = ctk.RIGHT, fill=ctk.Y)
+
+        self.view = ViewPanel(self)
         self.view.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Makes the left panel

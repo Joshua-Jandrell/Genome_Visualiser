@@ -13,13 +13,13 @@ class SearchPanel(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master=master, width=Dims.PANEL_WIDTH)
 
-        self.button_panel = ctk.CTkFrame(self,bg_color='transparent', height=Dims.BUTTON_PANEL_HIGHT)
         self.search_options = SearchOptions(self)
+        self.search_options.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Keep search options as it is used by other classes 
         # TODO This should be refactored to remove this depndancy
-        self.button_panel.pack(side=ctk.BOTTOM,fill=ctk.X)
-        self.search_options.pack(side=ctk.BOTTOM, expand=True, fill=ctk.BOTH)
+        self.button_panel = ctk.CTkFrame(self,bg_color='transparent', height=Dims.BUTTON_PANEL_HIGHT)
+        self.button_panel.pack(side=ctk.TOP,fill=ctk.X)
 
 
 class SearchOptions(ctk.CTkTabview):
@@ -36,5 +36,5 @@ class SearchOptions(ctk.CTkTabview):
         self.data_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Create features for the options pannel 
-        self.plots_options = PlotOptionList(self.plots)
-        self.plots_options.pack(fill=ctk.BOTH, expand=True)
+        #self.plots_options = PlotOptionList(self.plots)
+        #self.plots_options.pack(fill=ctk.BOTH, expand=True)

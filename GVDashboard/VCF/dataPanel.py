@@ -36,7 +36,6 @@ class DataPanel(ctk.CTkFrame):
         # Data option control used to create new dataset cards
         self.data_opt_ctl = DataOptionCtrl(option_list=self.content,key="Add")
 
-
     def make_title(self):
         self.title_txt = ctk.CTkLabel(master=self,
                                       text=self.PLOT_TXT)
@@ -48,7 +47,7 @@ class DataPanel(ctk.CTkFrame):
 
     def on_add_button_click(self):
         # Create file path selection dialog box
-        self.new_dataset = DataSetConfig(self,command=self.on_data_select)
+        DataSetConfig(self,command=self.on_data_select)
 
     def on_data_select(self, dataset_info:DataSetInfo):
         print(f"wot {dataset_info.name}")

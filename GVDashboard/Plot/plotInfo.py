@@ -3,22 +3,35 @@ import numpy as np
 
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 import VCF.dataWrapper as dw
+from VCF.filterInfo import DataSetInfo
 
 from matplotlib.figure import Figure as Figure
 from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
-# base class used to specify view types
 class ViewInfo_base:
+    """
+    Base class used to define and plot views
+    """
     def __init__(self) -> None:
         self.plots = []
-    # Returns the number of plots expected 
+
+        # Set a default dataset for the view
+        
+    def set_data(self, dataset_info:DataSetInfo):
+        self.dataset_info = dataset_info
     def get_plot_count(self)->int:
+        """Returns the number of plots expected"""
         return 1
-    def get_hight_weights(self,wrapped_data:DataWrapper)->list[int]:
+    def get_hight_weights(self)->list[int]:
         return [1]
-    def make_plots(self,fig:Figure, gs:GridSpec ,start_index:int, wrapped_data:DataWrapper, ref_x:Axes|None)->Axes:
+    def make_plots(self,fig:Figure, gs:GridSpec ,start_index:int, ref_x:Axes|None)->tuple[Axes,str]:
+        """
+        Method used to plot the data on a figure\n
+        Returns the axis used for plotting and a log string containing any errors or notes\n
+        NOTE: This function must be overridden then the `ViewInfo_base` class is implemented.
+        """
         pass
 
 
@@ -28,12 +41,12 @@ class ViewPlotter:
 
         self.viewInfos = []
         self.plots = []
-        self.wrapped_data = None
+        self.default_data_wrapper = None
         self.configure(wrapped_data,views)
 
     def configure(self, wrapped_data:DataWrapper|None=None, views:list[ViewInfo_base]|None=None):
         if wrapped_data is not None:
-            self.wrapped_data = wrapped_data
+            self.default_data_wrapper = wrapped_data
         if views is not None:
             self.viewInfos = views
     
@@ -45,7 +58,7 @@ class ViewPlotter:
         for info in self.viewInfos:
             assert(isinstance(info, ViewInfo_base))
             n_subplots += info.get_plot_count()
-            height_ratios += info.get_hight_weights(wrapped_data=self.wrapped_data)
+            height_ratios += info.get_hight_weights(wrapped_data=self.default_data_wrapper)
 
         # Create figure 
         self.fig = Figure(figsize = (5, 5), dpi = 100)
@@ -56,7 +69,7 @@ class ViewPlotter:
         ref_x = None
         for info in self.viewInfos:
             assert(isinstance(info,ViewInfo_base))
-            ax = info.make_plots(self.fig,gs=gs,start_index=subplot_index,wrapped_data=self.wrapped_data, ref_x=ref_x)
+            ax = info.make_plots(self.fig,gs=gs,start_index=subplot_index,wrapped_data=self.default_data_wrapper, ref_x=ref_x)
             if ref_x is None: ref_x = ax
             subplot_index += info.get_plot_count()
         
@@ -86,6 +99,8 @@ class RefView(ViewInfo_base):
     # Boundaries
     VAR_MAX = 4
     VAR_MIN = -1
+    # Annotation limits 
+    ANNOTATION_MAX = 500
     ALLELE_COLORS = colors.ListedColormap(["#00000000","grey", "#29E838", "#E829D8", "#E89829", "#2979E8"])
     def __init__(self,plot_alt:bool = True, annotated:bool = True) -> None:
         self.plot_alt = plot_alt
@@ -109,7 +124,8 @@ class RefView(ViewInfo_base):
         return ref_ax
 
     def make_allele_plot(self, axis:Axes, data:np.matrix, label:str, data_labels, wrapped_data: DataWrapper):
-        axis.pcolor(data,linewidth=1,edgecolors="k",cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
+        # linewidth=1,edgecolors="k"
+        axis.pcolorfast(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
         # Remove tick labels
         axis.set_xticks([])
         axis.set_yticks([])
@@ -127,4 +143,4 @@ class RefView(ViewInfo_base):
                                   fontsize=8)
                     
     def should_annotate(self,wrapped_data:DataWrapper)->bool:
-        return self.annotated
+        return self.annotated and wrapped_data.get_alt().shape[1] < self.ANNOTATION_MAX

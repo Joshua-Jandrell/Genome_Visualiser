@@ -11,6 +11,7 @@ class DataFilter_base():
 # Class used to store and apply various vcf filters
 class DataSetInfo:
     APPEND = "_subset"
+    sets = []
     def __init__(self,source_path:str|None = None,save_path:str|None = None,name:str=None) -> None:
         self.filters = []
         self.source_path = source_path
@@ -19,6 +20,10 @@ class DataSetInfo:
         self.configure(source_path, save_path, name=name)
         self._get_save_path()
         self._get_dataset_name()
+        print(f"Makde{self.name}")
+
+    def __del__(self):
+        print(f"killed {self.name}")
         
 
     def configure(self,source_path:str|None = None, save_path:str|None = None, filters:DataFilter_base|None = None, name:str|None = None):
@@ -48,6 +53,22 @@ class DataSetInfo:
     def get_data_wrapper()->DataWrapper:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
     
+class GlobalDatasetManager():
+    """Holds a static record of all datasets created. Used to avoid unesesary searching and copying of datasets"""
+    _datasets = {str,DataSetInfo} # Holds a list of all existing datasets
+
+    def register(dataset:DataSetInfo):
+        """Register a dataset for global access"""
+        GlobalDatasetManager._datasets[dataset.gt]
+
+    def deregister(dataset:DataSetInfo):
+        """Remove a dataset from global access and delete references to it"""
+
+    def reconfigure(keys:list[str]):
+        """Remove all datasets that do not """
+
+    def get_dataset(key:str):
+        pass
 
 # ===================================================================
 # Class used to filter based b

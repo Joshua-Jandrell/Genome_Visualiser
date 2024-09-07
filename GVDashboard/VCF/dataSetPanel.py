@@ -4,6 +4,7 @@ from tkinter.constants import NORMAL
 from typing import Any, Callable, Tuple
 import customtkinter as ctk
 from os import path
+import tkinter as tk
 
 from VCF.dataFetcher import DataFetcher
 from VCF.dataWrapper import VcfDataWrapper
@@ -56,17 +57,17 @@ class FilePicker(ctk.CTkFrame):
         self.path_frame.pack(side=ctk.LEFT, fill=ctk.X, expand=True, padx = 0)
         self.path_txt = ctk.CTkLabel(self.path_frame,text="No file selected...",anchor="w", justify=ctk.LEFT)
         self.path_txt.pack(side=ctk.LEFT, fill=ctk.X, expand=True, padx = 10)
-        #self.path_txt = ctk.CTkOptionMenu(self,values=["one", "tow", "tree"])
+
         self.file_button = ctk.CTkButton(self, text="select", command=self.user_update_path, width=40)
         self.file_button.pack(side=ctk.LEFT)
         self.path_tooltip = ToolTip(self.path_txt, text=None)
 
-        self.path_var.trace_add('write',self.on_file_change)
-    def on_file_change(self, *args):
+    def _on_file_change(self):
         path = self.path_var.get()
         if path == "": return
         
         self._update_path_text(path)
+    
 
     # Updates path text display to only show file name 
     def _update_path_text(self,path_text:str):
@@ -80,6 +81,7 @@ class FilePicker(ctk.CTkFrame):
     def user_update_path(self):
         path = FileFetcher.get_vcf_filename()
         self.path_var.set(value=path)
+        self._on_file_change()
 
     def update_dataset(self):
         if self._path_value == "": return
@@ -92,16 +94,20 @@ class DatasetNameEdit(ctk.CTkFrame):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
         
         self.dataset = dataset
-        self.name_var = ctk.StringVar(value=dataset.name)
+        self.name_var = ctk.StringVar(value=self.dataset.name)
 
         # Create and pack elements 
         self.label = make_field_label(self, text="Name: ")
         self.label.pack(side=ctk.LEFT, padx=FIELD_LABEL_PADDING)
 
-        self.name_entry = ctk.CTkEntry(self,textvariable=self.name_var)
-        self.name_entry.pack(side=ctk.LEFT)
+        self.name_entry = ctk.CTkEntry(self)
+        # NOTE The text variable MUST be set here and not in the constructor.
+        # Otherwise a memory leak occures due to issues with custom tkinter.
+        self.name_entry.configure(textvariable=self.name_var) 
+        self.name_entry.pack()
         
     def update_dataset(self):
+        print(self.name_var.get())
         self.dataset.configure(name=self.name_var.get())
 
     
@@ -113,9 +119,9 @@ class DataSetConfig(ctk.CTkToplevel):
     """
     WINDOW_WIDTH = 400
     WINDOW_HIGHT = 250
+    test = None
 
     dateset_count = 0
-    datasets = []
     def __init__(self, app:ctk.CTk, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None,fg_color: str | Tuple[str] | None = None, **kwargs):
         """
         Creates a new `DataSetConfig` window.\n
@@ -169,6 +175,9 @@ class DataSetConfig(ctk.CTkToplevel):
     def _configure_title(self):
         if self.new_dataset: self.title("Create Dataset")
         else: self.title("Edit Dataset")
+
+    def __del__(self):
+        print("data set config is gonefig")
 
 
 
