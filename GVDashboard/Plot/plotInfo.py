@@ -16,6 +16,7 @@ class ViewInfo_base:
     """
     def __init__(self) -> None:
         self.plots = []
+        self.dataset_info = None
 
         # Set a default dataset for the view
         
@@ -58,7 +59,7 @@ class ViewPlotter:
         for info in self.viewInfos:
             assert(isinstance(info, ViewInfo_base))
             n_subplots += info.get_plot_count()
-            height_ratios += info.get_hight_weights(wrapped_data=self.default_data_wrapper)
+            height_ratios += info.get_hight_weights()
 
         # Create figure 
         self.fig = Figure(figsize = (5, 5), dpi = 100)
@@ -69,7 +70,7 @@ class ViewPlotter:
         ref_x = None
         for info in self.viewInfos:
             assert(isinstance(info,ViewInfo_base))
-            ax = info.make_plots(self.fig,gs=gs,start_index=subplot_index,wrapped_data=self.default_data_wrapper, ref_x=ref_x)
+            ax = info.make_plots(self.fig,gs=gs,start_index=subplot_index, ref_x=ref_x)
             if ref_x is None: ref_x = ax
             subplot_index += info.get_plot_count()
         
@@ -85,10 +86,12 @@ class ZygoteView(ViewInfo_base):
         self.max_weight = 100
         self.colors = colors.ListedColormap(["#00000000","#002164", "g", "y"])
         super().__init__()
-    def get_hight_weights(self,wrapped_data:DataWrapper) -> list[int]:
+    def get_hight_weights(self) -> list[int]:
+        wrapped_data = self.dataset_info.get_data_wrapper()
         return [min(wrapped_data.n_samples,self.max_weight)]
-    def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, wrapped_data: DataWrapper, ref_x:Axes|None)->Axes:
+    def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, ref_x:Axes|None)->Axes:
         axis = fig.add_subplot(gs[start_index], sharex = ref_x)
+        wrapped_data = self.dataset_info.get_data_wrapper()
         p = axis.pcolorfast(np.matrix(wrapped_data.get_zygosity()), cmap=self.colors, vmax=2, vmin=-1)
         self.plots.append(p)
         return axis
@@ -107,15 +110,17 @@ class RefView(ViewInfo_base):
         self.annotated = annotated
         self.allele_colors = self.ALLELE_COLORS
         super().__init__()
-    def get_hight_weights(self, wrapped_data: DataWrapper) -> list[int]:
+    def get_hight_weights(self) -> list[int]:
         weight = [1]
         if self.plot_alt:
+            wrapped_data = self.dataset_info.get_data_wrapper()
             weight += [wrapped_data.get_alt().shape[0]]
         return weight
     def get_plot_count(self) -> int:
         if self.plot_alt: return 2
         else: return 1
-    def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, wrapped_data: DataWrapper, ref_x:Axes|None)->Axes:
+    def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, ref_x:Axes|None)->Axes:
+        wrapped_data = self.dataset_info.get_data_wrapper()
         ref_ax = fig.add_subplot(gs[start_index], sharex = ref_x)
         self.make_allele_plot(ref_ax, np.matrix(wrapped_data.get_ref()),self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
         if self.plot_alt:

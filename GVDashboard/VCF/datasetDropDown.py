@@ -29,7 +29,6 @@ class DatasetMenu(ctk.CTkOptionMenu):
 
         # Register new dropdown with global dataset manager 
         GlobalDatasetManager.add_listener(self.__update_options)
-        print(dataset_names)
 
     def get_selected_dataset(self)->str|None:
         """
@@ -38,7 +37,7 @@ class DatasetMenu(ctk.CTkOptionMenu):
         """
         dataset_name =  self.get() 
         if dataset_name is not DatasetMenu.NO_VALUE_TXT and dataset_name is not DatasetMenu.UNSELECTED_VALUE:
-            return dataset_name
+            return GlobalDatasetManager.get_dataset_by_name(dataset_name)
         else: return None
 
     def __update_options(self, dataset_names):
@@ -53,12 +52,16 @@ class DatasetMenu(ctk.CTkOptionMenu):
             self.set(DatasetMenu.UNSELECTED_VALUE)
         elif not self.get() in dataset_names:
             self.set(DatasetMenu.UNSELECTED_VALUE)
+             # invoke command to reconfigure dataset for all listeners 
+            self._command(self.get())
 
     def __on_no_datasets(self):
         """Method called when there are no dataset option available."""
         self.set(DatasetMenu.NO_VALUE_TXT)
         self.configure(state="disabled")
         self.active_options = False
+        # invoke command to reconfigure dataset for all listeners 
+        self._command(self.get())
 
     def __deregister_listener(self):
         """Remove event listener for this dropdown."""
