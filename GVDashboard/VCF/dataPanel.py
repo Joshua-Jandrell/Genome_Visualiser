@@ -6,7 +6,8 @@ from UI.optionPanel import OptionCard
 from UI.optionPanel import OptionCtrl, OptionList
 
 from VCF.filterInfo import DataSetInfo
-from VCF.dataSetPanel import DataSetConfig
+from VCF.dataSetConfig import DataSetConfig
+from VCF.gloabalDatasetManger import GlobalDatasetManager
 
 # Panel used to add and remove Datasets and the filter options of each "Dataset".
 class DataPanel(ctk.CTkFrame):
@@ -46,8 +47,8 @@ class DataPanel(ctk.CTkFrame):
         self.add_button = ctk.CTkButton(self,text=self.ADD_TXT,command=self.on_add_button_click, width=20, height=20)
 
     def on_add_button_click(self):
-        # Create file path selection dialog box
-        DataSetConfig(self,command=self.on_data_select)
+        # Open data picker dialog box
+        DataSetConfig.open(self,command=self.on_data_select)
 
     def on_data_select(self, dataset_info:DataSetInfo):
         self.data_opt_ctl.configure(dataset_info)
@@ -56,7 +57,7 @@ class DataPanel(ctk.CTkFrame):
 # Class used to create dataset option panels
 class DataOptionCtrl(OptionCtrl):
     """
-    An option card to represent a new dataset
+    An option controller to manges option cards for datasets
     """
     def configure(self,dataset_info:DataSetInfo):
         """
@@ -67,5 +68,16 @@ class DataOptionCtrl(OptionCtrl):
     def make_option_card(self) -> OptionCard:
         assert(isinstance(self.dataset_info,DataSetInfo)) # Option should never be selected when info is not set
         op = super().make_option_card()
-        op.label.configure(text=self.dataset_info.name)
+        op.reconfigure_option(option_key=self.dataset_info.get_dataset_name(), option_value=self.dataset_info)
+        # Register option with the global manager
+        GlobalDatasetManager.register(self.dataset_info)
+
+        # Clear reference to dataset info to ensure that config always occurs
+        self.dataset_info = None
+
         return op
+    
+    def deselect(self, opt: OptionCard):
+        # Deregister option card form global manager
+        GlobalDatasetManager.deregister(opt.value)
+        super().deselect(opt)

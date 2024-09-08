@@ -24,7 +24,7 @@ class SearchPanel(ctk.CTkFrame):
 
 class SearchOptions(ctk.CTkTabview):
     def __init__(self, master):
-        super().__init__(master=master, width=Dims.PANEL_WIDTH)
+        super().__init__(master=master, width=Dims.PANEL_WIDTH, fg_color="transparent")
 
         ## Adds tabs at the top of the Search Panel
         self.data = self.add("Datasets")
@@ -32,9 +32,9 @@ class SearchOptions(ctk.CTkTabview):
         self.set("Datasets") #Selects which tab is active by default when Search Panel initially opens.
 
         # Create dataset panel 
-        self.data_panel = DataPanel(self.data)
+        self.data_panel = DataPanel(self.data,fg_color="transparent")
         self.data_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Create features for the options pannel 
-        self.plots_options = PlotOptionList(self.plots)
+        self.plots_options = PlotOptionList(self.plots,fg_color="transparent")
         self.plots_options.pack(fill=ctk.BOTH, expand=True)

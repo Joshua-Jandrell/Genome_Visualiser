@@ -6,7 +6,7 @@ from UI.deafultSettings import Dimenations as Dims
 
 class SidePanel(ctk.CTkFrame):
     def __init__(self, master, pack_side):
-        super().__init__(master=master, width=Dims.PANEL_WIDTH)
+        super().__init__(master=master, width=Dims.PANEL_WIDTH, fg_color="transparent")
         self.content = ctk.CTkFrame(self, width=Dims.PANEL_WIDTH-Dims.HIDE_BAR_WIDTH)
         self.hide_button = HideButton(self,self.content,pack_side, pack_fill=ctk.Y)
 

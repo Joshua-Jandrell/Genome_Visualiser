@@ -26,7 +26,6 @@ class FileFetcher:
 
     def get_selected_data()->VcfDataWrapper:
         filename = FileFetcher.get_vcf_filename()
-        print(filename)
         if filename is not None and filename != "":
             return DataFetcher.load_data(filename)
 
@@ -39,14 +38,17 @@ def make_field_label(master,text:str)->ctk.CTkLabel:
     return label
 
 class FilePicker(ctk.CTkFrame):
-    "Class used to select and validate files for selection"
+    """
+    Class used to select and validate files for selection
+    """
 
     MAX_PATH_CHARS = 20
-    def __init__(self, master: Any, dataset_path:str, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    NO_PATH_TXT = "No path selected..."
+    def __init__(self, master: Any, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
         # Initialise constans
-        self.path_var = ctk.StringVar(value="No path selected...")
-        self._path_value = dataset_path
+        self.path_var = ctk.StringVar(value=FilePicker.NO_PATH_TXT)
+        self._path_value = ""   # Used to hold the validated path 
 
         # Create and pack elements 
         self.label = make_field_label(self,text="Source File:")
@@ -64,7 +66,7 @@ class FilePicker(ctk.CTkFrame):
     def _on_file_change(self):
         path = self.path_var.get()
         if path == "": return
-        
+        self._path_value = path
         self._update_path_text(path)
     
 
@@ -86,14 +88,19 @@ class FilePicker(ctk.CTkFrame):
         if self._path_value == "": return
         dataset.configure(source_path=self._path_value)
 
+    def set_path(self,path:str|None):
+        self._path_value = ""
+        if path is None:
+            self.path_var.set(value=FilePicker.NO_PATH_TXT)
+        else:
+            self.path_var.set(path)
+
 class DatasetNameEdit(ctk.CTkFrame):
     "Class used to edit the name of a dataset"
 
-    def __init__(self, master: Any, dataset_name:str, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master: Any, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
-        
-        self.name_var = ctk.StringVar(value=dataset_name)
-
+        self.name_var = ctk.StringVar(value="Name...")
         # Create and pack elements 
         self.label = make_field_label(self, text="Name: ")
         self.label.pack(side=ctk.LEFT, padx=FIELD_LABEL_PADDING)
@@ -103,6 +110,9 @@ class DatasetNameEdit(ctk.CTkFrame):
         # Otherwise a memory leak occures due to issues with custom tkinter.
         self.name_entry.configure(textvariable=self.name_var) 
         self.name_entry.pack()
+
+    def set_name(self,dataset_name:str):
+        self.name_var.set(dataset_name)
         
     def update_dataset(self, dataset:DataSetInfo):
         dataset.configure(name=self.name_var.get())
@@ -112,49 +122,70 @@ class DatasetNameEdit(ctk.CTkFrame):
     
 class DataSetConfig(ctk.CTkToplevel):
     """
-    A top-level window that lets the user create and edit datasets and their filters
+    A top-level window that lets the user create and edit datasets and their filters.
+     NOTE Use the static `open` and `close` methods to control the panel, not the constructor
     """
+    instance = None
+
+    def open(app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None,fg_color: str | Tuple[str] | None = None, **kwargs):
+        if not isinstance(DataSetConfig.instance,DataSetConfig):
+            DataSetConfig.instance = DataSetConfig(app, dataset, command, fg_color, **kwargs)
+        else:
+            DataSetConfig.instance.__open_config(dataset=dataset, command=command)
+
     WINDOW_WIDTH = 400
     WINDOW_HIGHT = 250
     test = None
 
-    dateset_count = 0
-    def __init__(self, app:ctk.CTk, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None,fg_color: str | Tuple[str] | None = None, **kwargs):
+    def __init__(self, app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None,fg_color: str | Tuple[str] | None = None, **kwargs):
         """
         Creates a new `DataSetConfig` window.\n
         NOTE: The `command` function must be a function that accepts a single positional argument of type `DataSetInfo`\n
         WARNING: This function should only be called by the dataset config `open` method
         """
         super().__init__(master=app,  fg_color=fg_color, **kwargs)
+        self.dataset = dataset
+        self.command = command
+        self.new_dataset = dataset is None
+
+        self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}")
+
+        # Make and pack elements 
+        self.name_text = DatasetNameEdit(self)
+        self.name_text.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=10)
+        self.file_picker = FilePicker(self)
+        self.file_picker.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5,)
+
+        
+        self.cancel_button = ctk.CTkButton(self, text="cancel", command=self._on_cancel)
+        self.cancel_button.pack(side=ctk.RIGHT, padx=10, pady=5,anchor="se")
+
+        
+        self.confirm_button = ctk.CTkButton(self, command=self._on_create)
+        self.confirm_button.pack(side=ctk.RIGHT, padx=10, pady=5,anchor="se")
+
+        # Add event handler to catch when user clicks the exit button
+        self.protocol("WM_DELETE_WINDOW", self._on_cancel)
+
+        # Open window (This must be done after all input element have been created)
+        self.__open_config(dataset=dataset, command=command)
+
+    def __set_dataset(self, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None):
         # Assume that dataset is being edited
         self.dataset = dataset
         self.new_dataset = False
-        action_text = "Update"
         self.command = command
         if self.dataset is None:
             self.new_dataset = True
-            self.dataset = DataSetInfo(name=f"Dataset_{self.dateset_count+1}")
-            action_text = "Create"
+            self.dataset = DataSetInfo()
 
-        self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}")
-        self._configure_title()
-        # Ensure that all events are directed to this panel
-        self.grab_set()
+    def __get_action_text(self):
+        if self.new_dataset: return "create"
+        else: return "update"
 
-        # Make and pack elements 
-        self.name_text = DatasetNameEdit(self,self.dataset.get_save_path())
-        self.name_text.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=10)
-        self.file_picker = FilePicker(self,self.dataset.get_dataset_name())
-        self.file_picker.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5,)
-
-
-        self.cancel_button = ctk.CTkButton(self, text="cancel", command=self._on_cancel)
-        self.cancel_button.pack(side=ctk.RIGHT, padx=10, pady=5,anchor="se")
-        self.confirm_button = ctk.CTkButton(self, text=action_text, command=self._on_create)
-        self.confirm_button.pack(side=ctk.RIGHT, padx=10, pady=5,anchor="se")
     def _on_cancel(self):
         self.dataset = None
-        self.destroy()
+        self.__close_config()
 
     def _on_create(self):
 
@@ -168,9 +199,32 @@ class DataSetConfig(ctk.CTkToplevel):
         if self.command is not None:
             self.command(self.dataset)
 
-        self.destroy()
+        self.__close_config()
 
     def _configure_title(self):
         if self.new_dataset: self.title("Create Dataset")
         else: self.title("Edit Dataset")
-    
+
+    def __open_config(self,dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None):
+        # Ensure that all events are directed to this panel
+        self.deiconify()
+        self.grab_set()
+
+        # Set the dataset info 
+        self.__set_dataset(dataset,command)
+
+        # Set title too correspond with action
+        self._configure_title()
+
+        # Configure the input fields (NB use self.dataset not the input dataset which could be None)
+        self.file_picker.set_path(self.dataset.get_source_path())
+        self.name_text.set_name(self.dataset.get_dataset_name())
+        self.confirm_button.configure(text=self.__get_action_text())
+
+    def __close_config(self):
+        # Remove reference to dataset so that its memory is freed
+        self.dataset = None
+        # Redirect events
+        self.grab_release()
+        # Hide the window
+        self.withdraw()

@@ -4,7 +4,7 @@ from typing import Tuple, Any, Callable
 import customtkinter as ctk
 import tkinter as tk
 
-from UI.dropDown import DrowDown
+from UI.dropDown import DropDown
 
 # An option card that can be displayed in an option list.
 # This object must be a child on an OptionList 
@@ -38,9 +38,18 @@ class OptionCard(ctk.CTkFrame):
         self.label.grid(row=0, column=0, sticky="w",ipadx=20)
         self.remove_button.grid(row=0,column=1)
 
+    def reconfigure_option(self, option_key:str|None = None, option_value=None):
+        if option_key is not None:
+            self.key = option_key
+            self.label.configure(text=option_key)
+        if option_value is not None:
+            self.value = option_value
 
     def deselect(self):
         self.ctrl.deselect(self)
+
+        # Set value to be none to avoid hanging references (MUST be done AFTER deselection from control)
+        self.value = None 
 
 
         
@@ -125,7 +134,7 @@ class OptionPanel(ctk.CTkFrame):
     # Creates the basic dropdown button to add new plot types
     def make_add_button(self):
         self.selected_opt = ctk.StringVar()
-        self.opt_button = DrowDown(self,values=[],variable=self.selected_opt,text=self.ADD_TXT,command=self.on_add_option_click)
+        self.opt_button = DropDown(self,values=[],variable=self.selected_opt,text=self.ADD_TXT,command=self.on_add_option_click)
 
     # Updates the options available on the dropdown
     def update_dropdown_opts(self):

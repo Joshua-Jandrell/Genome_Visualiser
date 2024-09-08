@@ -3,7 +3,7 @@ from tkinter.constants import NORMAL
 from typing import Any, Callable, Tuple
 import customtkinter as ctk
 
-class DrowDown(ctk.CTkOptionMenu):
+class DropDown(ctk.CTkOptionMenu):
     def __init__(self, master: Any, text:str="menu", width: int = 140, height: int = 28, corner_radius: int | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, button_color: str | Tuple[str, str] | None = None, button_hover_color: str | Tuple[str, str] | None = None, text_color: str | Tuple[str, str] | None = None, text_color_disabled: str | Tuple[str, str] | None = None, dropdown_fg_color: str | Tuple[str, str] | None = None, dropdown_hover_color: str | Tuple[str, str] | None = None, dropdown_text_color: str | Tuple[str, str] | None = None, font: tuple | ctk.CTkFont | None = None, dropdown_font: tuple | ctk.CTkFont | None = None, values: list | None = None, variable: ctk.Variable | None = None, state: str = NORMAL, hover: bool = True, command: Callable[[str], Any] | None = None, dynamic_resizing: bool = True, anchor: str = "w", **kwargs):
         # Set true command to be called
         # NOTE This must be done before the base constructor is called
