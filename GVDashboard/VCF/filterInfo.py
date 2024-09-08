@@ -1,5 +1,6 @@
 # Contains classes and data that can be used to filter, query and manage datasets
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
+from VCF.dataFetcher import DataFetcher
 # Class used to define how bcf filters should be applied
 # Acts as a base class for more advanced data filters
 class DataFilter_base():
@@ -12,6 +13,7 @@ class DataFilter_base():
 class DataSetInfo:
     APPEND = "_subset"
     names = [] # List of all dataset names to help avoid tow datasets having the same name
+    data_wrappers = {} # stores a list of pre-computed data wrappers 
 
     def add_name(name:str):
         DataSetInfo.names.append(name)
@@ -35,7 +37,6 @@ class DataSetInfo:
     def __del__(self):
         print(f"killed {self.__name}")
         DataSetInfo.clear_name(self.__name)
-        
 
     def configure(self,source_path:str|None = None, save_path:str|None = None, filters:DataFilter_base|None = None, name:str|None = None):
         if source_path is not None: self.source_path = source_path
@@ -79,10 +80,12 @@ class DataSetInfo:
             _name = name + f' ({iter})'
 
         DataSetInfo.add_name(_name) # add new name to the list 
-        self.__name = name # set name
+        self.__name = _name # set name
     
-    def get_data_wrapper()->DataWrapper:
+    def get_data_wrapper(self)->DataWrapper:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
+        return DataFetcher.load_data(self.get_source_path())
+
         
 
 # ===================================================================

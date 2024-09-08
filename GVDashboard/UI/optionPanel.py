@@ -50,7 +50,8 @@ class OptionCard(ctk.CTkFrame):
 
         # Set value to be none to avoid hanging references (MUST be done AFTER deselection from control)
         self.value = None 
-
+    def set_value(self,value):
+        self.value = value
 
         
 
@@ -86,9 +87,11 @@ class OptionCtrl():
     def is_selectable(self)->bool:
         return True
 
-    # Designed to be overridden by descendants to customize option available
-    # Acts as a factory method for the option panel UI element 
     def make_option_card(self)->OptionCard:
+        """
+        Designed to be overridden by descendants to customize option available.\n
+        Acts as a factory method for the option panel UI element 
+        """
         return OptionCard(self.option_list,self,self.key,self.key, height=self.H)
     
     def move_card_up(self,opt:OptionCard):
