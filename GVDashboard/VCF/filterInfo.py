@@ -74,7 +74,7 @@ class DataSetInfo:
         # If name is not available, append a number to name until it becomes available 
         iter = 0
         _name = name
-        while not DataSetInfo.is_free_name(name):
+        while not DataSetInfo.is_free_name(_name):
             iter += 1
             _name = name + f' ({iter})'
 

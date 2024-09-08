@@ -16,7 +16,7 @@ class PlotOptionList(OptionPanel):
 
 class PlotOptionCard(OptionCard):
     """
-    Special 
+    Special instance of option card used  
     """
 
 class PlotOptionCtrl(OptionCtrl):

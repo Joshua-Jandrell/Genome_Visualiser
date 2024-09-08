@@ -29,14 +29,17 @@ class DatasetMenu(ctk.CTkOptionMenu):
 
         # Register new dropdown with global dataset manager 
         GlobalDatasetManager.add_listener(self.__update_options)
+        print(dataset_names)
 
-    def get_selected_dataset(self)->DataSetInfo:
+    def get_selected_dataset(self)->str|None:
         """
         Returns the dataset selected by the option menu.\n
         WARNING: Do not keep a reference to the dataset returned by this method as it will prevent the dataset from being deleted.
         """
         dataset_name =  self.get() 
-        return GlobalDatasetManager.get_dataset_by_name(dataset_name)
+        if dataset_name is not DatasetMenu.NO_VALUE_TXT and dataset_name is not DatasetMenu.UNSELECTED_VALUE:
+            return dataset_name
+        else: return None
 
     def __update_options(self, dataset_names):
         """Updates the dropdown options to include all datasets."""
