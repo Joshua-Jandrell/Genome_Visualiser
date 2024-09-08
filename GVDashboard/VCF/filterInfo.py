@@ -73,11 +73,12 @@ class DataSetInfo:
         
         # If name is not available, append a number to name until it becomes available 
         iter = 0
+        _name = name
         while not DataSetInfo.is_free_name(name):
             iter += 1
-            name = name + f' ({iter})'
+            _name = name + f' ({iter})'
 
-        DataSetInfo.add_name(name) # add new name to the list 
+        DataSetInfo.add_name(_name) # add new name to the list 
         self.__name = name # set name
     
     def get_data_wrapper()->DataWrapper:

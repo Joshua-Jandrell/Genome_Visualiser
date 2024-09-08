@@ -29,4 +29,3 @@ class DropDown(ctk.CTkOptionMenu):
         if self._command != self._on_value_change:
             self._true_command = self._command
             self._command=self._on_value_change
-
