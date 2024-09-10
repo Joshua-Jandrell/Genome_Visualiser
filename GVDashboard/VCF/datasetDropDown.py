@@ -4,7 +4,7 @@ from typing import Any, Callable
 from customtkinter import CTkFont, Variable
 import customtkinter as ctk
 
-from VCF.gloabalDatasetManger import GlobalDatasetManager
+from VCF.globalDatasetManger import GlobalDatasetManager
 from VCF.filterInfo import DataSetInfo
 from VCF.dataSetConfig import DataSetConfig
 
@@ -23,6 +23,7 @@ class DatasetMenu(ctk.CTkOptionMenu):
         self.active_options = True
         dataset_names = GlobalDatasetManager.get_dataset_names()
         self.__update_options(dataset_names)
+        self.__previous_opt = self.get()
 
         # Intercept own command 
         self.__true_command = self._command
@@ -33,12 +34,14 @@ class DatasetMenu(ctk.CTkOptionMenu):
     def __on_command(self,event):
         # Check if command is "new"
         if self.get() is DatasetMenu.NEW_TXT:
-            DataSetConfig.open(command = self.__on_data_config)
+            DataSetConfig.open(command = self.__on_data_config, register_on_create = True)
+            self.set(self.__previous_opt)
         else:
-            self.__true_command(event)
+            self.__previous_opt = self.get() # store a record to previous option
+            if self.__true_command is not None:
+                self.__true_command(event)
 
     def __on_data_config(self, dataset_info:DataSetInfo):
-        GlobalDatasetManager.register(dataset_info)
         self.set(dataset_info.get_dataset_name())
         self._command(dataset_info.get_dataset_name())
 

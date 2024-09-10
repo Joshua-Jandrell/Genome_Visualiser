@@ -7,7 +7,7 @@ from UI.optionPanel import OptionCtrl, OptionList
 
 from VCF.filterInfo import DataSetInfo
 from VCF.dataSetConfig import DataSetConfig
-from VCF.gloabalDatasetManger import GlobalDatasetManager
+from VCF.globalDatasetManger import GlobalDatasetManager
 
 # Panel used to add and remove Datasets and the filter options of each "Dataset".
 class DataPanel(ctk.CTkFrame):
@@ -51,15 +51,7 @@ class DataPanel(ctk.CTkFrame):
 
     def on_add_button_click(self):
         # Open data picker dialog box
-        DataSetConfig.open(self,command=self.on_data_select)
-
-    def on_data_select(self, dataset_info:DataSetInfo):
-        # self.data_opt_ctl.configure(dataset_info)
-        # self.data_opt_ctl.select()
-
-        # Register dataset with global manager.
-        # NOTE When this is done a card will be automatically created
-        GlobalDatasetManager.register(dataset_info)
+        DataSetConfig.open(self,register_on_create = True)
 
     def __on_global_data_update(self, dataset_names):
         """Called when the list of global datasets is updated to add any new datasets here."""

@@ -9,6 +9,7 @@ import tkinter as tk
 from VCF.dataFetcher import DataFetcher
 from VCF.dataWrapper import VcfDataWrapper
 from VCF.filterInfo import DataSetInfo
+from VCF.globalDatasetManger import GlobalDatasetManager
 
 from UI.tooltip import ToolTip
 
@@ -127,9 +128,9 @@ class DataSetConfig(ctk.CTkToplevel):
     """
     instance = None
 
-    def open(app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None,fg_color: str | Tuple[str] | None = None, **kwargs):
+    def open(app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, fg_color: str | Tuple[str] | None = None, **kwargs):
         if not isinstance(DataSetConfig.instance,DataSetConfig):
-            DataSetConfig.instance = DataSetConfig(app, dataset, command, fg_color, **kwargs)
+            DataSetConfig.instance = DataSetConfig(app, dataset, command, register_on_create, fg_color, **kwargs)
         else:
             DataSetConfig.instance.__open_config(dataset=dataset, command=command)
 
@@ -137,7 +138,7 @@ class DataSetConfig(ctk.CTkToplevel):
     WINDOW_HIGHT = 250
     test = None
 
-    def __init__(self, app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None,fg_color: str | Tuple[str] | None = None, **kwargs):
+    def __init__(self, app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, fg_color: str | Tuple[str] | None = None, **kwargs):
         """
         Creates a new `DataSetConfig` window.\n
         NOTE: The `command` function must be a function that accepts a single positional argument of type `DataSetInfo`\n
@@ -146,6 +147,7 @@ class DataSetConfig(ctk.CTkToplevel):
         super().__init__(master=app,  fg_color=fg_color, **kwargs)
         self.dataset = dataset
         self.command = command
+        self.register_on_create = register_on_create
         self.new_dataset = dataset is None
 
         self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}")
@@ -168,7 +170,7 @@ class DataSetConfig(ctk.CTkToplevel):
         self.protocol("WM_DELETE_WINDOW", self._on_cancel)
 
         # Open window (This must be done after all input element have been created)
-        self.__open_config(dataset=dataset, command=command)
+        self.__open_config(dataset=dataset, command=command, register_on_create=register_on_create)
 
     def __set_dataset(self, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None):
         # Assume that dataset is being edited
@@ -195,6 +197,10 @@ class DataSetConfig(ctk.CTkToplevel):
         self.name_text.update_dataset(self.dataset)
         self.file_picker.update_dataset(self.dataset)
 
+        # Note, always register before executing command
+        if self.register_on_create:
+            GlobalDatasetManager.register(self.dataset)
+
         # Execute creation command
         if self.command is not None:
             self.command(self.dataset)
@@ -205,13 +211,15 @@ class DataSetConfig(ctk.CTkToplevel):
         if self.new_dataset: self.title("Create Dataset")
         else: self.title("Edit Dataset")
 
-    def __open_config(self,dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None):
+    def __open_config(self,dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True):
+        
         # Ensure that all events are directed to this panel
         self.deiconify()
         self.grab_set()
 
         # Set the dataset info 
         self.__set_dataset(dataset,command)
+        self.register_on_create = register_on_create
 
         # Set title too correspond with action
         self._configure_title()
