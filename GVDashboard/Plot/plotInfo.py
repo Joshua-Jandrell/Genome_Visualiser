@@ -38,37 +38,30 @@ class ViewInfo_base:
 
 # Class used to store all plot infos and construct the final figure
 class ViewPlotter:
-    def __init__(self, wrapped_data:DataWrapper|None=None,views:list[ViewInfo_base]|None=None) -> None:
-
-        self.viewInfos = []
+    def __init__(self,figure:Figure, views:list[ViewInfo_base]|None=None) -> None:
+        self.fig = figure
         self.plots = []
         self.default_data_wrapper = None
-        self.configure(wrapped_data,views)
 
-    def configure(self, wrapped_data:DataWrapper|None=None, views:list[ViewInfo_base]|None=None):
-        if wrapped_data is not None:
-            self.default_data_wrapper = wrapped_data
-        if views is not None:
-            self.viewInfos = views
     
-    def plot_figure(self)->Figure:
+    def plot_figure(self, views:list[ViewInfo_base])->Figure:
+        # clear any existing plots on the figure
+        self.fig.clear()
         # Determine number of sub_plots and their weights
         height_ratios = []
         n_subplots = 0
 
-        for info in self.viewInfos:
+        for info in views:
             assert(isinstance(info, ViewInfo_base))
             n_subplots += info.get_plot_count()
             height_ratios += info.get_hight_weights()
 
-        # Create figure 
-        self.fig = Figure(figsize = (5, 5), dpi = 100)
         gs = GridSpec(n_subplots, 1, height_ratios=height_ratios)
 
         # Add all subplots
         subplot_index = 0
         ref_x = None
-        for info in self.viewInfos:
+        for info in views:
             assert(isinstance(info,ViewInfo_base))
             ax = info.make_plots(self.fig,gs=gs,start_index=subplot_index, ref_x=ref_x)
             if ref_x is None: ref_x = ax

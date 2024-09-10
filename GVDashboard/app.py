@@ -18,7 +18,7 @@ from VCF.vcfTest import getData
 
 from UI.searchPanel import SearchPanel
 
-from Plot.plotInfo import ViewPlotter, ZygoteView
+from Plot.plotInfo import ViewInfo_base
 # Constants
 DEFAULT_WIDTH = 800
 DEFAULT_HIGHT = 300
@@ -33,9 +33,15 @@ class App(ctk.CTk):
     Class used to create and run the visualizer app.\n
     Inherits from `ctk.CTK` class to get functionalities of native application
     """
+
+    instance = None
     
     def __init__(self):
         super().__init__()
+
+        # There should only ever be one instance of the app
+        assert(App.instance is None)
+        App.instance = self
 
         self.title("Genome Visualizer")
 
@@ -62,9 +68,6 @@ class App(ctk.CTk):
         # Makes plot button -- might get depricated
         self.left.plot_button = ctk.CTkButton(self.search_panel.button_panel,text="Plot",command=self.makePlot)
         self.left.plot_button.pack(fill=ctk.BOTH)
-
-        # Create a view plotter for the canvas
-        self.view_plotter = ViewPlotter()
         
         self.view = ViewPanel(self)
         self.view.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
@@ -81,12 +84,12 @@ class App(ctk.CTk):
             self.destroy()
 
     def makePlot(self):
-        self.data = getData()
-        assert(self.data is not None)
-        wrapped_data = VcfDataWrapper(self.data)
-        self.view_plotter.configure(wrapped_data=wrapped_data,views=self.search_panel.search_options.plots_options.get_opt_values())
-        fig = self.view_plotter.plot_figure()
-        self.view.set_plot(fig)
+        self.view.set_plot(views=self.search_panel.search_options.plots_options.get_opt_values())
+
+    def plot_views(views:list[ViewInfo_base]):
+        """Static method used to plot the given list of views on the main canvas."""
+        assert(isinstance(App.instance,App))
+        App.instance.view.set_plot(views=views)
 
 # Makes app if run as main
 if __name__ == "__main__":
