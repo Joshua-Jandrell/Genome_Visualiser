@@ -26,6 +26,17 @@ class PlotOptionPanel(OptionPanel):
         """
         assert(isinstance(PlotOptionPanel.__instance,PlotOptionPanel))
         return PlotOptionPanel.__instance.select_option(opt_key)
+    
+    def listen(command):
+        """Add a listener to changes in the plot option panel."""
+        if isinstance(PlotOptionPanel.__instance, PlotOptionPanel):
+            PlotOptionPanel.__instance.content.add_listener(command=command)
+
+    def listen_stop(command):
+        """Remove a listener from plot option panel update events"""
+        if isinstance(PlotOptionPanel.__instance, PlotOptionPanel):
+            PlotOptionPanel.__instance.content.add_listener(command=command)
+
 
     def __init__(self, master, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, True, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
@@ -59,8 +70,13 @@ class PlotOptionCard(OptionCard):
 
     def update_data(self,event):
         if isinstance(self.value,ViewInfo_base):
-            # set dataset name for view info
-            self.value.set_data(self.data_menu.get_selected_dataset())
+            prev_val = self.value.get_data()
+            new_val = self.data_menu.get_selected_dataset()
+
+            if prev_val != new_val:
+                # set dataset name for view info
+                self.value.set_data(new_val)
+                self.update_event.invoke(self)
 
     def set_value(self, value):
         super().set_value(value)

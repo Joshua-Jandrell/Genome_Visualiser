@@ -22,6 +22,14 @@ class ViewInfo_base:
         
     def set_data(self, dataset_info:DataSetInfo):
         self.dataset_info = dataset_info
+
+    def get_data(self)->DataSetInfo|None:
+        """
+        Returns the current dataset info.\n
+        Warning: do not keep a reference to this dataset to that it can be deleted correctly 
+        """
+        return self.dataset_info
+    
     def get_plot_count(self)->int:
         """Returns the number of plots expected"""
         return 1

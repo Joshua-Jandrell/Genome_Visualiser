@@ -4,6 +4,8 @@ from typing import Tuple, Any, Callable
 import customtkinter as ctk
 import tkinter as tk
 
+from Util.event import Event
+
 from UI.dropDown import DropDown
 
 # An option card that can be displayed in an option list.
@@ -21,6 +23,9 @@ class OptionCard(ctk.CTkFrame):
         self.value = option_value
         self.ctrl = option_ctrl
         self.index = -1 # Holds the grid row/colum of the list managing the option
+
+        # Even that can be be called whenever the option card or its value are updated
+        self.update_event = Event()
 
         # Create panels and buttons
         self.remove_button = ctk.CTkButton(self,text="x", command=self.deselect, width=self.BUTTON_W, height=self.BUTTON_H)
@@ -45,17 +50,29 @@ class OptionCard(ctk.CTkFrame):
         if option_value is not None:
             self.value = option_value
 
+        self.update_event.invoke(self)
+
     def deselect(self):
         self.ctrl.deselect(self)
+
+        # Remove all listeners form update event
+        self.update_event.remove_all()
 
         # Set value to be none to avoid hanging references (MUST be done AFTER deselection from control)
         self.value = None 
     def set_value(self,value):
         self.value = value
 
-    def add_listener(command):
-        """Set a command to be called every time the option card is signficantly updated"""
+    def add_listener(self,command):
+        """Set a command to be called every time the option card is significantly updated"""
+        self.update_event.add_listener(command=command)
 
+    def remove_listener(self,command):
+        self.update_event.remove_listener(command=command)
+
+    def destroy(self):
+        self.update_event.remove_all()
+        return super().destroy()
         
 
 
@@ -78,6 +95,7 @@ class OptionCtrl():
         opt = self.make_option_card()
         self.option_list._add_option_card(opt)
         self.count += 1
+
         return opt
 
     def deselect(self,opt:OptionCard):
@@ -173,7 +191,7 @@ class OptionList(ctk.CTkFrame):
         # Coningure local valriables
         self.PAD = 5
         self.opt_ctrls = {}
-        self.opts_update_command = opts_update_command
+        self.opts_update_command = opts_update_command # Command called when a new option is registered
         self.active_opt_cards = []
         self.swap_buttons = []
         self.option_index = 0 # the row for the next option to be added 
@@ -181,6 +199,14 @@ class OptionList(ctk.CTkFrame):
 
         # configure content grid layout
         self.grid_columnconfigure(0,weight=1)
+
+        
+        # Create an event to be called when options are updated
+        self.update_event = Event()
+
+    def destroy(self):
+        self.update_event.remove_all()
+        return super().destroy()
 
     # Select and option and add it to the list
     def select_option(self, key:str):
@@ -217,6 +243,11 @@ class OptionList(ctk.CTkFrame):
 
         self.option_index += 1
 
+        # Add event listener to option card
+        option.add_listener(self.__on_card_update)
+        # Invoke option update event
+        self.update_event.invoke(self,[option])
+
     def _remove_option_card(self,option:OptionCard):
         target_index = option.index
         # Remove option from active options list
@@ -235,6 +266,12 @@ class OptionList(ctk.CTkFrame):
         self._remove_swap_button()
 
         self.option_index -= 1
+
+        # Remove event listener 
+        option.remove_listener(self.__on_card_update)
+
+        # Invoke the the update event
+        self.update_event.invoke(self,[option])
 
     def deselect_all(self):
         """Called to clear the list of all selected options and deselect them."""
@@ -256,6 +293,8 @@ class OptionList(ctk.CTkFrame):
         opt2.index = index_1
         opt2.grid_configure(row=self.get_opt_grid_row(index_1))
 
+        # Invoke update event for both options
+        self.update_event.invoke(self,[opt1, opt2])
 
     def _add_swap_button(self):
         swap_button = self._make_swap_button()
@@ -278,3 +317,17 @@ class OptionList(ctk.CTkFrame):
     def get_opt_grid_row(self,index:int)->int:
         if self._has_swaps: return 2*index
         else: return index
+
+    def add_listener(self,command:Callable):
+        """
+        Add a listener to the option panel update event.\n
+        The listener mus accept two arguments, an the option list which changed followed by a list of options card which have changed.
+        """
+        self.update_event.add_listener(command=command)
+
+    def remove_listener(self,command:Callable):
+        """Stop tracking option list updates."""
+        self.update_event.remove_listener(command=command)
+
+    def __on_card_update(self,card):
+        self.update_event.invoke(self,[card])
