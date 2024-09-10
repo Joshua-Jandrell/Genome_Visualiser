@@ -69,7 +69,7 @@ class DatasetMenu(ctk.CTkOptionMenu):
 
         if not self.get() in dataset_names:
             self.set(DatasetMenu.UNSELECTED_VALUE)
-             # invoke command to reconfigure dataset for all listeners 
+            # invoke command to reconfigure dataset for all listeners 
             self._command(self.get())
 
 

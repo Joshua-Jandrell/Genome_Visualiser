@@ -24,12 +24,11 @@ class AutoPlotter():
             PlotOptionPanel.listen_stop(AutoPlotter.__on_plots_update)
 
     def __on_data_update(dataset_names:list[str]):
+        AutoPlotter.view_change_ignore_flag =True # Stop views from double plotting
         data_available = len(dataset_names) > 0
         if AutoPlotter.no_data  and data_available:
             # Make automatic plot
             AutoPlotter.make_autoPlot()
-
-
 
         # Update data variable to reflect if not data is present
         AutoPlotter.no_data = not data_available
@@ -37,13 +36,15 @@ class AutoPlotter():
         if AutoPlotter.no_data:
             ViewPanel.set_plots([])
 
+        AutoPlotter.view_change_ignore_flag = False
+
     def __on_plots_update(option_list:PlotOptionPanel,option_cards:list[PlotOptionCard]):
         """Called when plot options list is updated."""
         if AutoPlotter.view_change_ignore_flag: return
-
         ViewPanel.set_plots(PlotOptionPanel.get_view_list())
 
     def make_autoPlot():
+
         plot_data = GlobalDatasetManager.get_datasets()[0]
 
         # Check to see what plots have been selected 
@@ -51,10 +52,6 @@ class AutoPlotter():
 
         if len(views) == 0:
             views = select_views(plot_data)
-
-        # Set the view for each plot to the new data
-        for v in views:
-            v.set_data(plot_data)
 
         ViewPanel.set_plots(views)
 def select_views(data:DataSetInfo)->list[ViewInfo_base]:

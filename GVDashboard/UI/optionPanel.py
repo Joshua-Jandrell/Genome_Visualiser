@@ -1,6 +1,6 @@
 # This script contains base the classes and functions for a plot type selection tkinter menu
-
 from typing import Tuple, Any, Callable
+from enum import Enum 
 import customtkinter as ctk
 import tkinter as tk
 
@@ -182,6 +182,8 @@ class OptionPanel(ctk.CTkFrame):
 
     def select_option(self,key:str)->OptionCard:
         return self.content.select_option(key=key)
+
+#class ListChangeType(Enum)
 
 
 class OptionList(ctk.CTkFrame):

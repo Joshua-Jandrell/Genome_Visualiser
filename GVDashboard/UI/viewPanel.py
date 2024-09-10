@@ -65,16 +65,16 @@ class ViewPanel(ctk.CTkFrame):
 
     def make_plot(self, views:list[ViewInfo_base])->FigCanvas:
 
-        if len(views) > 0 and self.hidden:
+        # Scale figure based on window size
+        plot_good = self.view_plotter.plot_figure(views)
+
+        if plot_good and self.hidden:
             self.__show_plots()
-        elif len(views) == 0 and not self.hidden:
+            self.canvas.draw()
+            self.toolbar.update()
+        elif not plot_good and not self.hidden:
             self.__hide_plots()
             return
-
-        # Scale figure based on window size
-        self.view_plotter.plot_figure(views)
-        self.canvas.draw()
-        self.toolbar.update()
     
 
         #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)

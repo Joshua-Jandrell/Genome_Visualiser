@@ -42,6 +42,9 @@ class ViewInfo_base:
         NOTE: This function must be overridden then the `ViewInfo_base` class is implemented.
         """
         pass
+    def can_plot(self)->bool:
+        """Returns true if the view can be plotted."""
+        return self.dataset_info is not None and self.dataset_info.get_data_wrapper() is not None
 
 
 # Class used to store all plot infos and construct the final figure
@@ -52,15 +55,22 @@ class ViewPlotter:
         self.default_data_wrapper = None
 
     
-    def plot_figure(self, views:list[ViewInfo_base])->Figure:
+    def plot_figure(self, views:list[ViewInfo_base])->bool:
+        """Plot a figure on the canvas.\n
+        Returns true of a plot should be shown.
+        """
         # clear any existing plots on the figure
         self.fig.clear()
         # Determine number of sub_plots and their weights
         height_ratios = []
         n_subplots = 0
 
+        # Filter for only valid views
+        views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
+
+        if len(views) == 0: return False
+
         for info in views:
-            assert(isinstance(info, ViewInfo_base))
             n_subplots += info.get_plot_count()
             height_ratios += info.get_hight_weights()
 
@@ -77,7 +87,7 @@ class ViewPlotter:
         
         # Remove spacing between plots
         self.fig.subplots_adjust(hspace=0, wspace=0)
-        return self.fig
+        return True
 
 
 # ========================================================================
