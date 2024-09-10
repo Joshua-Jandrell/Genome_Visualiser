@@ -142,3 +142,20 @@ class RefView(ViewInfo_base):
                     
     def should_annotate(self,wrapped_data:DataWrapper)->bool:
         return self.annotated and wrapped_data.get_alt().shape[1] < self.ANNOTATION_MAX
+
+
+# ========================================================================
+# Plotter for frequency view
+class FrequencyView(ViewInfo_base):
+    #### am here ###
+    def __init__(self) -> None:
+        self.max_weight = 100
+        ##self.colors = colors.ListedColormap(["#00000000","#002164", "g", "y"])
+        super().__init__()
+    def get_hight_weights(self,wrapped_data:DataWrapper) -> list[int]:
+        return [min(wrapped_data.n_samples,self.max_weight)]
+    def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, wrapped_data: DataWrapper, ref_x:Axes|None)->Axes:
+        axis = fig.add_subplot(gs[start_index], sharex = ref_x)
+        p = axis.pcolorfast(np.matrix(wrapped_data.get_zygosity()), cmap=self.colors, vmax=2, vmin=-1)
+        self.plots.append(p)
+        return axis
