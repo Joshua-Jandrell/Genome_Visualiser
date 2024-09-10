@@ -90,11 +90,13 @@ class FilePicker(ctk.CTkFrame):
         dataset.configure(source_path=self._path_value)
 
     def set_path(self,path:str|None):
-        self._path_value = ""
         if path is None:
             self.path_var.set(value=FilePicker.NO_PATH_TXT)
+            self._path_value = ""
         else:
             self.path_var.set(path)
+            self._path_value = path
+            self._update_path_text(path)
 
 class DatasetNameEdit(ctk.CTkFrame):
     "Class used to edit the name of a dataset"
@@ -128,17 +130,26 @@ class DataSetConfig(ctk.CTkToplevel):
     """
     instance = None
 
-    def open(app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, fg_color: str | Tuple[str] | None = None, **kwargs):
+    def open(app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, get_file_first:bool = True, fg_color: str | Tuple[str] | None = None, **kwargs):
+        
+        new_file = False
+        if get_file_first and dataset is None:
+            file_name = FileFetcher.get_vcf_filename()
+            dataset = DataSetInfo(source_path=file_name)
+            print(dataset.get_dataset_name())
+            new_file = True
+
+        
         if not isinstance(DataSetConfig.instance,DataSetConfig):
-            DataSetConfig.instance = DataSetConfig(app, dataset, command, register_on_create, fg_color, **kwargs)
+            DataSetConfig.instance = DataSetConfig(app, dataset, command, register_on_create, new_file, fg_color, **kwargs)
         else:
-            DataSetConfig.instance.__open_config(dataset=dataset, command=command)
+            DataSetConfig.instance.__open_config(dataset=dataset, command=command, register_on_create=register_on_create, treat_as_new=new_file)
 
     WINDOW_WIDTH = 400
     WINDOW_HIGHT = 250
     test = None
 
-    def __init__(self, app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, fg_color: str | Tuple[str] | None = None, **kwargs):
+    def __init__(self, app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, treat_as_new:bool = False, fg_color: str | Tuple[str] | None = None, **kwargs):
         """
         Creates a new `DataSetConfig` window.\n
         NOTE: The `command` function must be a function that accepts a single positional argument of type `DataSetInfo`\n
@@ -148,7 +159,7 @@ class DataSetConfig(ctk.CTkToplevel):
         self.dataset = dataset
         self.command = command
         self.register_on_create = register_on_create
-        self.new_dataset = dataset is None
+        self.new_dataset = (treat_as_new or dataset is None)
 
         self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}")
 
@@ -170,15 +181,14 @@ class DataSetConfig(ctk.CTkToplevel):
         self.protocol("WM_DELETE_WINDOW", self._on_cancel)
 
         # Open window (This must be done after all input element have been created)
-        self.__open_config(dataset=dataset, command=command, register_on_create=register_on_create)
+        self.__open_config(dataset=dataset, command=command, register_on_create=register_on_create, treat_as_new=treat_as_new)
 
-    def __set_dataset(self, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None):
+    def __set_dataset(self, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, treat_as_new:bool = False):
         # Assume that dataset is being edited
         self.dataset = dataset
-        self.new_dataset = False
+        self.new_dataset = treat_as_new or dataset is None
         self.command = command
         if self.dataset is None:
-            self.new_dataset = True
             self.dataset = DataSetInfo()
 
     def __get_action_text(self):
@@ -211,14 +221,15 @@ class DataSetConfig(ctk.CTkToplevel):
         if self.new_dataset: self.title("Create Dataset")
         else: self.title("Edit Dataset")
 
-    def __open_config(self,dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True):
+    def __open_config(self,dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, treat_as_new:bool = False):
         
         # Ensure that all events are directed to this panel
         self.deiconify()
         self.grab_set()
 
         # Set the dataset info 
-        self.__set_dataset(dataset,command)
+        self.new_dataset = treat_as_new or dataset is None
+        self.__set_dataset(dataset,command, treat_as_new=treat_as_new)
         self.register_on_create = register_on_create
 
         # Set title too correspond with action
