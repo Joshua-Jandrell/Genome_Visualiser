@@ -2,8 +2,9 @@
 
 import allel as al # Used for VCF file manipulation
 import os
+#from pysam import VariantFile
 
-TEST_FILE = os.path.realpath("./Data/afr-small.vcf") # Path to the vcf file used for testing
+TEST_FILE = os.path.realpath("./Data/med.vcf.gz") # Path to the vcf file used for testing
 
 def getData()->dict:
     return al.read_vcf(TEST_FILE)
@@ -12,6 +13,7 @@ def getData()->dict:
 if __name__ == "__main__":
     # Get data somehow....
     data = getData()
+    
     # and make data into dataframe
     df = al.vcf_to_dataframe(TEST_FILE)
 

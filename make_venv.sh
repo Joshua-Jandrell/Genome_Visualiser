@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 
-python -m venv .venv
-
-
 if [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then
     # Running on windows
+    python -m venv .venv
     source .venv/Scripts/activate
 else
-    source .venv/bin/activate
+    python3 -m venv .venv_2
+    source .venv_2/bin/activate
 fi
 
 # Add depandancies
 #python -m pip3 install customtkinter # For dashbaord app creation
 #python -m pip install Flask
-python -m pip install numpy
-python -m pip install customtkinter
-python -m pip install matplotlib
-python -m pip install scikit-allel
-python -m pip install pandas
+pip install numpy
+pip install customtkinter
+pip install matplotlib
+pip install scikit-allel
+pip install pandas
 # requires c++ version 14 or higher

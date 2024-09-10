@@ -142,7 +142,7 @@ class OptionPanel(ctk.CTkFrame):
     # Updates the options available on the dropdown
     def update_dropdown_opts(self):
         opt_txt = []
-        for key,opt in self.content.opts.items():
+        for key,opt in self.content.opt_ctrls.items():
             assert(isinstance(opt, OptionCtrl))
             opt_txt.append(key)
         
@@ -165,9 +165,9 @@ class OptionList(ctk.CTkFrame):
         
         # Coningure local valriables
         self.PAD = 5
-        self.opts = {}
+        self.opt_ctrls = {}
         self.opts_update_command = opts_update_command
-        self.active_opts = []
+        self.active_opt_cards = []
         self.swap_buttons = []
         self.option_index = 0 # the row for the next option to be added 
         self._has_swaps = has_swaps
@@ -177,11 +177,11 @@ class OptionList(ctk.CTkFrame):
 
     # Select and option and add it to the list
     def select_option(self, key:str):
-        self.opts[key].select()
+        self.opt_ctrls[key].select()
 
     # Register an option a selectable
     def register_option(self, option_ctrl:OptionCtrl):
-        self.opts[option_ctrl.key] = option_ctrl
+        self.opt_ctrls[option_ctrl.key] = option_ctrl
 
         # Invoke the command for option registration
         if self.opts_update_command is not None:
@@ -190,13 +190,13 @@ class OptionList(ctk.CTkFrame):
     # Returns list of all selected option values from the option list
     def get_opt_values(self)->list[any]:
         vals = []
-        for opt in self.active_opts:
+        for opt in self.active_opt_cards:
             assert(isinstance(opt,OptionCard))
             vals.append(opt.value)
         return vals
     
     def get_opt_count(self)->int:
-        return len(self.opts)
+        return len(self.opt_ctrls)
     
     # Function wich adds options to display. Should only be called from an OptionPanel object
     def _add_option_card(self,option:OptionCard):
@@ -206,20 +206,20 @@ class OptionList(ctk.CTkFrame):
 
         option.grid(row=self.get_opt_grid_row(self.option_index), column=0, sticky="ew",pady=self.PAD, padx=self.PAD)
         option.index = self.option_index
-        self.active_opts.append(option)
+        self.active_opt_cards.append(option)
 
         self.option_index += 1
 
     def _remove_option_card(self,option:OptionCard):
         target_index = option.index
         # Remove option from active options list
-        self.active_opts.remove(option)
+        self.active_opt_cards.remove(option)
         # Remove option from grid
         option.grid_forget()
 
         # shift all other options up one
-        for i in range(target_index,len(self.active_opts)):
-            opt = self.active_opts[i]
+        for i in range(target_index,len(self.active_opt_cards)):
+            opt = self.active_opt_cards[i]
             assert(isinstance(opt,OptionCard))
             opt.index -= 1
             opt.grid_configure(row=self.get_opt_grid_row(opt.index))
@@ -229,11 +229,18 @@ class OptionList(ctk.CTkFrame):
 
         self.option_index -= 1
 
+    def deselect_all(self):
+        """Called to clear the list of all selected options and deselect them."""
+
+        # Note: always remove cards from back, one at a time to avoid unintended behavior as list is resized
+        while len(self.active_opt_cards) > 0:
+            self._remove_option_card(self.active_opt_cards[-1])
+
     # Shifts an option panel up one grid column 
     def swap_opts(self,index_1:int, index_2:int):
-        opt1 = self.active_opts[index_1]
-        opt2 = self.active_opts[index_2]
-        self.active_opts[index_1], self.active_opts[index_2] = self.active_opts[index_2], self.active_opts[index_1]
+        opt1 = self.active_opt_cards[index_1]
+        opt2 = self.active_opt_cards[index_2]
+        self.active_opt_cards[index_1], self.active_opt_cards[index_2] = self.active_opt_cards[index_2], self.active_opt_cards[index_1]
         assert(isinstance(opt1,OptionCard) and isinstance(opt2,OptionCard))
 
         opt1.index = index_2

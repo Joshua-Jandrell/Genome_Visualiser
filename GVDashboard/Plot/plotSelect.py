@@ -22,16 +22,21 @@ class PlotOptionCard(OptionCard):
     def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
+        self.MENU_W = 75
         # Add common elements to the plot option panel
-        data_label = ctk.CTkLabel(self.content, text="dataset:")
-        data_label.grid(row=0,column=0,padx=10,pady=10,sticky='w')
-        self.data_menu = DatasetMenu(self.content,50, self.BUTTON_H, command=self.update_data)
-        self.data_menu.grid(row=0,column=1,padx=10,pady=10,sticky='w')
+        self.dataset_frame = frame = ctk.CTkFrame(self.content, height=self.BUTTON_H)
+        data_label = ctk.CTkLabel(frame, text="Dataset:")
+        self.data_menu = DatasetMenu(frame, 50, self.BUTTON_H, self.MENU_W, command=self.update_data)
+        data_label.pack(side=ctk.LEFT, padx = 5, pady = 0)
+        self.data_menu.pack(side=ctk.LEFT)
+
+        frame.grid(row=0,column=0, sticky="w", padx = 5, pady = 5)
+ 
 
     def update_data(self,event):
-        assert(isinstance(self.value,ViewInfo_base))
-        # set dataset name for view info
-        self.value.set_data(self.data_menu.get_selected_dataset())
+        if isinstance(self.value,ViewInfo_base):
+            # set dataset name for view info
+            self.value.set_data(self.data_menu.get_selected_dataset())
 
     def set_value(self, value):
         super().set_value(value)

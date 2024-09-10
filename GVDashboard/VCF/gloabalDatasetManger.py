@@ -11,8 +11,12 @@ class GlobalDatasetManager():
         GlobalDatasetManager._datasets.append(dataset)
         GlobalDatasetManager.__call_listeners()
 
+    def is_registered(dataset:DataSetInfo)->bool:
+        """Returns `True` is the given dataset is registered."""
+        return dataset in GlobalDatasetManager._datasets
     def deregister(dataset:DataSetInfo):
         """Remove a dataset from global access and delete references to it"""
+        if not GlobalDatasetManager.is_registered(dataset): return
         GlobalDatasetManager._datasets.remove(dataset)
         GlobalDatasetManager.__call_listeners()
 

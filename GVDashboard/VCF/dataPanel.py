@@ -37,6 +37,9 @@ class DataPanel(ctk.CTkFrame):
         # Data option control used to create new dataset cards
         self.data_opt_ctl = DataOptionCtrl(option_list=self.content,key="Add")
 
+        # Subscribe to option list change event 
+        GlobalDatasetManager.add_listener(self.__on_global_data_update)
+
     def make_title(self):
         self.title_txt = ctk.CTkLabel(master=self,
                                       text=self.PLOT_TXT)
@@ -51,26 +54,51 @@ class DataPanel(ctk.CTkFrame):
         DataSetConfig.open(self,command=self.on_data_select)
 
     def on_data_select(self, dataset_info:DataSetInfo):
-        self.data_opt_ctl.configure(dataset_info)
-        self.data_opt_ctl.select()
+        # self.data_opt_ctl.configure(dataset_info)
+        # self.data_opt_ctl.select()
+
+        # Register dataset with global manager.
+        # NOTE When this is done a card will be automatically created
+        GlobalDatasetManager.register(dataset_info)
+
+    def __on_global_data_update(self, dataset_names):
+        """Called when the list of global datasets is updated to add any new datasets here."""
+        current_datasets = self.content.get_opt_values()
+        all_datasets = GlobalDatasetManager.get_datasets() 
+
+        # Add all new datasets to dataset options list
+        [self.data_opt_ctl.register_dataset(dataset) for dataset in all_datasets if dataset not in current_datasets]
+            
+
+    def destroy(self):
+        # Unsubscribe from global dataset event
+        GlobalDatasetManager.remove_listener(self.__on_global_data_update)
+
+        # Remove all datasets 
+        self.content.deselect_all()
+        GlobalDatasetManager.reconfigure(datasets = [])
+        return super().destroy()
 
 # Class used to create dataset option panels
 class DataOptionCtrl(OptionCtrl):
     """
     An option controller to manges option cards for datasets
     """
-    def configure(self,dataset_info:DataSetInfo):
+    def register_dataset(self,dataset_info:DataSetInfo, add_set:bool = True):
         """
-        Set the dataset info that the next selected dataset will hold a reference to.
+        Set the dataset info that the next selected dataset will hold a reference to.\n
+        If `add_set` is `True` then the set will automatically be selected and added to the list.
         """
         self.dataset_info = dataset_info
+        if add_set:
+            self.select()
 
     def make_option_card(self) -> OptionCard:
+        # NOTE: This method is called whenever a dataset is register. DO NOT register dataset here.
+
         assert(isinstance(self.dataset_info,DataSetInfo)) # Option should never be selected when info is not set
         op = super().make_option_card()
         op.reconfigure_option(option_key=self.dataset_info.get_dataset_name(), option_value=self.dataset_info)
-        # Register option with the global manager
-        GlobalDatasetManager.register(self.dataset_info)
 
         # Clear reference to dataset info to ensure that config always occurs
         self.dataset_info = None

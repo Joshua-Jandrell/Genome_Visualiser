@@ -1,8 +1,8 @@
 # This script contains the core code used for the Cutom Tkinker app
 
 import customtkinter as ctk # For general application features
-import tkinter as tk
-import tkinter.ttk as ttk
+#import tkinter as tk
+#import tkinter.ttk as ttk
 
 from matplotlib.figure import Figure as Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
@@ -28,7 +28,6 @@ PANEL_WIDTH = 200
 HIDE_BAR_WIDTH = 10
 MIN_VIEW_WIDTH = 400
 
-# 
 class App(ctk.CTk):
     """
     Class used to create and run the visualizer app.\n
