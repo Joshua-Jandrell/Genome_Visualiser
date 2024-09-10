@@ -20,6 +20,13 @@ class PlotOptionPanel(OptionPanel):
             return PlotOptionPanel.__instance.get_opt_values()
         else: return[]
 
+    def select_instance_option(opt_key:str)->OptionCard:
+        """
+        Selects a view option and returns the newly created `OptionCard`.
+        """
+        assert(isinstance(PlotOptionPanel.__instance,PlotOptionPanel))
+        return PlotOptionPanel.__instance.select_option(opt_key)
+
     def __init__(self, master, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, True, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 

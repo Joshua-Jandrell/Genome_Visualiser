@@ -71,10 +71,11 @@ class OptionCtrl():
         option_list.register_option(self)
 
     # Select an option and add it to the option list
-    def select(self):
+    def select(self)->OptionCard:
         opt = self.make_option_card()
         self.option_list._add_option_card(opt)
         self.count += 1
+        return opt
 
     def deselect(self,opt:OptionCard):
         self.option_list._remove_option_card(opt)
@@ -158,6 +159,9 @@ class OptionPanel(ctk.CTkFrame):
         self.content.register(option_ctrl)
         self.update_dropdown_opts()
 
+    def select_option(self,key:str)->OptionCard:
+        return self.content.select_option(key=key)
+
 
 class OptionList(ctk.CTkFrame):
     def __init__(self, master, has_swaps:bool = True, opts_update_command:Callable[[],Any]|None=None, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
@@ -177,7 +181,7 @@ class OptionList(ctk.CTkFrame):
 
     # Select and option and add it to the list
     def select_option(self, key:str):
-        self.opt_ctrls[key].select()
+        return self.opt_ctrls[key].select()
 
     # Register an option a selectable
     def register_option(self, option_ctrl:OptionCtrl):

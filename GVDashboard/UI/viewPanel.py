@@ -12,10 +12,17 @@ from VCF.dataSetConfig import DataSetConfig
 
 
 class ViewPanel(ctk.CTkFrame):
-    instance = None
+    __instance = None
+
+    def set_plots(views:list[ViewInfo_base]):
+        if isinstance(ViewPanel.__instance, ViewPanel):
+            ViewPanel.__instance.make_plot(views=views)
 
     def __init__(self, master):
         super().__init__(master=master, fg_color="transparent")
+        
+        # There can only be one instance 
+        assert(not isinstance(ViewPanel.__instance, ViewPanel))
 
         self.plot = None
         self.toolbar = None
@@ -35,7 +42,7 @@ class ViewPanel(ctk.CTkFrame):
         )
 
         self.__hide_plots()
-        ViewPanel.instance = self
+        ViewPanel.__instance = self
 
     def __hide_plots(self):
         """Hides the plot canvas. Should be called when no figures are plotted."""
@@ -51,7 +58,8 @@ class ViewPanel(ctk.CTkFrame):
     def __show_plots(self):
         self.data_select_button.place_forget()
 
-        self.toolbar.pack(side="top")
+        self.toolbar.pack(side="top",fill="x")
+        self.toolbar.update()
         self.plot.pack(side="top", fill="both", expand=True)
         self.hidden = False
 
