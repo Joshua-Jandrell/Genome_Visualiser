@@ -2,7 +2,7 @@
 
 from VCF.globalDatasetManger import GlobalDatasetManager
 from UI.viewPanel import ViewPanel
-from Plot.plotInfo import ViewPlotter, DataSetInfo, ZygoteView, RefView, ViewInfo_base
+from Plot.plotInfo import DataSetInfo, ZygoteView, RefView, ViewInfo_base
 from Plot.plotSelect import PlotOptionPanel, ZYGOSITY_OPT
 
 CLEAR_ON_DATASET_DELETE = True # If set to true the figure will be completely cleared if no datasets are available 
@@ -26,6 +26,9 @@ class AutoPlotter():
 
         # Update data variable to reflect if not data is present
         AutoPlotter.no_data = not data_available
+
+        if AutoPlotter.no_data:
+            ViewPanel.set_plots([])
 
     def make_autoPlot():
         plot_data = GlobalDatasetManager.get_datasets()[0]

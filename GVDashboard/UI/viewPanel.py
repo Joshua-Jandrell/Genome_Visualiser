@@ -71,13 +71,6 @@ class ViewPanel(ctk.CTkFrame):
             self.__hide_plots()
             return
 
-
-        # Destroy old plot and toolbar if any
-        # if self.plot is not None:
-        #     self.plot.destroy()
-        # if self.toolbar is not None:
-        #     self.toolbar.destroy()
-
         # Scale figure based on window size
         self.view_plotter.plot_figure(views)
         self.canvas.draw()

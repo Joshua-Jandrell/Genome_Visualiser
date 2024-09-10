@@ -53,6 +53,9 @@ class OptionCard(ctk.CTkFrame):
     def set_value(self,value):
         self.value = value
 
+    def add_listener(command):
+        """Set a command to be called every time the option card is signficantly updated"""
+
         
 
 
