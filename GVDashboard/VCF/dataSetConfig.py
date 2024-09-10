@@ -135,8 +135,8 @@ class DataSetConfig(ctk.CTkToplevel):
         new_file = False
         if get_file_first and dataset is None:
             file_name = FileFetcher.get_vcf_filename()
+            if file_name == "": return
             dataset = DataSetInfo(source_path=file_name)
-            print(dataset.get_dataset_name())
             new_file = True
 
         

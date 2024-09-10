@@ -6,14 +6,31 @@ from UI.optionPanel import OptionCtrl, OptionCard, OptionPanel
 from Plot.plotInfo import ZygoteView, RefView, DataSetInfo, ViewInfo_base
 
 from VCF.datasetDropDown import DatasetMenu
+ZYGOSITY_OPT = "Zygosity"
+REF_OPT = "Ref. Genome"
+class PlotOptionPanel(OptionPanel):
+    __instance = None
 
-class PlotOptionList(OptionPanel):
+    def get_view_list()->list[ViewInfo_base]:
+        """
+        Returns a list of all selected view options.\n
+        Returns an empty list is no instance of `PlotOptionPanel` exists.
+        """
+        if isinstance(PlotOptionPanel.__instance, PlotOptionPanel):
+            return PlotOptionPanel.__instance.get_opt_values()
+        else: return[]
+
     def __init__(self, master, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, True, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
+        # There should only be one instance
+        assert(not isinstance(PlotOptionPanel.__instance, PlotOptionPanel))
+        PlotOptionPanel.__instance = self
+
         # Add plot options
-        self.content.register_option(ZygoteOption(self.content,"Zygosity"))
-        self.content.register_option(RefOption(self.content,"Ref. Genome"))
+        self.content.register_option(ZygoteOption(self.content,ZYGOSITY_OPT))
+        self.content.register_option(RefOption(self.content,REF_OPT))
+
 
 class PlotOptionCard(OptionCard):
     """

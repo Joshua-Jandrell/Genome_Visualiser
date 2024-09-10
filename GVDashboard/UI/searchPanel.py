@@ -6,7 +6,7 @@ import tkinter as tk
 from UI.deafultSettings import Dimenations as Dims
 
 from UI.optionPanel import OptionCard, OptionCtrl
-from Plot.plotSelect import PlotOptionList
+from Plot.plotSelect import PlotOptionPanel
 from VCF.dataPanel import DataPanel
 
 class SearchPanel(ctk.CTkFrame): 
@@ -36,5 +36,5 @@ class SearchOptions(ctk.CTkTabview):
         self.data_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Create features for the options pannel 
-        self.plots_options = PlotOptionList(self.plots,fg_color="transparent")
+        self.plots_options = PlotOptionPanel(self.plots,fg_color="transparent")
         self.plots_options.pack(fill=ctk.BOTH, expand=True)

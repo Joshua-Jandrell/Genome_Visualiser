@@ -19,6 +19,7 @@ from VCF.vcfTest import getData
 from UI.searchPanel import SearchPanel
 
 from Plot.plotInfo import ViewInfo_base
+from Plot.autoPlotter import AutoPlotter
 # Constants
 DEFAULT_WIDTH = 800
 DEFAULT_HIGHT = 300
@@ -72,6 +73,9 @@ class App(ctk.CTk):
         self.view = ViewPanel(self)
         self.view.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
+        # Activate auto plotter. This should only be done after all UI element are created 
+        AutoPlotter.set_active(True)
+
         # Add event to define behavior when deleted
         self.protocol("WM_DELETE_WINDOW", self._on_app_delete)
 
@@ -81,15 +85,16 @@ class App(ctk.CTk):
             # self.main_frame.pack_forget()
             # self.main_frame.destroy()
             # self.main_frame = None
+            AutoPlotter.set_active(False)
             self.destroy()
 
     def makePlot(self):
-        self.view.set_plot(views=self.search_panel.search_options.plots_options.get_opt_values())
+        self.view.make_plot(views=self.search_panel.search_options.plots_options.get_opt_values())
 
     def plot_views(views:list[ViewInfo_base]):
         """Static method used to plot the given list of views on the main canvas."""
         assert(isinstance(App.instance,App))
-        App.instance.view.set_plot(views=views)
+        App.instance.view.make_plot(views=views)
 
 # Makes app if run as main
 if __name__ == "__main__":

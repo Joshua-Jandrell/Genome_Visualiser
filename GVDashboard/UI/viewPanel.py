@@ -35,6 +35,7 @@ class ViewPanel(ctk.CTkFrame):
         )
 
         self.__hide_plots()
+        ViewPanel.instance = self
 
     def __hide_plots(self):
         """Hides the plot canvas. Should be called when no figures are plotted."""
@@ -54,7 +55,7 @@ class ViewPanel(ctk.CTkFrame):
         self.plot.pack(side="top", fill="both", expand=True)
         self.hidden = False
 
-    def set_plot(self, views:list[ViewInfo_base])->FigCanvas:
+    def make_plot(self, views:list[ViewInfo_base])->FigCanvas:
 
         if len(views) > 0 and self.hidden:
             self.__show_plots()
@@ -78,5 +79,3 @@ class ViewPanel(ctk.CTkFrame):
         #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)
         return self.canvas
 
-    # def on_mouse_move(self, event):
-    #     print(event)
