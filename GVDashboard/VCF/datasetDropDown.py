@@ -31,6 +31,7 @@ class DatasetMenu(ctk.CTkOptionMenu):
 
         # Register new dropdown with global dataset manager 
         GlobalDatasetManager.add_listener(self.__update_options)
+
     def __on_command(self,event):
         # Check if command is "new"
         if self.get() is DatasetMenu.NEW_TXT:
@@ -60,12 +61,12 @@ class DatasetMenu(ctk.CTkOptionMenu):
         # Configure dropdown options
         self.configure(values = dataset_names + [DatasetMenu.NEW_TXT])
 
-
         # Add divider between new options button and other datasets
         if len(dataset_names) != 0:
-            # select last dataset added
-            self.set(dataset_names[-1])
             self._dropdown_menu.insert_separator(len(dataset_names))
+            # select last dataset added if no dataset is selected
+            if self.get() == self.NO_VALUE_TXT or self.get() == self.UNSELECTED_VALUE:
+                self.set(dataset_names[-1])
 
         if not self.get() in dataset_names:
             self.set(DatasetMenu.UNSELECTED_VALUE)
