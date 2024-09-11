@@ -87,7 +87,7 @@ class VcfDataWrapper:
         """
         if self._pos is None:
             self._pos = np.array(self.data[POS]) 
-            self._pos = self._pos.sort_values(by=[POS], ascending=True)
+            #self._pos = self._pos.sort_values(by=[POS], ascending=True)
         return self._pos
 
 # Converts and allele character/string to an intagetr

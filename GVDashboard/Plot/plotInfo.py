@@ -176,14 +176,15 @@ class FrequencyView(ViewInfo_base):
         self.min_window = 500     ##make function to get window size
         super().__init__()
     
-    def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, wrapped_data: DataWrapper, ref_x:Axes|None)->Axes:
+    def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, ref_x:Axes|None)->Axes:
         axis = fig.add_subplot(gs[start_index], sharex = ref_x)
         
         wrapped_data = self.dataset_info.get_data_wrapper()
         pos = wrapped_data.get_pos()
         
         # setup windows   #  Window_size:  Ratio recommened:  (500:100000)
-        bins = np.arange(pos.min(), pos.max(), window_size=self.min_window)
+        window_size = self.min_window
+        bins = np.arange(pos.min(), pos.max(), window_size)
        
         print("Count plot!", axis)
         
