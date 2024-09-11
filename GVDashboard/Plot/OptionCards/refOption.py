@@ -43,7 +43,9 @@ class RefOptionCard(PlotOptionCard):
 
 class RefOptionCtrl(PlotOptionCtrl):
     def make_option_card(self) -> OptionCard:
-        op = super().make_option_card()
-        op.label.configure(text="Reference Sequence")
+        op = RefOptionCard(master=self.option_list, # The UI container the option card goes into (should be an option list)
+                           option_ctrl=self, # The option control that created this option card (should be this option control)
+                           option_key="Reference Sequence" # The `option_key` is essentially just the text displayed on the option card label
+                           )
         op.set_value(RefView())
         return op

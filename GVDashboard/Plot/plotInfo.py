@@ -219,28 +219,46 @@ class RefView(ViewInfo_base):
 #TODO: Plotter for frequency view
 class FrequencyView(ViewInfo_base):
     def __init__(self) -> None:
-        self.min_window = 500     ##make function to get window size
+        self.min_window = 750     ##make function to get window size
+        self.plot_density = False
         super().__init__()
     
     def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, ref_x:Axes|None)->Axes:
-        gs_pos = 2*start_index # Akward scaling needed to add key (will be removed later)
+        gs_pos = 2*start_index # Awkward scaling needed to add key (will be removed later)
         axis = fig.add_subplot(gs[gs_pos+1], sharex = ref_x)
+        
         #axis = fig.add_subplot(gs[start_index], sharex = ref_x)
         
         wrapped_data = self.dataset_info.get_data_wrapper()
         pos = wrapped_data.get_pos()
         
-        # setup windows   #  Window_size:  Ratio recommened:  (500:100000)
+        # setup windows   #  Window_size:  Ratio recommened:  (750:100000)
         window_size = self.min_window
         bins = np.arange(pos.min(), pos.max(), window_size)
-       
         
-        axis.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow
-        axis.set_mouseover(True)
-        axis.set_facecolor('#FEFBE9')
-        axis.set_xlabel('Chromosome position (bp)')
-        axis.set_ylabel('Variant count, bp$^{-1}$')
-        axis.set_title('Mutation Count frequency')
+        # compute variant density in each window
+        h, _ = np.histogram(pos, bins=bins)
+        y = h / window_size
+        
+        if self.plot_density == False:
+            axis.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow
+            axis.set_mouseover(True)
+            axis.set_facecolor('#FEFBE9')
+            axis.set_xlabel('Chromosome position (bp)')
+            axis.set_ylabel('Variant count, bp$^{-1}$')
+            axis.set_title('Mutation Count frequency')
+            
+            return axis
 
-        return axis
+        elif self.plot_density == True:     
+            axis_dense = fig.add_subplot(gs[gs_pos+1], sharex = ref_x)
+            axis_dense.bar(_[:-1], y, width=np.diff(_), align='edge', edgecolor='black', color='#CC6677')
+            axis_dense.set_mouseover(True)
+            axis_dense.set_facecolor('#E8ECFB')
+            axis_dense.set_xlabel('Chromosome position (bp)')
+            axis_dense.set_ylabel('Variant density (count per bp $^{-1}$)')
+            axis_dense.set_title('Mutation Density frequency')
+            
+            return axis_dense
+
 #########################################################################

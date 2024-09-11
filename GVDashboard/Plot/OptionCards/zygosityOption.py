@@ -45,8 +45,10 @@ class ZygoOptionCard(PlotOptionCard):
 # Option control specifcally for zygosity info
 class ZygoteOptionCtrl(PlotOptionCtrl):
     def make_option_card(self) -> OptionCard:
-        op = super().make_option_card()
-        op.label.configure(text="Zygosity Plot")
+        op = ZygoOptionCard(master=self.option_list, # The UI container the option card goes into (should be an option list)
+                           option_ctrl=self, # The option control that created this option card (should be this option control)
+                           option_key="Zygosity Plot" # The `option_key` is essentially just the text displayed on the option card label
+                           )
         op.set_value(ZygoteView())
         return op
         
