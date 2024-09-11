@@ -82,14 +82,12 @@ class VcfDataWrapper:
             self._alts = self._alts[:,filter_mask].transpose()[::-1,:] # Put samples on the rows in descending order
         return self._alts
     
-    def get_pos(self):   #TODO:  Yo... dis gud chief???? ._. sorry if it's weird :<
+    def get_pos(self):
         """Returns an array of chromosome positions in acsending order.
         """
         if self._pos is None:
             self._pos = np.array(self.data[POS]) 
             self._pos = self._pos.sort_values(by=[POS], ascending=True)
-            #pos_filter_mask = np.array([np.max(self._pos,axis=0) >= 0][0]) # filter out empty columns
-            #self._pos = self._alts[:,pos_filter_mask].transpose()[::-1,:] # Put samples on the rows in descending order
         return self._pos
 
 # Converts and allele character/string to an intagetr

@@ -103,7 +103,7 @@ class ZygoteView(ViewInfo_base):
         self.colors = colors.ListedColormap(["#00000000","#002164", "g", "y"])
         super().__init__()
         
-    def get_height_weights(self) -> list[int]:        #TODO: What are height weights???
+    def get_height_weights(self) -> list[int]:
         wrapped_data = self.dataset_info.get_data_wrapper()
         return [min(wrapped_data.n_samples,self.max_weight)]
     
@@ -173,69 +173,26 @@ class RefView(ViewInfo_base):
 #TODO: Plotter for frequency view
 class FrequencyView(ViewInfo_base):
     def __init__(self) -> None:
-        self.min_window = 500     ##am confused
+        self.min_window = 500     ##make function to get window size
         super().__init__()
-        
-    def get_pos_counts(self,wrapped_data:DataWrapper) -> list[int]:
-        return [min(wrapped_data._pos,self.min_window)]
     
-    ######################################################################
-    def plot_windowed_variant_count(pos, window_size, title=None):
-
-        #window_size:  Ratio recommened:  (500:100000)
-        
-        # Make get data
-        pos = get_pos()
-        
-        # setup windows 
-        bins = np.arange(pos.min(), pos.max(), window_size)
-        
-        # plot
-        fig, ax = plt.subplots(figsize=(12,5))
-        
-        print("Count plot!",ax)
-        ax.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow
-        ax.set_mouseover(True)
-        ax.set_facecolor('#FEFBE9')
-        ax.set_xlabel('Chromosome position (bp)')
-        ax.set_ylabel('Variant count, bp$^{-1}$')
-        if title:
-            ax.set_title(title)
-
-    plt.show()
-    ######################################################################
     def make_plots(self, fig: Figure, gs: GridSpec, start_index: int, wrapped_data: DataWrapper, ref_x:Axes|None)->Axes:
         axis = fig.add_subplot(gs[start_index], sharex = ref_x)
-        #p = axis.pcolorfast(np.matrix(wrapped_data.get_pos()))
-        p = plot_windowed_variant_count()
-        self.plots.append(p)
+        
+        wrapped_data = self.dataset_info.get_data_wrapper()
+        pos = wrapped_data.get_pos()
+        
+        # setup windows   #  Window_size:  Ratio recommened:  (500:100000)
+        bins = np.arange(pos.min(), pos.max(), window_size=self.min_window)
+       
+        print("Count plot!", axis)
+        
+        axis.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow
+        axis.set_mouseover(True)
+        axis.set_facecolor('#FEFBE9')
+        axis.set_xlabel('Chromosome position (bp)')
+        axis.set_ylabel('Variant count, bp$^{-1}$')
+        axis.set_title('Mutation Count frequency')
+
         return axis
-    
-    # ######################################################################
-    # def plot_windowed_variant_count(pos, window_size=500):
-
-    #     window_size=500  #Ratio recommened:  (500:100000)
-        
-    #     #data = get_pos()
-    #     # Make data into dataframe
-    #     df = al.vcf_to_dataframe(TEST_FILE)
-    #     pos = df['POS'][:]
-        
-    #     # setup windows 
-    #     bins = np.arange(pos.min(), pos.max(), window_size)
-        
-    #     # plot
-    #     fig, ax = plt.subplots(figsize=(12,5))
-        
-    #     print("Count plot!",ax)
-    #     ax.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow
-    #     ax.set_mouseover(True)
-    #     ax.set_facecolor('#FEFBE9')
-    #     ax.set_xlabel('Chromosome position (bp)')
-    #     ax.set_ylabel('Variant count, bp$^{-1}$')
-    #     if title:
-    #         ax.set_title(title)
-
-    # plt.show()
-    # ######################################################################
-    
+#########################################################################
