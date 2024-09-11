@@ -62,4 +62,5 @@ class PlotOptionCard(OptionCard):
 class PlotOptionCtrl(OptionCtrl):
     def make_option_card(self) -> OptionCard:
         op = PlotOptionCard(self.option_list, self, self.key)
+        op.get_dataset_menu_frame().pack() # Add dataset select button by default
         return op
