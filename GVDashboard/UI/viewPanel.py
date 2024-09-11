@@ -28,7 +28,8 @@ class ViewPanel(ctk.CTkFrame):
         self.toolbar = None
 
         self.fig = Figure(figsize = (5, 5), dpi = 100)
-        self.canvas =  FigCanvas(self.fig, master=self)
+        self.canvas_frame = ctk.CTkScrollableFrame(self)
+        self.canvas =  FigCanvas(self.fig, master=self.canvas_frame)
         
         # Create a view plotter for the canvas
         self.view_plotter = ViewPlotter(self.fig)
@@ -60,6 +61,7 @@ class ViewPanel(ctk.CTkFrame):
 
         self.toolbar.pack(side="top",fill="x")
         self.toolbar.update()
+        self.canvas_frame.pack(side="top", fill="both", expand=True)
         self.plot.pack(side="top", fill="both", expand=True)
         self.hidden = False
 

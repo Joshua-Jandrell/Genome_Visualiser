@@ -19,6 +19,8 @@ class DatasetMenu(ctk.CTkOptionMenu):
     def __init__(self, master: Any, width: int = 140, height: int = 28, corner_radius: int | None = None, bg_color: str | tuple[str, str] = "transparent", fg_color: str | tuple[str, str] | None = None, button_color: str | tuple[str, str] | None = None, button_hover_color: str | tuple[str, str] | None = None, text_color: str | tuple[str, str] | None = None, text_color_disabled: str | tuple[str, str] | None = None, dropdown_fg_color: str | tuple[str, str] | None = None, dropdown_hover_color: str | tuple[str, str] | None = None, dropdown_text_color: str | tuple[str, str] | None = None, font: tuple | CTkFont | None = None, dropdown_font: tuple | CTkFont | None = None, values: list | None = None, variable: Variable | None = None, state: str = ..., hover: bool = True, command: Callable[[str], Any] | None = None, dynamic_resizing: bool = True, anchor: str = "w", **kwargs):
         super().__init__(master, width, height, corner_radius, bg_color, fg_color, button_color, button_hover_color, text_color, text_color_disabled, dropdown_fg_color, dropdown_hover_color, dropdown_text_color, font, dropdown_font, values, variable, state, hover, command, dynamic_resizing, anchor, **kwargs)
 
+        # Ensure that self is set to a valid option
+        self.set(self.UNSELECTED_VALUE)
         # Configure dataset options
         self.active_options = True
         dataset_names = GlobalDatasetManager.get_dataset_names()
@@ -65,7 +67,7 @@ class DatasetMenu(ctk.CTkOptionMenu):
         if len(dataset_names) != 0:
             self._dropdown_menu.insert_separator(len(dataset_names))
             # select last dataset added if no dataset is selected
-            if self.get() == self.NO_VALUE_TXT or self.get() == self.UNSELECTED_VALUE:
+            if self.get() == self.NO_VALUE_TXT or self.get() == self.UNSELECTED_VALUE or self.get() == "":
                 self.set(dataset_names[-1])
 
         if not self.get() in dataset_names:
