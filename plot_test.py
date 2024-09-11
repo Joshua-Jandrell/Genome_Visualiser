@@ -14,7 +14,7 @@ from GVDashboard.VCF.vcfTest import TEST_FILE
 def plot_windowed_variant_count(pos, window_size=500, title=None):
 
     window_size=500  #Ratio recommened:  (500:100000)
-    data = getData()
+    #data = get_pos()
     
     # Make data into dataframe
     df = al.vcf_to_dataframe(TEST_FILE)
