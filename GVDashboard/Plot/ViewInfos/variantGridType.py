@@ -24,11 +24,15 @@ class ZygoteView(ViewInfo_base):
         self.max_weight = 100
         self.min_block_size = 10 # the smallest blocksize acceptable
         self.max_block_size = 100 # The largest block size acceptable 
+        self.ideal_hight = 800
         self.colors = colors.ListedColormap(self.MUTATION_COLORS)
         self.min_block_size = 0.25
 
         self.type_key = GRID_TYPE_KEY
-        self.__has_key = True
+        self._has_key = True
+    
+    def get_desired_hight(self) -> list[int]:
+        return super().get_desired_hight()
         
     def get_height_weights(self) -> list[int]:
         wrapped_data = self.dataset_info.get_data_wrapper()

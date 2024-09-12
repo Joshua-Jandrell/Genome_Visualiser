@@ -23,9 +23,10 @@ class ViewPlotter:
         self.plots = []
         self.default_data_wrapper = None
 
-    def plot_figure(self, views:list[ViewInfo_base])->bool:
-        """Plot a figure on the canvas.\n
-        Returns true if a plot should be shown.
+    def plot_figure(self, views:list[ViewInfo_base])->int:
+        """
+        Plot a figure on the canvas.\n
+        Returns the deisried figure hight, or 0 if figure should not be shown.
         """
         # clear any existing plots on the figure
         self.fig.clear()
@@ -33,15 +34,13 @@ class ViewPlotter:
         # Filter for only valid views
         views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
 
-        if len(views) == 0: return False
+        if len(views) == 0: return 0
 
         # group views into a collection of view sets
         view_sets = get_view_sets(views)
-        print(view_sets)
 
-        plot_sets(view_sets, self.fig)
-
-        return True
+        hight = plot_sets(view_sets, self.fig)
+        return hight
 
 
 # ========================================================================

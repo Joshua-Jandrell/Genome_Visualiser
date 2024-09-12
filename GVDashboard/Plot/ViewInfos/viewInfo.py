@@ -25,7 +25,7 @@ class ViewInfo_base:
         self.dataset_info = None
         self.link_to_prev = True # Link the 'long' axis of this plot to the plot that came before it.
         self.link_to_next = True # Link the 'long' axis of this plot to the next plot
-        self.__has_key = False
+        self._has_key = False
         self.type_key = BASE_TYPE_KEY
         """The type key is used to link like views."""
         # Set a default dataset for the view
@@ -52,7 +52,7 @@ class ViewInfo_base:
         """
         return [200]
     
-    def make_plots(self,axs:list[Axes])->str:
+    def make_plots(self,axs:list[Axes],show_x:bool,show_y:bool)->str:
         """
         Method used to plot the data on a figure\n
         Returns the axis used for plotting and a log-string containing any errors or notes\n
@@ -66,7 +66,7 @@ class ViewInfo_base:
         """Returns `True` if two view infos are compatible to be linked."""
         return self.type_key == other.type_key
     def has_key(self)->bool:
-        return self.__has_key
+        return self._has_key
     
 ############################################################################################################
 
@@ -106,13 +106,7 @@ class viewSetManager:
         if self.type_key == BASE_TYPE_KEY or not view_info.can_link(self.base_info): return False
 
         self.views.append(view_info)
-
-        # Views are compatible so can be linked...
-        # if self.__stack:
-        #     ax.sharex(self.ax)
-        # else:
-        #     ax.sharey(self.ax)
-
+        
         return True
     
     def get_desired_hight(self):
@@ -138,7 +132,6 @@ class viewSetManager:
                 axs.append(ax.inset_axes([0,bottom,1,top-bottom],sharex=ax))
                 bound_index += 1  
             view.make_plots(axs)
-            print("did plot")
 
 def get_view_sets(view_infos:ViewInfo_base)->list[viewSetManager]:
     """Iterate through a list of view infos and return a list of view set managers for those views"""
@@ -161,23 +154,19 @@ def length_and_ratios(requested_lengths:list[int])->tuple[int,NDArray]:
     weights = np.array(requested_lengths)/full_length
     return full_length, weights
 
-def plot_sets(view_sets:list[viewSetManager], fig:Figure):
-    """Plots the list of view sets on the given figure"""
+def plot_sets(view_sets:list[viewSetManager], fig:Figure)->int:
+    """Plots the list of view sets on the given figure and returns its desired hight in pixels"""
     fig_hights = []
     for view_set in view_sets:
         fig_hights.append(view_set.get_desired_hight())
-        print("plot set...")
 
     # Get length and ratios of view sets
     fig_hight, ratios = length_and_ratios(fig_hights)
 
-    # update figure hight to match desired hight
-    fig.set_figheight(fig_hight / fig.dpi)
-
     # Create a gridspec to manage all figure set subplots
     nrows = len(view_sets)
     ncols = 1
-    gs = GridSpec(nrows=nrows, ncols=ncols, width_ratios=ratios)
+    gs = GridSpec(nrows=nrows, ncols=ncols,height_ratios=fig_hights,figure=fig)
 
     # iterate through figures sets, assign each of them a subplot
     for i, view_set in enumerate(view_sets):
@@ -185,6 +174,7 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure):
         ax = fig.add_subplot(gs[i])
         view_set.plot(ax)
 
+    return fig_hight
 
 ####################################################################################
 class viewPosManager:
