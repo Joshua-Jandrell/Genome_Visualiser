@@ -18,9 +18,11 @@ class DataFetcher:
     def load_data(data_path:str, exclude_fields=None, rename_fields=None)->DataWrapper:
 
         full_path = path.realpath(data_path)
-        data = DataWrapper(al.read_vcf(full_path,
+        data = al.read_vcf(full_path,
                                         exclude_fields=exclude_fields,
                                         rename_fields=rename_fields,
-                                        ))
+                                        )
+        dataframe = al.vcf_to_dataframe(full_path)
+        data_wrapper = DataWrapper(data, dataframe)
 
-        return data
+        return data_wrapper

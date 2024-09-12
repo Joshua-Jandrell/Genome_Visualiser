@@ -1,7 +1,8 @@
 # This script contains classes for managing and updating vcf data plots 
 import numpy as np
-
+import allel as allel
 from allel import GenotypeArray as GTArr
+from pandas import DataFrame
 
 # Constants used to index a VCF dictionary
 CHROM = 'variants/CHROM'
@@ -24,8 +25,9 @@ NUCLEOTIDE_DICT = {
 
 # Conatins vcf query data and returns it in various formats
 class VcfDataWrapper:
-    def __init__(self, vcf_data:dict) -> None:
-
+    def __init__(self, vcf_data:dict, df:DataFrame) -> None:
+        
+        self.df=df
         # Tmp data size constriants
         # TODO REMOVE THESE
         max_vars = 5000
@@ -82,13 +84,44 @@ class VcfDataWrapper:
             self._alts = self._alts[:,filter_mask].transpose()[::-1,:] # Put samples on the rows in descending order
         return self._alts
     
+    
+    
     def get_pos(self):
-        """Returns an array of chromosome positions in acsending order.
+        """Returns an array of chromosome positions.
         """
         if self._pos is None:
             self._pos = np.array(self.data[POS]) 
-            #self._pos = self._pos.sort_values(by=[POS], ascending=True)
         return self._pos
+    
+    def filter_pos (self):
+        self.df = self.df.sort_values(by=[POS], ascending=True)
+        
+        min_pos = self._pos
+        max_pos = self._pos.size
+        return
+    def get_pos_range(self):
+        self.df = self.df.sort_values(by=[POS], ascending=True)
+        
+        min_pos = self.df[POS].iloc[[0]]
+        max_pos = self.df[POS].iloc[[-1]]
+        return(min_pos, max_pos)
+    
+    def set_pos_range(self):
+        
+        return (user_min, user_max)
+
+    def sort_qual(self):
+        return
+
+    # def filter_ref_variant_length(self):  #Scott didn't think this was necessary
+    #     return
+
+    # def filter_zygosity_type(self):   #See in zygosityOption
+    #     return
+    
+    def filter_nucleotide_type(self):
+        return
+
 
 # Converts and allele character/string to an intagetr
 # 0 = multi-nucleotide, -1 = n0-data
@@ -102,3 +135,11 @@ def allele_to_numb(a:str):
 # Converts an array of alleles to numbers
 def alleles_to_numbs(alleles:np.array):
     return [allele_to_numb(a) for a in alleles]
+
+
+# Sets the range of nucleotides on the reference gtenome the user wants to view
+def set_pos_range_max(self):
+        return()
+
+def set_pos_range_min(self):
+    return()

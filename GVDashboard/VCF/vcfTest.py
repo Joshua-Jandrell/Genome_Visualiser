@@ -32,27 +32,46 @@ if __name__ == "__main__":
 
     
     # The indexes of a dataframe can be used to access and sored rows of a genotype array (or any numpy array/matrix)
-    print(al.GenotypeArray(data['calldata/GT'])[new_df.index,:])
+    # print("\n This is 'calldata/GT': \n",al.GenotypeArray(data['calldata/GT'])[new_df.index,:])
 
+    #sort ascending according to index???
+    # df = df.sort_index
+    # print("This is sorted df: \n", df)
     # get column of dataframe
-    print(new_df["POS"])
+    print("This is new_df, only \"POS\": \n", new_df["POS"])
+    pos_df= new_df.sort_values(by=["POS"], ascending=True) #["POS"]
+    #df.sort_values(by=['Date'], ascending=False)
+    print("This is sorted new_df, only \"POS\": \n", pos_df["POS"])
+    count = pos_df.size
+    print("This is count: \n", count)
+    first_row = pos_df["POS"].iloc[[0]]
+    print("This is first_row: \n", first_row)
+    last_row = pos_df["POS"].iloc[[-1]] #, ['POS']]
+    print("This is last: \n", last_row)
+    
+    # for index, pos_df["POS"] in enumerate(pos_df):
+    #     print(index, pos_df)
+    
 
-    print(data['samples'])
+    
+
+    print("This is data['samples']: \n", data['samples'])
 
     eg_sample = data['samples'][0]
 
     #============ String stuff =================
-    # Get only the numbers form a string
+    # Get only the numbers from a string
     numb_str = ''.join([s for s in eg_sample if s.isdigit()])
-    print(numb_str)
+    print("This is numb_str: \n", numb_str)
 
     # Now remove numb_str from the main sring 
     leters = eg_sample.strip(numb_str)
-    print(leters)
+    print("This is leters: \n", leters)
 
     # now make sample an intager
     int(numb_str)
+    print("This is numb_str: \n", numb_str)
     
-    print("Starting conversion")
-    al.vcf_to_csv('./Data/afr-small.vcf', './Data/example.csv', fields='*')
-    print("done")
+    # print("Starting conversion")
+    # al.vcf_to_csv('./Data/afr-small.vcf', './Data/example.csv', fields='*')
+    # print("done")
