@@ -68,14 +68,14 @@ class ViewPanel(ctk.CTkFrame):
     def make_plot(self, views:list[ViewInfo_base])->FigCanvas:
 
         # Scale figure based on window size
-        plot_hight = self.view_plotter.plot_figure(views)
+        plot_hight, plot_width = self.view_plotter.plot_figure(views,
+                                                   size=[self.plot.winfo_height(),self.plot.winfo_width()],
+                                                   can_expand = [False, True])
 
         if plot_hight != 0:
             if self.hidden: self.__show_plots()
-            self.plot.update()
-            self.plot.configure(height=plot_hight)
+            #self.plot.configure(height=plot_hight)
             self.canvas.draw()
-            self.toolbar.update()
         elif plot_hight == 0 and not self.hidden:
             self.__hide_plots()
             return

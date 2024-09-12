@@ -23,29 +23,30 @@ class ZygoteView(ViewInfo_base):
         super().__init__()
         self.max_weight = 100
         self.min_block_size = 10 # the smallest blocksize acceptable
+        self.ideal_block_size = 10
         self.max_block_size = 100 # The largest block size acceptable 
-        self.ideal_hight = 800
+        self.ideal_hight = 8
         self.colors = colors.ListedColormap(self.MUTATION_COLORS)
         self.min_block_size = 0.25
 
         self.type_key = GRID_TYPE_KEY
         self._has_key = True
     
-    def get_desired_hight(self) -> list[int]:
-        return super().get_desired_hight()
+    def get_desired_size(self) -> list[int]:
+        wrapped_data = self.dataset_info.get_data_wrapper()
+        return [self.ideal_block_size * wrapped_data.n_samples]
         
     def get_height_weights(self) -> list[int]:
         wrapped_data = self.dataset_info.get_data_wrapper()
         return [min(wrapped_data.n_samples,self.max_weight)]
     
-    def make_plots(self,axs:list[Axes],key_ax:Axes|None = None)->str:
+    def make_plots(self,axs:list[Axes],size:tuple[int,int],key_ax:Axes|None = None)->str:
         #axis =fig.add_axes([0.1,0.1,0.9,0.9])
         axis = axs[0]
         #key_axis = fig.add_subplot(gs[gs_pos], sharex = ref_x)
         wrapped_data = self.dataset_info.get_data_wrapper()
         p = axis.pcolorfast(np.matrix(wrapped_data.get_zygosity()), cmap=self.colors, vmax=2, vmin=-1)
         axis.set_xlim(0,20)
-        axis.set_ylim(0,20)
         if key_ax is not None:
             self.make_key(key_ax)
 

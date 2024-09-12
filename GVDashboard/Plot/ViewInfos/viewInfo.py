@@ -46,7 +46,7 @@ class ViewInfo_base:
     def get_height_weights(self)->list[int]:
         return [1]
     
-    def get_desired_hight(self)->list[int]:
+    def get_desired_size(self)->list[int]:
         """
         Returns the the hight, in pixes, that the given plot will ideally occupy.
         """
@@ -106,19 +106,19 @@ class viewSetManager:
         if self.type_key == BASE_TYPE_KEY or not view_info.can_link(self.base_info): return False
 
         self.views.append(view_info)
-        
+
         return True
     
     def get_desired_hight(self):
         """Returns the desired hight of the full view set"""
-        return sum([sum(view.get_desired_hight()) for view in self.views])
+        return sum([sum(view.get_desired_size()) for view in self.views])
     
-    def plot(self, ax:Axes):
+    def plot(self, ax:Axes, size:tuple[int,int]):
         """Plot all views in the view set on the given axes"""
         hights=[]
         ax.set_axis_off()
         for view in self.views:
-            hights += view.get_desired_hight()
+            hights += view.get_desired_size()
         h, ratios = length_and_ratios(hights)
         bounds = np.concatenate((np.array([0]), np.cumsum(ratios)),axis=0)
 
@@ -131,7 +131,7 @@ class viewSetManager:
                 top = bounds[bound_index+1]
                 axs.append(ax.inset_axes([0,bottom,1,top-bottom],sharex=ax))
                 bound_index += 1  
-            view.make_plots(axs)
+            view.make_plots(axs, size)
 
 def get_view_sets(view_infos:ViewInfo_base)->list[viewSetManager]:
     """Iterate through a list of view infos and return a list of view set managers for those views"""
@@ -154,14 +154,19 @@ def length_and_ratios(requested_lengths:list[int])->tuple[int,NDArray]:
     weights = np.array(requested_lengths)/full_length
     return full_length, weights
 
-def plot_sets(view_sets:list[viewSetManager], fig:Figure)->int:
+def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tuple([0,0]), can_expand=tuple([False, False]))->int:
     """Plots the list of view sets on the given figure and returns its desired hight in pixels"""
+
+    # Determine which axes can expand
+    can_expand = tuple([can_expand[0] or size[0] == 0,can_expand[1] or size[1] == 0])
+
     fig_hights = []
     for view_set in view_sets:
         fig_hights.append(view_set.get_desired_hight())
 
     # Get length and ratios of view sets
     fig_hight, ratios = length_and_ratios(fig_hights)
+    fig_width = size[1]
 
     # Create a gridspec to manage all figure set subplots
     nrows = len(view_sets)
@@ -172,22 +177,7 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure)->int:
     for i, view_set in enumerate(view_sets):
         # Make axis for view set 
         ax = fig.add_subplot(gs[i])
-        view_set.plot(ax)
+        view_set.plot(ax, size=size)
 
-    return fig_hight
-
-####################################################################################
-class viewPosManager:
-    """
-    Class used to define where on the canvas a given view should be plotted.
-    """
-    def __init__(self,requested_lengths:list[int],requested_sub_segments:list[int|None]=None,stack=True) -> None:
-        """
-        Create a view pos manager where `requested_lengths` describes the size of views in the expending direction.\n
-        Requested segments should be a list segments sizes which each plot should be allocated. If a segment is allocated a non-positive size it will be expanded to fill the available space.
-        """
-        self.full_length = sum(requested_lengths)
-        weights = np.array(requested_lengths)/self.full_length
-        self.ranges = np.cumsum(weights)
-        print(self.ranges)
+    return fig_hight, fig_width
     
