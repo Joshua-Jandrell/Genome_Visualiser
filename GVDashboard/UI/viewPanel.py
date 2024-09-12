@@ -48,7 +48,7 @@ class ViewPanel(ctk.CTkFrame):
     def __hide_plots(self):
         """Hides the plot canvas. Should be called when no figures are plotted."""
         # hide canvas and toolbar
-        self.plot.pack_forget()
+        self.canvas_frame.pack_forget()
         self.toolbar.pack_forget()
         self.hidden = True
 
@@ -62,26 +62,24 @@ class ViewPanel(ctk.CTkFrame):
         self.toolbar.pack(side="top",fill="x")
         self.toolbar.update()
         self.canvas_frame.pack(side="top", fill="both", expand=True)
-        self.plot.pack(side="top")
+        self.plot.pack(side="top", fill='x', expand='true')
         self.hidden = False
 
     def make_plot(self, views:list[ViewInfo_base])->FigCanvas:
 
         # Scale figure based on window size
-        plot_hight, plot_width = self.view_plotter.plot_figure(views,
-                                                   size=[self.plot.winfo_height(),self.plot.winfo_width()],
+        plot_width, plot_hight = self.view_plotter.plot_figure(views,
+                                                   size=tuple([self.winfo_width(), 0]),
                                                    can_expand = [False, True])
 
+        print(f"final {plot_width} and {plot_hight}")
         if plot_hight != 0:
-            if self.hidden: self.__show_plots()
-            #self.plot.configure(height=plot_hight)
+            self.plot.configure(height=plot_hight)
             self.canvas.draw()
+            if self.hidden: self.__show_plots()
         elif plot_hight == 0 and not self.hidden:
             self.__hide_plots()
-            return
-
-           
-    
+            return    
 
         #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)
         return self.canvas

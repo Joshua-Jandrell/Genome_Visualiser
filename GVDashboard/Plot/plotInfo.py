@@ -42,6 +42,7 @@ class ViewPlotter:
         view_sets = get_view_sets(views)
 
         width, hight = plot_sets(view_sets, self.fig, size=size, can_expand = can_expand)
+        print(f"h: {hight}")
         return width, hight
 
 

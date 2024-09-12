@@ -16,6 +16,10 @@ from matplotlib.gridspec import GridSpec as GridSpec
 
 from .viewInfo import ViewInfo_base
 GRID_TYPE_KEY = "Var-Grid"
+MIN_BLOCKS_PER_COL = 20
+"""The Minimum number of blocks allowed per column.\n
+If the number of blocks is smaller than this then a larger block size is used.
+"""
 # Plotter for zygosity view
 class ZygoteView(ViewInfo_base):
     MUTATION_COLORS = ["#00000000","#002164", "g", "y"]
@@ -23,7 +27,7 @@ class ZygoteView(ViewInfo_base):
         super().__init__()
         self.max_weight = 100
         self.min_block_size = 10 # the smallest blocksize acceptable
-        self.ideal_block_size = 10
+        self.ideal_block_size = 7
         self.max_block_size = 100 # The largest block size acceptable 
         self.ideal_hight = 8
         self.colors = colors.ListedColormap(self.MUTATION_COLORS)
@@ -46,7 +50,11 @@ class ZygoteView(ViewInfo_base):
         #key_axis = fig.add_subplot(gs[gs_pos], sharex = ref_x)
         wrapped_data = self.dataset_info.get_data_wrapper()
         p = axis.pcolorfast(np.matrix(wrapped_data.get_zygosity()), cmap=self.colors, vmax=2, vmin=-1)
-        axis.set_xlim(0,20)
+
+        # Find x limit based on block size:
+        x_lim = int(np.round(size[0]/self.ideal_block_size))
+        print(x_lim)
+        axis.set_xlim(0,x_lim)
         if key_ax is not None:
             self.make_key(key_ax)
 

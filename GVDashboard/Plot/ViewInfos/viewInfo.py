@@ -50,7 +50,7 @@ class ViewInfo_base:
         """
         Returns the the hight, in pixes, that the given plot will ideally occupy.
         """
-        return [200]
+        return [500]
     
     def make_plots(self,axs:list[Axes],show_x:bool,show_y:bool)->str:
         """
@@ -166,7 +166,7 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tu
 
     # Get length and ratios of view sets
     fig_hight, ratios = length_and_ratios(fig_hights)
-    fig_width = size[1]
+    fig_width = size[0]
 
     # Create a gridspec to manage all figure set subplots
     nrows = len(view_sets)
@@ -178,6 +178,7 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tu
         # Make axis for view set 
         ax = fig.add_subplot(gs[i])
         view_set.plot(ax, size=size)
+        print(f"Size here {size}")
 
-    return fig_hight, fig_width
+    return fig_width, fig_hight
     
