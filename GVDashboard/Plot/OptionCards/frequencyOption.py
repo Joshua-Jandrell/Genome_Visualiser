@@ -37,13 +37,12 @@ class FreqOptionCard(PlotOptionCard):
         """Private method called when the value of the counts toggle is updated."""
         assert(isinstance(self.value, FrequencyView)) # Ensure that view info is of type frequency view
         if value == self.COUNTS_VALUE:
-           self.value.plot_density == False 
-           print("Plot counts")
-            ### TODO: Add code to update view info here
+           self.value.set_should_plot_density(False)           
         elif value == self.DENSITY_VALUE:
-            ### TODO: Figure out why density isn't called
-            self.value.plot_density == True
-            print("Plot densities")
+            self.value.set_should_plot_density(True)
+
+        # Invoke update event 
+        self.update_event.invoke(self)
         
         
 

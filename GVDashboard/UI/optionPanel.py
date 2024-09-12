@@ -26,6 +26,13 @@ class OptionCard(ctk.CTkFrame):
 
         # Even that can be be called whenever the option card or its value are updated
         self.update_event = Event()
+        """
+        Event that can be be called whenever the option card or its value are updated and should be re-plotted.\n
+        Call event using:
+        ```python
+        self.update_event.invoke(self)
+        ```
+        """
 
         # Create panels and buttons
         self.remove_button = ctk.CTkButton(self,text="x", command=self.deselect, width=self.BUTTON_W, height=self.BUTTON_H)
