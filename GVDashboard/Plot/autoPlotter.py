@@ -2,7 +2,8 @@
 
 from VCF.globalDatasetManger import GlobalDatasetManager
 from UI.viewPanel import ViewPanel
-from Plot.plotInfo import DataSetInfo, ZygoteView, RefView, ViewInfo_base
+from Plot.plotInfo import DataSetInfo, ViewInfo_base
+from Plot.ViewInfos import ZygoteView, RefView
 from Plot.plotSelect import PlotOptionPanel, PlotOptionCard, ZYGOSITY_OPT
 
 CLEAR_ON_DATASET_DELETE = True # If set to true the figure will be completely cleared if no datasets are available 

@@ -72,8 +72,10 @@ class ViewPanel(ctk.CTkFrame):
 
         if plot_good:
             if self.hidden: self.__show_plots()
+            self.plot.update()
             self.canvas.draw()
             self.toolbar.update()
+            print("draw")
         elif not plot_good and not self.hidden:
             self.__hide_plots()
             return

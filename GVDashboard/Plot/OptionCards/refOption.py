@@ -1,5 +1,5 @@
 from Plot.OptionCards import PlotOptionCard, PlotOptionCtrl, OptionCard
-from Plot.plotInfo import RefView
+from Plot.ViewInfos import RefView
 from typing import Tuple
 
 class RefOptionCard(PlotOptionCard):
