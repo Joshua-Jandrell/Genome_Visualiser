@@ -86,12 +86,12 @@ class ZygoteView(ViewInfo_base):
         # Find x limit based on block size:
         x_lim = int(np.round(size[0]/self.ideal_block_size))
         self.active_axis.set_xlim(0,x_lim)
+
+    def has_key(self)->bool:
+        return True
     
     def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
-            
-            divider = make_axes_locatable(key_ax)
-            key = divider.append_axes('right', size='5%', pad=0.05)
-            
+                      
             key_txt = [["   ","No Mutation (ref)"],
                 ["   ", "Heterozygous (alt)"],
                 ["   ", "Homozygous (alt)"],

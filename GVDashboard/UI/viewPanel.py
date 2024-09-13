@@ -6,9 +6,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavToolbar
 
 from matplotlib.figure import Figure 
+from matplotlib.gridspec import GridSpec as GridSpec
 
 from Plot.plotInfo import ViewPlotter, ViewInfo_base
 from VCF.dataSetConfig import DataSetConfig
+from Plot.keyCanvas import KeyCanvas
 
 
 class ViewPanel(ctk.CTkFrame):
@@ -76,6 +78,10 @@ class ViewPanel(ctk.CTkFrame):
             self.plot.configure(height=plot_hight)
             self.canvas.draw()
             if self.hidden: self.__show_plots()
+
+            # Plot keys if possible
+            make_keys(views=views)
+                
         elif plot_hight == 0 and not self.hidden:
             self.__hide_plots()
             return    
@@ -83,3 +89,24 @@ class ViewPanel(ctk.CTkFrame):
         #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)
         return self.canvas
 
+def make_keys(views:list[ViewInfo_base]):
+    key_fig = KeyCanvas.get_figure()
+    if not isinstance(key_fig, Figure): return
+    
+    # Find the number keys that need to be plotted
+    key_count = sum([view.has_key() for view in views])
+    if key_count == 0:
+        KeyCanvas.hide_canvas()
+        return
+    
+    # Make a gridspec for all keys
+    gs = GridSpec(nrows=key_count, ncols=1)
+    
+    fig = KeyCanvas.get_figure()
+    if not isinstance(fig, Figure): return
+
+    for i, view in enumerate(views):
+        ax = fig.add_subplot(gs[i])
+        view.make_key(ax,(0,0))
+
+    KeyCanvas.show_canvas()
