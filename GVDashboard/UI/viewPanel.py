@@ -92,6 +92,7 @@ class ViewPanel(ctk.CTkFrame):
 def make_keys(views:list[ViewInfo_base]):
     key_fig = KeyCanvas.get_figure()
     if not isinstance(key_fig, Figure): return
+    key_fig.clear()
     
     # Find the number keys that need to be plotted
     key_count = sum([view.has_key() for view in views])
@@ -101,12 +102,9 @@ def make_keys(views:list[ViewInfo_base]):
     
     # Make a gridspec for all keys
     gs = GridSpec(nrows=key_count, ncols=1)
-    
-    fig = KeyCanvas.get_figure()
-    if not isinstance(fig, Figure): return
 
     for i, view in enumerate(views):
-        ax = fig.add_subplot(gs[i])
+        ax = key_fig.add_subplot(gs[i])
         view.make_key(ax,(0,0))
 
     KeyCanvas.show_canvas()

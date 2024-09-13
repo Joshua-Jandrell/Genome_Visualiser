@@ -26,7 +26,8 @@ class ViewInfo_base:
         self.link_to_prev = True # Link the 'long' axis of this plot to the plot that came before it.
         self.link_to_next = True # Link the 'long' axis of this plot to the next plot
         self._has_key = False
-        self.type_key = BASE_TYPE_KEY
+        self._view_type = BASE_TYPE_KEY
+        """Defines what type of views this view can be combined with."""
 
         self.key_row_size = 12
         """The type key is used to link like views."""
@@ -81,9 +82,12 @@ class ViewInfo_base:
         return self.dataset_info is not None and self.dataset_info.get_data_wrapper() is not None
     def can_link(self, other):
         """Returns `True` if two view infos are compatible to be linked."""
-        return self.type_key == other.type_key
+        return self._view_type == other._view_type
     def has_key(self)->bool:
         return self._has_key
+    
+    def get_view_type(self):
+        return self._view_type
     
 ############################################################################################################
 
@@ -116,7 +120,7 @@ class viewSetManager:
         if not self.is_linked:
             #Link first view into view set.
             #self.ax =ax
-            self.type_key = view_info.type_key
+            self.view_type = view_info.get_view_type
             self.base_info = view_info
             self.is_linked = True
             view_info.pos_in_set = 0
@@ -124,7 +128,7 @@ class viewSetManager:
             return True
 
         # The base type view is not compatible, event with itself, by default.
-        if self.type_key == BASE_TYPE_KEY or not view_info.can_link(self.base_info): return False
+        if self.view_type == BASE_TYPE_KEY or not view_info.can_link(self.base_info): return False
 
         # Updated last view 
         view_info.pos_in_set = len(self.views)
@@ -152,8 +156,8 @@ class viewSetManager:
             axs =[] 
             axs.clear()
             for _ in range(view.get_plot_count()):
-                bottom = bounds[bound_index]
-                top = bounds[bound_index+1]
+                bottom = 1-bounds[bound_index+1]
+                top = 1-bounds[bound_index]
                 axs.append(ax.inset_axes([0,bottom,1,top-bottom],sharex=ax))
                 bound_index += 1  
             view.make_plots(axs=axs, size=size)
