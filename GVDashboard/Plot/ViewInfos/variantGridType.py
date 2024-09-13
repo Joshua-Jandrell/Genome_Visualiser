@@ -3,8 +3,10 @@ Variant grid type views are views with samples on the first axis and variants on
 These view types are compatible with one another and can be set to share axes for each variant.\n
 TODO: The views will need to be able to change orientation and axis sharing.
 """
+from typing import Literal
 import numpy as np
 import matplotlib as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 import VCF.dataWrapper as dw
@@ -20,6 +22,11 @@ MIN_BLOCKS_PER_COL = 20
 """The Minimum number of blocks allowed per column.\n
 If the number of blocks is smaller than this then a larger block size is used.
 """
+class GridParams():
+    """
+    Simple static class that contains genal grid-based parameters.
+    """
+
 # Plotter for zygosity view
 class ZygoteView(ViewInfo_base):
     MUTATION_COLORS = ["#00000000","#002164", "g", "y"]
@@ -35,31 +42,56 @@ class ZygoteView(ViewInfo_base):
 
         self.type_key = GRID_TYPE_KEY
         self._has_key = True
+
+        self.active_axis = None
     
     def get_desired_size(self) -> list[int]:
         wrapped_data = self.dataset_info.get_data_wrapper()
         return [self.ideal_block_size * wrapped_data.n_samples]
+
         
     def get_height_weights(self) -> list[int]:
         wrapped_data = self.dataset_info.get_data_wrapper()
         return [min(wrapped_data.n_samples,self.max_weight)]
     
-    def make_plots(self,axs:list[Axes],size:tuple[int,int],key_ax:Axes|None = None)->str:
-        #axis =fig.add_axes([0.1,0.1,0.9,0.9])
+    def make_plots(self,axs:list[Axes],size:tuple[int,int], label:Literal["top", "bottom", "left", "right"]="none")->str:
         axis = axs[0]
-        #key_axis = fig.add_subplot(gs[gs_pos], sharex = ref_x)
+        self.active_axis = axis
+        # Get wrapped data and make the plot
         wrapped_data = self.dataset_info.get_data_wrapper()
-        p = axis.pcolorfast(np.matrix(wrapped_data.get_zygosity()), cmap=self.colors, vmax=2, vmin=-1)
+        axis.pcolorfast(np.matrix(wrapped_data.get_zygosity()), cmap=self.colors, vmax=2, vmin=-1)
+        #axis.matshow(wrapped_data.get_zygosity(), cmap=self.colors, vmax=2, vmin=-1)
 
+        if self.pos_in_set == 0:
+            self.fit_to_size(size=size)
+
+        # Clear ticks from x axis
+        axis.set_xticks([])
+
+        # Add tick to y-axis only if scaling permits TODO: Implement this 
+        axis.set_yticks([])
+
+        # Set x label
+        if "top" in label or "bottom" in label:
+            axis.set_xlabel("Variant")
+
+        # Set y label
+        if "left" in label or "right" in label:
+            axis.set_ylabel("Sample")
+
+        return ""
+    
+    def fit_to_size(self,size:tuple[int,int]):
+        if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:
         x_lim = int(np.round(size[0]/self.ideal_block_size))
-        axis.set_xlim(0,x_lim)
-        if key_ax is not None:
-            self.make_key(key_ax)
-
-        return axis
+        self.active_axis.set_xlim(0,x_lim)
     
-    def make_key(self,key_ax:Axes)->Axes:
+    def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
+            
+            divider = make_axes_locatable(key_ax)
+            key = divider.append_axes('right', size='5%', pad=0.05)
+            
             key_txt = [["   ","No Mutation (ref)"],
                 ["   ", "Heterozygous (alt)"],
                 ["   ", "Homozygous (alt)"],

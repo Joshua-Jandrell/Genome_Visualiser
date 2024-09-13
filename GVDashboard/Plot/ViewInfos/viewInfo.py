@@ -27,7 +27,14 @@ class ViewInfo_base:
         self.link_to_next = True # Link the 'long' axis of this plot to the next plot
         self._has_key = False
         self.type_key = BASE_TYPE_KEY
+
+        self.key_row_size = 12
         """The type key is used to link like views."""
+
+        self.pos_in_set = -1 
+        """The position of te plot in the set."""
+
+        self.last_in_set = False
         # Set a default dataset for the view
         
     def set_data(self, dataset_info:DataSetInfo):
@@ -46,17 +53,27 @@ class ViewInfo_base:
     def get_height_weights(self)->list[int]:
         return [1]
     
+    def get_key_size(self)->int:
+        return 4 * self.key_row_size
+    
     def get_desired_size(self)->list[int]:
         """
         Returns the the hight, in pixes, that the given plot will ideally occupy.
         """
         return [500]
     
-    def make_plots(self,axs:list[Axes],show_x:bool,show_y:bool)->str:
+    def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         """
         Method used to plot the data on a figure\n
         Returns the axis used for plotting and a log-string containing any errors or notes\n
         NOTE: This function must be overridden, only then can the `ViewInfo_base` class is implemented.
+        """
+        pass
+    def make_key(self, axs, size):
+        pass
+    def fit_to_size(self,size:tuple[int,int]):
+        """
+        Scale the view to comfortably fit into the given size.
         """
         pass
     def can_plot(self)->bool:
@@ -102,12 +119,17 @@ class viewSetManager:
             self.type_key = view_info.type_key
             self.base_info = view_info
             self.is_linked = True
+            view_info.pos_in_set = 0
             self.views.append(view_info)
             return True
 
         # The base type view is not compatible, event with itself, by default.
         if self.type_key == BASE_TYPE_KEY or not view_info.can_link(self.base_info): return False
 
+        # Updated last view 
+        view_info.pos_in_set = len(self.views)
+        self.views[-1].last_in_set = False
+        view_info.last_in_set = True
         self.views.append(view_info)
 
         return True
@@ -134,7 +156,7 @@ class viewSetManager:
                 top = bounds[bound_index+1]
                 axs.append(ax.inset_axes([0,bottom,1,top-bottom],sharex=ax))
                 bound_index += 1  
-            view.make_plots(axs, size)
+            view.make_plots(axs=axs, size=size)
 
 def get_view_sets(view_infos:ViewInfo_base)->list[viewSetManager]:
     """Iterate through a list of view infos and return a list of view set managers for those views"""
@@ -185,7 +207,7 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tu
     for i, view_set in enumerate(view_sets):
         # Make axis for view set 
         ax = fig.add_subplot(gs[i])
-        view_set.plot(ax, size=size)
+        view_set.plot(ax=ax, size=size)
 
     return fig_width, fig_hight
 

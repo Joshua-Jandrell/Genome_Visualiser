@@ -41,7 +41,7 @@ class ViewPlotter:
         # group views into a collection of view sets
         view_sets = get_view_sets(views)
 
-        width, hight = plot_sets(view_sets, self.fig, size=size, can_expand = can_expand)
+        width, hight = plot_sets(view_sets, self.fig, size=size, can_expand=can_expand,)
         return width, hight
 
 
