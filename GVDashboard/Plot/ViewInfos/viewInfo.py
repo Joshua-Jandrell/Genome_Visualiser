@@ -72,7 +72,10 @@ class ViewInfo_base:
 
 class viewSetManager:
     """Class used to store information about a group of linked (or similar) views."""
-
+    TOP_PADDING = 50
+    BOTTOM_PADDING = 20
+    LEFT_PADDING = 30
+    RIGHT_PADDING = 20
   
     def __init__(self,stack=True, view_info:ViewInfo_base|None = None) -> None:
         """
@@ -164,9 +167,14 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tu
     for view_set in view_sets:
         fig_hights.append(view_set.get_desired_hight())
 
+    fig_widths = [size[0]]
+
     # Get length and ratios of view sets
-    fig_hight, ratios = length_and_ratios(fig_hights)
-    fig_width = size[0]
+    fig_hight, h_ratios = length_and_ratios([viewSetManager.TOP_PADDING]+fig_hights+[viewSetManager.BOTTOM_PADDING])
+    fig_width, w_ratios = length_and_ratios([viewSetManager.LEFT_PADDING]+fig_widths+[viewSetManager.RIGHT_PADDING])
+
+    # Scale figure side padding
+    fig.subplots_adjust(left=w_ratios[0], right=1-w_ratios[-1], top=1-h_ratios[0], bottom=h_ratios[-1])
 
     # Create a gridspec to manage all figure set subplots
     nrows = len(view_sets)
@@ -178,7 +186,11 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tu
         # Make axis for view set 
         ax = fig.add_subplot(gs[i])
         view_set.plot(ax, size=size)
-        print(f"Size here {size}")
 
     return fig_width, fig_hight
+
+
+#def scale_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tuple([0,0]), can_expand=tuple([False, False])):
+    """Function used to update the scale of a list of view sets without re-plotting"""
+
     

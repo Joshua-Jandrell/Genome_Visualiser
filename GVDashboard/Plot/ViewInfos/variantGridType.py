@@ -53,7 +53,6 @@ class ZygoteView(ViewInfo_base):
 
         # Find x limit based on block size:
         x_lim = int(np.round(size[0]/self.ideal_block_size))
-        print(x_lim)
         axis.set_xlim(0,x_lim)
         if key_ax is not None:
             self.make_key(key_ax)

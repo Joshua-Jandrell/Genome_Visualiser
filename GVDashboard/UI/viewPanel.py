@@ -72,7 +72,6 @@ class ViewPanel(ctk.CTkFrame):
                                                    size=tuple([self.winfo_width(), 0]),
                                                    can_expand = [False, True])
 
-        print(f"final {plot_width} and {plot_hight}")
         if plot_hight != 0:
             self.plot.configure(height=plot_hight)
             self.canvas.draw()
