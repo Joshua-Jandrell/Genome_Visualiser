@@ -30,6 +30,7 @@ class DataSetInfo:
         self.save_path = save_path
         self.__name = None # Must set name to None here so that set name can use this variable 
         # If a path was given, use this to name the dataset 
+        self.dw = None
         if name is None:
             if source_path is not None:
                 name = path.basename(source_path)
@@ -91,7 +92,9 @@ class DataSetInfo:
     
     def get_data_wrapper(self)->DataWrapper:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
-        return DataFetcher.load_data(self.get_source_path())
+        if self.dw is None:
+            self.dw = DataFetcher.load_data(self.get_source_path())
+        return self.dw
     
         
 
