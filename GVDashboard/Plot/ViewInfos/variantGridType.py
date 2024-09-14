@@ -36,6 +36,10 @@ class VariantGrindType(ViewInfo_base):
         self.active_axis = None
         self._view_type = GRID_TYPE_KEY
 
+        # Key formats
+        self.key_row_hight = 0.07
+        self.key_column_width = 0.6
+
     def fit_to_size(self,size:tuple[int,int]):
         if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:

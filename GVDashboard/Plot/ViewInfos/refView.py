@@ -87,18 +87,25 @@ class RefView(VariantGrindType):
         return self.annotated and wrapped_data.get_alt().shape[1] < self.ANNOTATION_MAX
     
     def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
-            pass
             key_txt = [["   ","A"],
+                ["   ", "C"],
                 ["   ", "G"],
-                ["   ", "Homozygous (alt)"],
-                ["   ", ""]]
+                ["   ", "T"],
+                ["   ", "Multiple"],
+                ["   ", "Deletion"],
+                ["   ", "None"]]
             key_colors = [[self.ALLELE_COLORS[2], "#00000000"],
                           [self.ALLELE_COLORS[3], "#00000000"],
                           [self.ALLELE_COLORS[4], "#00000000"],
-                          [self.ALLELE_COLORS[5], "#00000000"]]
-            tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center")
-            tab.auto_set_font_size([False, False])
-            tab.auto_set_column_width([0, 1])
+                          [self.ALLELE_COLORS[5], "#00000000"],
+                          [self.ALLELE_COLORS[1], "#00000000"],
+                          [self.ALLELE_COLORS[1], "#00000000"],
+                          [self.ALLELE_COLORS[0], "#00000000"]]
+            tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_row_hight, self.key_column_width])
+            #tab.auto_set_font_size([False, False])
+            cellDict=tab.get_celld()
+
+            #tab.auto_set_column_width([0, 1])
             key_ax.set_xticklabels([])
             key_ax.set_yticklabels([])
             key_ax.set_xlabel("")

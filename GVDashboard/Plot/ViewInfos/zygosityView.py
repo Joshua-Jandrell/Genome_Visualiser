@@ -83,11 +83,7 @@ class ZygoteView(VariantGrindType):
                           [self.MUTATION_COLORS[2], "#00000000"],
                           [self.MUTATION_COLORS[3], "#00000000"],
                           [self.MUTATION_COLORS[0], "#00000000"]]
-            tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center")
-            tab.auto_set_font_size([False, False])
-            tab.auto_set_column_width([0, 1])
-            key_ax.set_xticklabels([])
-            key_ax.set_yticklabels([])
-            key_ax.set_xlabel("")
-            key_ax.set_ylabel("")
+            tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_row_hight, self.key_column_width])
+            # tab.auto_set_font_size([False, False])
+            # tab.auto_set_column_width([0, 1])
             key_ax.axis('off')
