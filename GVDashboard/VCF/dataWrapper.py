@@ -113,7 +113,7 @@ class VcfDataWrapper:
     
     def get_file_pos_range(self):
         """Returns max possible range of genome sequence positons."""
-        self.df = self.df.sort_values(by=[POS], ascending=True)
+        self.df = self.df.sort_values(by=["POS"], ascending=True)   ### All the 'by=...' stuuf needs: ""
         
         min_pos = self.df[POS].iloc[[0]]
         max_pos = self.df[POS].iloc[[-1]]
@@ -220,7 +220,7 @@ def select_by_qual(df: DataFrame, first, last)-> DataFrame:
     return df[df[QUAL].between(first, last, inclusive = 'both')]
 
 def sort_qual(df:DataFrame):
-    return df.sort_values(by=[QUAL], descending=True)
+    return df.sort_values(by=["QUAL"], descending=True)
 
 def sort_popualtion(df:DataFrame):
-    return df.sort_values(by=[SAMPLES], ascending=True)
+    return df.sort_values(by=['samples'], ascending=True)

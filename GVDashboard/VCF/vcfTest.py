@@ -14,14 +14,19 @@ if __name__ == "__main__":
     # Get data somehow....  <<< gets .vcf file dictionary keys, from TEST _FILE 
     dict_data = getData()
     
+    print(dict_data)
+    
     # Make data into a (pandas?) dataframe
     df = al.vcf_to_dataframe(TEST_FILE)
 
+    print("\n\n\n",df)
+    
     # Construct a search query based on dataframe
     bool_search = (df["QUAL"].between(30, 35, inclusive = 'both'))
     # This search can be chained (useful)
     bool_search = bool_search &(df["POS"]<15000)
 
+    print("\nposis:\n",df["POS"][-1:])
     # Then get a new dataframe by indexing useing the bool search
     new_df = df[bool_search]
 
