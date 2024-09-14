@@ -91,6 +91,7 @@ class App(ctk.CTk):
             # self.main_frame.pack_forget()
             # self.main_frame.destroy()
             # self.main_frame = None
+            ViewPanel.set_active(False)
             AutoPlotter.set_active(False)
             self.destroy()
 

@@ -12,12 +12,15 @@ from Plot.plotInfo import ViewPlotter, ViewInfo_base
 from VCF.dataSetConfig import DataSetConfig
 from Plot.keyCanvas import KeyCanvas
 
-
 class ViewPanel(ctk.CTkFrame):
     __instance = None
+    __active = True
+
+    def set_active(active:bool):
+        ViewPanel.__active = active
 
     def set_plots(views:list[ViewInfo_base]):
-        if isinstance(ViewPanel.__instance, ViewPanel):
+        if ViewPanel.__active and isinstance(ViewPanel.__instance, ViewPanel):
             ViewPanel.__instance.make_plot(views=views)
 
     def __init__(self, master):
@@ -37,6 +40,11 @@ class ViewPanel(ctk.CTkFrame):
         self.view_plotter = ViewPlotter(self.fig)
         self.toolbar = NavToolbar(window=self,canvas=self.canvas)
         self.plot = self.canvas.get_tk_widget()
+
+        test = ctk.CTkSlider(self.plot,orientation="horizontal", height=20)
+        test.place(relx=0.5, y=2,relwidth=1,anchor="n")  
+
+        self.test_scroll = test    
 
 
         # Create button to let users quickly select datasets
@@ -77,7 +85,11 @@ class ViewPanel(ctk.CTkFrame):
         if plot_hight != 0:
             self.plot.configure(height=plot_hight)
             self.canvas.draw()
+            A.c = self.canvas
             if self.hidden: self.__show_plots()
+
+            # Add scroll bars if required
+            make_scrolls(views=views, scroll_bar=self.test_scroll)
 
             # Plot keys if possible
             make_keys(views=views)
@@ -102,9 +114,26 @@ def make_keys(views:list[ViewInfo_base]):
     
     # Make a gridspec for all keys
     gs = GridSpec(nrows=key_count, ncols=1)
-
     for i, view in enumerate(views):
         ax = key_fig.add_subplot(gs[i])
         view.make_key(ax,(0,0))
 
     KeyCanvas.show_canvas()
+
+def make_scrolls(views:list[ViewInfo_base], scroll_bar:ctk.CTkSlider):
+    # Find the list of views that require scroll bars
+    x_scroll_views = [view for view in views if view.should_add_x_scroll()]
+
+    print(x_scroll_views)
+    A.a = x_scroll_views[0]
+    min, max, window = x_scroll_views[0].get_x_scroll_params()
+    #scroll_bar.configure(command=A.test_scroll)
+    scroll_bar._button_length = 20
+    scroll_bar.configure(command = A.test_scroll, from_ = min, to = max-window)
+
+class A:
+    a:ViewInfo_base
+    c:FigCanvas
+    def test_scroll(val):
+        A.a.scroll_x(val)
+        A.c.draw()

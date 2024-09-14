@@ -9,6 +9,8 @@ from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 from matplotlib.widgets import Slider, Button, RadioButtons
 
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 from VCF.filterInfo import DataSetInfo
 def inch_to_cm(inches:float)->float:
     """Converts inches to centimeters"""
@@ -88,6 +90,22 @@ class ViewInfo_base:
     
     def get_view_type(self):
         return self._view_type
+    
+    # Scrolling information 
+    def should_add_x_scroll(self)->bool:
+        """Returns true if the graph requires a scroll bar in the x direction."""
+        return False
+    
+    def get_x_scroll_params(self)->tuple[float, float, float]:
+        """Returns a tuple of min value, max value and widow size."""
+        return 0,0,0
+    
+    def scroll_x(self, x_pos:float):
+        """
+        Scrolls the views left most point to the given x position.\n
+        MUST be overridden for functionality 
+        """
+        pass
     
 ############################################################################################################
 
@@ -214,6 +232,7 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tu
         view_set.plot(ax=ax, size=size)
 
     return fig_width, fig_hight
+
 
 
 #def scale_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tuple([0,0]), can_expand=tuple([False, False])):

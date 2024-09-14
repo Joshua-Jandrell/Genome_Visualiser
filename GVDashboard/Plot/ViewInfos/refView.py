@@ -6,7 +6,6 @@ TODO: The views will need to be able to change orientation and axis sharing.
 from typing import Literal
 import numpy as np
 import matplotlib as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 import VCF.dataWrapper as dw
@@ -15,6 +14,8 @@ from matplotlib.figure import Figure as Figure
 from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
+from matplotlib.widgets import Slider
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from .viewInfo import ViewInfo_base
 from .variantGridType import GRID_TYPE_KEY, GridParams, VariantGrindType
@@ -38,6 +39,8 @@ class RefView(VariantGrindType):
 
         self._has_key = True
         self._view_type = GRID_TYPE_KEY
+
+        self.h_slider = None
     def get_desired_size(self) -> list[int]:
         l = [self.ideal_block_size]
         if self.plot_alt:
@@ -102,8 +105,6 @@ class RefView(VariantGrindType):
                           [self.ALLELE_COLORS[1], "#00000000"],
                           [self.ALLELE_COLORS[0], "#00000000"]]
             tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_row_hight, self.key_column_width])
-            #tab.auto_set_font_size([False, False])
-            cellDict=tab.get_celld()
 
             #tab.auto_set_column_width([0, 1])
             key_ax.set_xticklabels([])

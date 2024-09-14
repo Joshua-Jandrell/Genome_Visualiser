@@ -27,7 +27,6 @@ class ZygoteView(VariantGrindType):
         self.max_weight = 100
         self.min_block_size = 10 # the smallest blocksize acceptable
         self.max_block_size = 100 # The largest block size acceptable 
-        self.ideal_hight = 8
         self.colors = colors.ListedColormap(self.MUTATION_COLORS)
         self.min_block_size = 0.25
 
