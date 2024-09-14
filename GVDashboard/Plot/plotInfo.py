@@ -111,7 +111,6 @@ class ViewPlotter:
 
 
 # ========================================================================
-# Plotter for zygosity view
 class ZygoteView(ViewInfo_base):
     MUTATION_COLORS = ["#00000000","#002164", "g", "y"]
     def __init__(self) -> None:
@@ -157,6 +156,7 @@ class ZygoteView(ViewInfo_base):
             key_ax.set_ylabel("")
             key_ax.axis('off')
 
+# ========================================================================
 class RefView(ViewInfo_base):
     REF_LABEL = "Ref."
     ALT_LABEL = "Alt."
@@ -214,12 +214,10 @@ class RefView(ViewInfo_base):
     def should_annotate(self,wrapped_data:DataWrapper)->bool:
         return self.annotated and wrapped_data.get_alt().shape[1] < self.ANNOTATION_MAX
 
-
 # ========================================================================
-#TODO: Plotter for frequency view
 class FrequencyView(ViewInfo_base):
     def __init__(self) -> None:
-        self.min_window = 750     ##make function to get window size
+        self.min_window = 750     ##TODO: make function to get window size
         self.plot_density = False
         super().__init__()
     

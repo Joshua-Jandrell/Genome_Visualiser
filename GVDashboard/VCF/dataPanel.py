@@ -21,6 +21,7 @@ class DataPanel(ctk.CTkFrame):
         # Create top label
         self.make_title()
         self.make_add_button()
+        
         # Create content 
         self.content = OptionList(self, False)
 
@@ -61,7 +62,6 @@ class DataPanel(ctk.CTkFrame):
         # Add all new datasets to dataset options list
         [self.data_opt_ctl.register_dataset(dataset) for dataset in all_datasets if dataset not in current_datasets]
             
-
     def destroy(self):
         # Unsubscribe from global dataset event
         GlobalDatasetManager.remove_listener(self.__on_global_data_update)
@@ -70,6 +70,62 @@ class DataPanel(ctk.CTkFrame):
         self.content.deselect_all()
         GlobalDatasetManager.reconfigure(datasets = [])
         return super().destroy()
+
+#DataOptionCard:                #### Currently:: Initialises and says hi :)
+class DataOptionCard(OptionCard):
+    """
+    Special instance of option card used to make plots. Contains useful methods for constructing common plot option widgets.\n
+    The `self.value` field of a plot option card should alway inherit from `ViewInfo_base` so that it can be used to plot views.
+    """
+    def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+        super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
+
+        # Set default width of menu buttons
+        self.MENU_W = 125
+ 
+        ###
+        #Add range selection functions from DataWrapper here
+        ###
+            
+            #From, file: plotCard.py --> class: PlotOptionCard 
+            # def set_value(self, value):
+            #     """Override of set value method. Value must inherit for `ViewInfo_base`."""
+            #     super().set_value(value)
+            #     # update data to register on new plot info
+            #     assert(isinstance(value,ViewInfo_base))
+            #     self.__on_dataset_update(value)
+
+        # So you can add any number of tkinter or custom tkinter elements to the card.  <<< That's pretty cool!!
+        # Used `self.content` as the master (root) for all elements you add (this way you won't need to worry about the card label)  <<< A... content creator?!??!!? 
+    
+    ############### JOSH'S  CODE :: (look out below):: 
+        # For example here is a simple button:
+        random_button = ctk.CTkButton(master=self.content, # Note that master is content.
+                                      text="Cool button",  # This text will display on the button
+                                      command=self.say_hi) # The command is a function that is called when the button is pressed
+                                                           # NOTE this function will not work until say hi is implemented 
+       
+        # NB once an element is made it must be packed/placed in the content panel:
+        random_button.grid(row=1, column=0, columnspan=2, padx=10, pady=10) # The button will be in the 2nd row and span two columns
+
+        self.text_var = ctk.StringVar(value="words") # A custom tkinter variable that can be linked to a UI input element 
+        self.text_input = ctk.CTkEntry(self.content,textvariable=self.text_var)
+        self.text_input.grid(row=0, column=1, columnspan=1, padx=10, pady=10) 
+    
+                
+    def say_hi(self):
+        text_val = self.text_var.get() # Can get value form text variable 
+        text_val2 = self.text_input.get() # Can also get value directly from tet input 
+        print(f"Hi {text_val} and {text_val2}")
+
+        self.text_var.set("Noice") # can also set value of variable to change the text which is displayed 
+
+        # In this case the `self.value` variable will be a data info (which hold a reference to a datawrapper)
+        assert(isinstance(self.value, DataSetInfo))
+        dw = self.value.get_data_wrapper() # NB please PULL from git to get this to work without loading a new datawrapper each time
+        # now, for example, you could use that number extracting code to get numeric values form textbox input...
+                   
+
 
 # Class used to create dataset option panels
 class DataOptionCtrl(OptionCtrl):
@@ -84,15 +140,16 @@ class DataOptionCtrl(OptionCtrl):
         self.dataset_info = dataset_info
         if add_set:
             self.select()
-
+            
     def make_option_card(self) -> OptionCard:
-        # NOTE: This method is called whenever a dataset is register. DO NOT register dataset here.
+        # NOTE: This method is called whenever a dataset is registered. DO NOT register dataset here.
 
         assert(isinstance(self.dataset_info,DataSetInfo)) # Option should never be selected when info is not set
-        op = super().make_option_card()
+        op = DataOptionCard(self.option_list, self, self.key)
+        # op = DatasetOptionCard(self.option_list, self, "eee")  <<< For error checking I'm guessing
         op.reconfigure_option(option_key=self.dataset_info.get_dataset_name(), option_value=self.dataset_info)
 
-        # Clear reference to dataset info to ensure that config always occurs
+        # Clear reference to dataset_info to ensure that configuration always occurs
         self.dataset_info = None
 
         return op
@@ -101,3 +158,37 @@ class DataOptionCtrl(OptionCtrl):
         # Deregister option card form global manager
         GlobalDatasetManager.deregister(opt.value)
         super().deselect(opt)
+
+      ###################~~ JOSH'S CODE FOR: DataOptionCard ~~############################################
+ 
+# class DatasetOptionCard(OptionCard):   ### MUST TAKE out later
+#     "Example class - will not commit to avoid comflicts"
+    # def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    #     super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
+
+    #     # So you can add any number od tkinter or custom tkinter elements to the card.
+    #     # Used `self.content` as the master (root) for all elements you add (this way you won't need to worry about the card label)
+
+    #     # For example here is a simple button:
+    #     random_button = ctk.CTkButton(master=self.content, # Note that master is content.
+    #                                   text="Cool button",  # This text will display on the button
+    #                                   command=self.say_hi) # The command is a function that is called when the button is pressed
+    #                                                        # NOTE this function will not work until say hi is implemented 
+    #     # NB once an element is made it must be packed/placed in the content panel:
+    #     random_button.grid(row=1, column=0, columnspan=2, padx=10, pady=10) # The button will be in the 2nd row and span two columns
+
+    #     self.text_var = ctk.StringVar(value="words") # A custom tkinter variable that can be linked to a UI input element 
+    #     self.text_input = ctk.CTkEntry(self.content,textvariable=self.text_var)
+    #     self.text_input.grid(row=0, column=1, columnspan=1, padx=10, pady=10) 
+    
+    # def say_hi(self):
+    #     text_val = self.text_var.get() # Can get value form text variable 
+    #     text_val2 = self.text_input.get() # Can also get value directly from tet input 
+    #     print(f"Hi {text_val} and {text_val2}")
+
+    #     self.text_var.set("Noice") # can also set value of variable to change the text which is displayed 
+
+    #     # In this case the `self.value` variable will be a data info (which hold a reference to a datawrapper)
+    #     assert(isinstance(self.value, DataSetInfo))
+    #     dw = self.value.get_data_wrapper() # NB please PULL from git to get this to work without loading a new datawrapper each time
+    #     # now, for example, you could use that number extracting code to get numeric values form textbox input...
