@@ -17,6 +17,11 @@ from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
 from .viewInfo import ViewInfo_base
+from Util.box import Box
+
+# For scroll view 
+from Plot.scrollWidget import ScrollWidget, ScrollManager
+
 GRID_TYPE_KEY = "Var-Grid"
 MIN_BLOCKS_PER_COL = 20
 """The Minimum number of blocks allowed per column.\n
@@ -28,7 +33,7 @@ class GridParams():
     """
 
 
-class VariantGrindType(ViewInfo_base):
+class VariantGridView(ViewInfo_base):
     def __init__(self) -> None:
         super().__init__()
 
@@ -52,6 +57,16 @@ class VariantGrindType(ViewInfo_base):
         self.active_axis.set_xlim(0,x_lim)
         self._blocks_per_window_x = x_lim
 
+        self.update_event.invoke(self)
+
+    def get_set_views(self) -> list:
+        views = super().get_set_views()
+        if self.is_fist_in_set():
+            scroll_view = VariantGridScrollView()
+            scroll_view.set_target_view(self)
+            views += [scroll_view]
+        return views
+
     # Scroll configuration 
     def should_add_x_scroll(self) -> bool:
         # Should scroll if this is the first view in the set
@@ -59,15 +74,32 @@ class VariantGrindType(ViewInfo_base):
     
     def get_x_scroll_params(self) -> tuple[float, float, float]:
         wrapped_data = self.dataset_info.get_data_wrapper()
-        print("TODO: FIP+FILTER scroll system")
         return 0, wrapped_data.n_variants, self._get_scroll_window()
     
     def scroll_x(self, x_pos: float):
         if not self.should_add_x_scroll() or not isinstance(self.active_axis, Axes): return
-
         self.active_axis.set_xlim(xmin=x_pos, xmax=x_pos+self._get_scroll_window())
 
-        
-        
     def _get_scroll_window(self)->float:
         return self._blocks_per_window_x
+    
+# ============== Special views ===================================================
+
+class VariantGridScrollView(ViewInfo_base):
+    """Special view type used to allow the user to scroll on the variant grid system."""
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.scroll_size = 30
+
+    def set_target_view(self,view:VariantGridView):
+        self.target_view = view
+
+    def get_desired_size(self) -> list[int]:
+        return [self.scroll_size]
+    
+    def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:
+        ScrollManager.make_scroll(view=self.target_view, scroll_box=plot_box)
+        self.target_view = None
+        return super().make_plots(axs, size, plot_box)
+        

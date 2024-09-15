@@ -33,19 +33,12 @@ class ViewPlotter:
         # clear any existing plots on the figure
         self.fig.clear()
 
-        # Filter for only valid views
-        views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
-
-        if len(views) == 0: return 0, 0
-
         # group views into a collection of view sets
         view_sets = get_view_sets(views)
 
         width, hight = plot_sets(view_sets, self.fig, size=size, can_expand=can_expand,)
         return width, hight
 
-
-# ========================================================================
 
 
 # ========================================================================

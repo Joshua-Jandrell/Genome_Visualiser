@@ -17,10 +17,11 @@ from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
 from .viewInfo import ViewInfo_base
-from .variantGridType import GRID_TYPE_KEY, GridParams, VariantGrindType
+from .variantGridType import GRID_TYPE_KEY, GridParams, VariantGridView
+from Util.box import Box
 
 # Plotter for zygosity view
-class ZygoteView(VariantGrindType):
+class ZygoteView(VariantGridView):
     MUTATION_COLORS = ["#00000000","#002164", "g", "y"]
     def __init__(self) -> None:
         super().__init__()
@@ -36,12 +37,12 @@ class ZygoteView(VariantGrindType):
         wrapped_data = self.dataset_info.get_data_wrapper()
         return [self.ideal_block_size * wrapped_data.n_samples]
 
-        
+
     def get_height_weights(self) -> list[int]:
         wrapped_data = self.dataset_info.get_data_wrapper()
         return [min(wrapped_data.n_samples,self.max_weight)]
     
-    def make_plots(self,axs:list[Axes],size:tuple[int,int], label:Literal["top", "bottom", "left", "right"]="none")->str:
+    def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->str:
         axis = axs[0]
         self.active_axis = axis
         # Get wrapped data and make the plot

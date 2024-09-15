@@ -12,6 +12,9 @@ from matplotlib.widgets import Slider, Button, RadioButtons
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from VCF.filterInfo import DataSetInfo
+from Util.box import Box
+from Util.event import Event
+
 def inch_to_cm(inches:float)->float:
     """Converts inches to centimeters"""
     return inches * 2.54
@@ -30,6 +33,13 @@ class ViewInfo_base:
         self._has_key = False
         self._view_type = BASE_TYPE_KEY
         """Defines what type of views this view can be combined with."""
+
+        
+        self.update_event = Event()
+        """
+        Event to be called when a major update is made to a view info.\n
+        All listeners should accept view info base as their only argument.
+        """
 
         self.key_row_size = 12
         """The type key is used to link like views."""
@@ -65,7 +75,7 @@ class ViewInfo_base:
         """
         return [500]
     
-    def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
+    def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box)->str:
         """
         Method used to plot the data on a figure\n
         Returns the axis used for plotting and a log-string containing any errors or notes\n
@@ -88,8 +98,19 @@ class ViewInfo_base:
     def has_key(self)->bool:
         return self._has_key
     
+    # === Group/set type information ===
+
+    def is_fist_in_set(self):
+        return self.pos_in_set == 0
+    
     def get_view_type(self):
         return self._view_type
+    
+    def get_set_views(self)->list:
+        """
+        Returns any addtional view that may supplement this widgets group.
+        """
+        return []
     
     # Scrolling information 
     def should_add_x_scroll(self)->bool:
@@ -105,6 +126,7 @@ class ViewInfo_base:
         Scrolls the views left most point to the given x position.\n
         MUST be overridden for functionality 
         """
+        print("Warning scroll not possible")
         pass
     
 ############################################################################################################
@@ -160,25 +182,39 @@ class viewSetManager:
         """Returns the desired hight of the full view set"""
         return sum([sum(view.get_desired_size()) for view in self.views])
     
-    def plot(self, ax:Axes, size:tuple[int,int]):
+    def plot(self, ax:Axes, size:tuple[int,int], plot_box:Box):
         """Plot all views in the view set on the given axes"""
+
+        # Get addtional views from the group:
+        additional_views = []
+        for view in self.views:
+            additional_views += view.get_set_views()
+
+        _views:list[ViewInfo_base] = additional_views + self.views
         hights=[]
         ax.set_axis_off()
-        for view in self.views:
+        for view in _views:
             hights += view.get_desired_size()
         h, ratios = length_and_ratios(hights)
         bounds = np.concatenate((np.array([0]), np.cumsum(ratios)),axis=0)
 
         bound_index = 0
-        for view in self.views:
+        # Get relative box bounds
+        left_edge, top_edge = plot_box.get_top_left() # Get the top of the bounding plot box (which hold the size relative to the the full figure)
+        right_edge = plot_box.get_right()
+        for view in _views:
             axs =[] 
-            axs.clear()
+            
+            # Move top edge down as more axes are packed 
+            start_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
             for _ in range(view.get_plot_count()):
                 bottom = 1-bounds[bound_index+1]
                 top = 1-bounds[bound_index]
                 axs.append(ax.inset_axes([0,bottom,1,top-bottom],sharex=ax))
                 bound_index += 1  
-            view.make_plots(axs=axs, size=size)
+            end_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
+            
+            view.make_plots(axs=axs, size=size, plot_box=Box.from_points(top_left=(left_edge,start_bound), bottom_right=(right_edge, end_bound)))
 
 def get_view_sets(view_infos:ViewInfo_base)->list[viewSetManager]:
     """Iterate through a list of view infos and return a list of view set managers for those views"""
@@ -226,10 +262,19 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tu
     gs = GridSpec(nrows=nrows, ncols=ncols,height_ratios=fig_hights,figure=fig)
 
     # iterate through figures sets, assign each of them a subplot
+    top_edge = 1-h_ratios[0]
     for i, view_set in enumerate(view_sets):
+        x = w_ratios[0]
+        y = top_edge
+        w = w_ratios[1]
+        h = h_ratios[i+1]
+        # Shift top edge down to account for the next view
+        top_edge -= h
+        # Construct bounding box
+        box = Box(x,y,w,h)
         # Make axis for view set 
         ax = fig.add_subplot(gs[i])
-        view_set.plot(ax=ax, size=size)
+        view_set.plot(ax=ax, size=size, plot_box=box)
 
     return fig_width, fig_hight
 

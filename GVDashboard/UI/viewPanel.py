@@ -10,7 +10,12 @@ from matplotlib.gridspec import GridSpec as GridSpec
 
 from Plot.plotInfo import ViewPlotter, ViewInfo_base
 from VCF.dataSetConfig import DataSetConfig
+
 from Plot.keyCanvas import KeyCanvas
+from Plot.scrollWidget import ScrollManager
+from Plot.plotUpdate import PlotUpdate
+
+from Util.event import Event
 
 class ViewPanel(ctk.CTkFrame):
     __instance = None
@@ -41,10 +46,11 @@ class ViewPanel(ctk.CTkFrame):
         self.toolbar = NavToolbar(window=self,canvas=self.canvas)
         self.plot = self.canvas.get_tk_widget()
 
-        test = ctk.CTkSlider(self.plot,orientation="horizontal", height=20)
-        test.place(relx=0.5, y=2,relwidth=1,anchor="n")  
+        # Set canvas to be used by scroll widgets 
+        ScrollManager.set_scroll_canvas(self.plot)
 
-        self.test_scroll = test    
+        # Set plot update to update the plot
+        PlotUpdate.set_canvas(self.canvas)
 
 
         # Create button to let users quickly select datasets
@@ -75,7 +81,15 @@ class ViewPanel(ctk.CTkFrame):
         self.plot.pack(side="top", fill='x', expand='true')
         self.hidden = False
 
-    def make_plot(self, views:list[ViewInfo_base])->FigCanvas:
+    def make_plot(self, views:list[ViewInfo_base])->None:
+
+        ScrollManager.clear_scrolls()
+
+        # Filter for only valid views
+        views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
+        if len(views) == 0: 
+            self.__hide_plots()
+            return
 
         # Scale figure based on window size
         plot_width, plot_hight = self.view_plotter.plot_figure(views,
@@ -85,11 +99,7 @@ class ViewPanel(ctk.CTkFrame):
         if plot_hight != 0:
             self.plot.configure(height=plot_hight)
             self.canvas.draw()
-            A.c = self.canvas
             if self.hidden: self.__show_plots()
-
-            # Add scroll bars if required
-            make_scrolls(views=views, scroll_bar=self.test_scroll)
 
             # Plot keys if possible
             make_keys(views=views)
@@ -103,8 +113,8 @@ class ViewPanel(ctk.CTkFrame):
 
 def make_keys(views:list[ViewInfo_base]):
     key_fig = KeyCanvas.get_figure()
-    if not isinstance(key_fig, Figure): return
     key_fig.clear()
+    if not isinstance(key_fig, Figure): return
     
     # Find the number keys that need to be plotted
     key_count = sum([view.has_key() for view in views])
@@ -119,21 +129,3 @@ def make_keys(views:list[ViewInfo_base]):
         view.make_key(ax,(0,0))
 
     KeyCanvas.show_canvas()
-
-def make_scrolls(views:list[ViewInfo_base], scroll_bar:ctk.CTkSlider):
-    # Find the list of views that require scroll bars
-    x_scroll_views = [view for view in views if view.should_add_x_scroll()]
-
-    print(x_scroll_views)
-    A.a = x_scroll_views[0]
-    min, max, window = x_scroll_views[0].get_x_scroll_params()
-    #scroll_bar.configure(command=A.test_scroll)
-    scroll_bar._button_length = 20
-    scroll_bar.configure(command = A.test_scroll, from_ = min, to = max-window)
-
-class A:
-    a:ViewInfo_base
-    c:FigCanvas
-    def test_scroll(val):
-        A.a.scroll_x(val)
-        A.c.draw()

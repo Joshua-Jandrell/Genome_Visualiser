@@ -18,10 +18,12 @@ from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from .viewInfo import ViewInfo_base
-from .variantGridType import GRID_TYPE_KEY, GridParams, VariantGrindType
+from .variantGridType import GRID_TYPE_KEY, GridParams, VariantGridView
+
+from Util.box import Box
 
 
-class RefView(VariantGrindType):
+class RefView(VariantGridView):
     REF_LABEL = "Ref."
     ALT_LABEL = "Alt."
     # Boundaries   #TODO What boundaries???
@@ -57,7 +59,7 @@ class RefView(VariantGrindType):
     def get_plot_count(self) -> int:
         if self.plot_alt: return 2
         else: return 1
-    def make_plots(self,axs:list[Axes],size:tuple[int,int], label:Literal["top", "bottom", "left", "right"]="none")->Axes:
+    def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->Axes:
         self.active_axis = axs[0]
         wrapped_data = self.dataset_info.get_data_wrapper()
         self.make_allele_plot(axs[0], np.matrix(wrapped_data.get_ref()),self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
