@@ -117,14 +117,15 @@ def make_keys(views:list[ViewInfo_base]):
     if not isinstance(key_fig, Figure): return
     
     # Find the number keys that need to be plotted
-    key_count = sum([view.has_key() for view in views])
+    key_views = [view for view in views if view.has_key()]
+    key_count = len(key_views)
     if key_count == 0:
         KeyCanvas.hide_canvas()
         return
     
     # Make a gridspec for all keys
     gs = GridSpec(nrows=key_count, ncols=1)
-    for i, view in enumerate(views):
+    for i, view in enumerate(key_views):
         ax = key_fig.add_subplot(gs[i])
         view.make_key(ax,(0,0))
 
