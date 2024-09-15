@@ -109,14 +109,14 @@ class VcfDataWrapper:
     def get_pos(self):
         """Returns an array of chromosome positions, for plotting."""
         df = self.__get_filtered_df()
-        return df[POS].to_numpy()
+        return df["POS"].to_numpy()
     
     def get_file_pos_range(self):
         """Returns max possible range of genome sequence positons."""
-        self.df = self.df.sort_values(by=["POS"], ascending=True)   ### All the 'by=...' stuuf needs: ""
+        self.df = self.df.sort_values(by=["POS"], ascending=True)   ### All the 'by=...' stuff needs: ""
         
-        min_pos = self.df[POS].iloc[[0]]
-        max_pos = self.df[POS].iloc[[-1]]
+        min_pos = self.df["POS"].iloc[[0]]
+        max_pos = self.df["POS"].iloc[[-1]]
         return(min_pos, max_pos)
     
     def set_pos_range(self, min_pos:int, max_pos:int):
@@ -214,10 +214,10 @@ def alleles_to_numbs(alleles:np.array):
     return [allele_to_numb(a) for a in alleles]
 
 def select_by_pos(df: DataFrame, first, last)-> DataFrame:
-    return df[df[POS].between(first, last, inclusive = 'both')]
+    return df[df["POS"].between(first, last, inclusive = 'both')]
 
 def select_by_qual(df: DataFrame, first, last)-> DataFrame:
-    return df[df[QUAL].between(first, last, inclusive = 'both')]
+    return df[df["QUAL"].between(first, last, inclusive = 'both')]
 
 def sort_qual(df:DataFrame):
     return df.sort_values(by=["QUAL"], descending=True)
