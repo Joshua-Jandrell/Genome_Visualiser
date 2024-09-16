@@ -192,7 +192,7 @@ class VcfDataWrapper:
     # def filter_ref_variant_length(self):  #Scott didn't think this was necessary
     #     return
 
-    # def filter_zygosity_type(self):   #See in zygosityOption
+    # def filter_zygosity_type(self):   #See in zygosityOption ~~~~  toggling
     #     return
     
     # def filter_nucleotide_type(self):

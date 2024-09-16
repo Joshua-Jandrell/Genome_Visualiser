@@ -108,7 +108,7 @@ class DataOptionCard(OptionCard):
         self.position_startLabel = ctk.CTkLabel(self.content, text="From:")
         self.position_startLabel.grid(row=1, column=0,columnspan=1, padx=20, pady=10, sticky="w") #
         #input field:
-        self.input_pos_start = ctk.StringVar(value=" - ") # A custom tkinter variable that can be linked to a UI input element 
+        self.input_pos_start = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
         self.position_start = ctk.CTkEntry(self.content, textvariable=self.input_pos_start, width= 70) #begin_posrange=self.input_pos_start)
         self.position_start.grid(row=1, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") #padx=0, pady=0, 
         #Textbox:
@@ -120,7 +120,7 @@ class DataOptionCard(OptionCard):
         self.position_endLabel = ctk.CTkLabel(self.content, text="To:") #, compound="top", justify="left", anchor="w")
         self.position_endLabel.grid(row=2, column=0,columnspan=1, padx=20, pady=10, sticky="w")
         #input field:
-        self.input_pos_end = ctk.StringVar(value=" - ") # A custom tkinter variable that can be linked to a UI input element 
+        self.input_pos_end = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
         self.position_end = ctk.CTkEntry(self.content,textvariable=self.input_pos_end, width= 70) # end_posrange=self.input_pos_end)
         self.position_end.grid(row=2, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") 
         #Textbox:
@@ -132,7 +132,7 @@ class DataOptionCard(OptionCard):
         self.input_pos_end.trace_add(mode="read", callback=self.read_in_pos)
         
         
-    #### quality range:
+####### quality range:   ##############
         assert(isinstance(self.value, DataSetInfo))
         print(self.value.get_source_path())
         dw = self.value.get_data_wrapper()
@@ -147,7 +147,7 @@ class DataOptionCard(OptionCard):
         self.quality_startLabel = ctk.CTkLabel(self.content, text="From:")
         self.quality_startLabel.grid(row=4, column=0,columnspan=1, padx=20, pady=10, sticky="w") #
         #input field:
-        self.input_qual_start = ctk.StringVar(value=" - ") # A custom tkinter variable that can be linked to a UI input element 
+        self.input_qual_start = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
         self.quality_start = ctk.CTkEntry(self.content, textvariable=self.input_qual_start, width= 70) #begin_posrange=self.input_pos_start)
         self.quality_start.grid(row=4, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") #padx=0, pady=0, 
         #Textbox:
@@ -159,30 +159,26 @@ class DataOptionCard(OptionCard):
         self.quality_endLabel = ctk.CTkLabel(self.content, text="To:") #, compound="top", justify="left", anchor="w")
         self.quality_endLabel.grid(row=5, column=0,columnspan=1, padx=20, pady=10, sticky="w")
         #input field:
-        self.input_qual_end = ctk.StringVar(value=" - ") # A custom tkinter variable that can be linked to a UI input element 
+        self.input_qual_end = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
         self.quality_end = ctk.CTkEntry(self.content,textvariable=self.input_qual_end, width= 70) # end_posrange=self.input_pos_end)
         self.quality_end.grid(row=5, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") 
         #Textbox:
         self.quality_maxendLabel = ctk.CTkLabel(self.content, text=("100 (max)"))
         self.quality_maxendLabel.grid(row=5, column=2, columnspan=1, padx=0, pady=10, sticky="w")
 
-###### Sort options:
+###### Sort options:    ##############
      #Sort heading Textbox:
-        self.quality_headingLabel = ctk.CTkLabel(self.content, text="Sort by:", justify="left",)
-        self.quality_headingLabel.grid(row=6, column=0, columnspan=2, padx=20, pady=7, sticky="ew")
-    ##### 
-    #     self.text_var = ctk.StringVar(value="words") # A custom tkinter variable that can be linked to a UI input element 
-    #     self.text_input = ctk.CTkEntry(self.content,textvariable=self.text_var)
-    #     self.text_input.grid(row=3, column=1, columnspan=1, padx=10, pady=10) 
+        self.quality_headingLabel = ctk.CTkLabel(self.content, text="Sort Samples by :", justify="center",)
+        self.quality_headingLabel.grid(row=6, column=0, columnspan=3, padx=20, pady=5, sticky="ew")
     
     # Quality and Population Radio Buttons:
-        self.genderVar = ctk.StringVar(value="")
+        self.set_sort_mode = ctk.BooleanVar(value=False)
  
-        self.qualityRadioButton = ctk.CTkRadioButton(self, text="Sample Quality (100 to 0)", variable=self.genderVar, value="He is")
-        self.qualityRadioButton.grid(row=7, column=0, padx=10, pady=20, sticky="ew")
+        self.qualityRadioButton = ctk.CTkRadioButton(self, text="Quality\n(100 to 0)", variable=self.set_sort_mode, value=True)
+        self.qualityRadioButton.grid(row=7, column=0, padx=20, pady=5, sticky="w")
  
-        self.populationRadioButton = ctk.CTkRadioButton(self, text="Sample Population (alphabetically)", variable=self.genderVar, value="She is")
-        self.populationRadioButton.grid(row=7, column=1, padx=10, pady=20, sticky="ew")
+        self.populationRadioButton = ctk.CTkRadioButton(self, text="Population\n(alphabetically)", variable=self.set_sort_mode, value=True)
+        self.populationRadioButton.grid(row=7, column=1, padx=5, pady=5, sticky="w")
         
         
     # dropdown 
@@ -218,12 +214,6 @@ class DataOptionCard(OptionCard):
        
         # NB once an element is made it must be packed/placed in the content panel:
         #apply_filter_button.grid(row=8, column=0, columnspan=2, padx=10, pady=10) # The button will be in the 2nd row and span two columns
-
-
-#### noice & words textbox
-        self.text_var = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
-        self.text_input = ctk.CTkEntry(self.content,textvariable=self.text_var)
-        self.text_input.grid(row=9, column=0, columnspan=1, padx=10, pady=10, sticky="ew") 
     
 ############# From, file: plotCard.py --> class: PlotOptionCard 
             # def set_value(self, value):
