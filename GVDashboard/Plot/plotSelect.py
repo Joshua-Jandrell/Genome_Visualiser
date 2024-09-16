@@ -3,7 +3,7 @@
 from typing import Tuple
 import customtkinter as ctk
 from UI.optionPanel import OptionCtrl, OptionCard, OptionPanel
-from Plot.plotInfo import DataSetInfo, ViewInfo_base, FrequencyView
+from Plot.plotInfo import DataSetInfo, ViewInfo_base
 from Plot.ViewInfos import ZygoteView, RefView
 
 from VCF.datasetDropDown import DatasetMenu

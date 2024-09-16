@@ -6,3 +6,5 @@ from .variantGridType import *
 from .zygosityView import ZygoteView
 from .refView import RefView
 from .posView import VarPosView
+from .varFrequecyView import FrequencyView
+from .varFrequecyView import FrequencyView

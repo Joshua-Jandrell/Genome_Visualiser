@@ -138,16 +138,16 @@ class viewSetManager:
     LEFT_PADDING = 30
     RIGHT_PADDING = 20
   
-    def __init__(self,stack=True, view_info:ViewInfo_base|None = None) -> None:
+    def __init__(self,view_info:ViewInfo_base|None = None) -> None:
         """
         Construct a plot set manager to link plots to a set of plots relating to the given axis.\n
         If stack is true views will be added and linked vertically.
         """
         self.is_linked = False
         self.views:list[ViewInfo_base] = []
-        self.__stack = stack
 
         if view_info is not None:
+            print("linking set")
             self.link(view_info)
 
         "Link new plot vertically if stack set to true. " 
@@ -185,6 +185,8 @@ class viewSetManager:
     def plot(self, ax:Axes, size:tuple[int,int], plot_box:Box):
         """Plot all views in the view set on the given axes"""
 
+        print(f"plotting set {len(self.views)}")
+
         # Get addtional views from the group:
         additional_views = []
         for view in self.views:
@@ -204,7 +206,7 @@ class viewSetManager:
         right_edge = plot_box.get_right()
         for view in _views:
             axs =[] 
-            
+            print("here?")
             # Move top edge down as more axes are packed 
             start_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
             for _ in range(view.get_plot_count()):

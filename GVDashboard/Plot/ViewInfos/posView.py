@@ -1,6 +1,7 @@
 import numpy as np
 
 from matplotlib.axes import Axes as Axes
+from matplotlib import colors
 from Util.box import Box
 from .variantGridType import VariantGridView, ViewInfo_base
 
@@ -16,7 +17,7 @@ class VarPosView(VariantGridView):
         wrapped_data = self.dataset_info.get_data_wrapper()
         pos_mat = np.matrix(wrapped_data.get_pos())
 
-        ax.pcolorfast(pos_mat)
+        ax.pcolorfast(pos_mat, cmap='RdPu')
         #ax.plot(wrapped_data.get_pos())
         #ax.stem(wrapped_data.get_pos())
         #ax.bar(wrapped_data.get_pos())

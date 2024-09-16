@@ -20,12 +20,16 @@ class ScrollWidget(ctk.CTkFrame):
     def set_view(self, view:ViewInfo_base):
         "Set the scroll view"
 
+        print("set scroll")
+
         self.view =view
         # subscribe to view update event 
         view.update_event.add_listener(self.__on_view_update)
 
         min, max, window = view.get_x_scroll_params()
         self.scroll_slider.configure(command = self.do_scroll, from_ = min, to = max-window)
+        self.scroll_slider.pack(fill=ctk.X, expand=True)
+        self.scroll_slider.set(min)
 
                 
         #scroll_bar.configure(command=A.test_scroll)
@@ -38,6 +42,7 @@ class ScrollWidget(ctk.CTkFrame):
 
     def clear_view(self):
         """Hide the scroll view"""
+        print("hid the scroll")
         if self.view is not None:
             self.view.update_event.remove_listener(self.__on_view_update)
             self.view = None
@@ -86,7 +91,7 @@ class ScrollManager():
                    relwidth = scroll_box.get_width(),
                    relheight = scroll_box.get_height(),
                    anchor='nw')
-        
+        print(f"got a scroll... {cls.__used_scrolls}")
         scroll.set_view(view=view)
 
     @classmethod
