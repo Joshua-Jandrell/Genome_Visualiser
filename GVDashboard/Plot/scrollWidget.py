@@ -11,16 +11,13 @@ class ScrollWidget(ctk.CTkFrame):
 
     # Take plot info, location, and canvas 
     def __init__(self, master:Canvas) -> None:
-        super().__init__(master=master, fg_color="transparent")
+        super().__init__(master=master, fg_color="transparent", height=20)
         self.scroll_slider = ctk.CTkSlider(self, orientation="horizontal")
-        self.scroll_slider.pack(fill=ctk.X, expand=True)
+        self.scroll_slider.pack(side=ctk.TOP, fill=ctk.X)
         self.view:ViewInfo_base|None = None
-        pass
 
     def set_view(self, view:ViewInfo_base):
         "Set the scroll view"
-
-        print("set scroll")
 
         self.view =view
         # subscribe to view update event 
@@ -28,7 +25,6 @@ class ScrollWidget(ctk.CTkFrame):
 
         min, max, window = view.get_x_scroll_params()
         self.scroll_slider.configure(command = self.do_scroll, from_ = min, to = max-window)
-        self.scroll_slider.pack(fill=ctk.X, expand=True)
         self.scroll_slider.set(min)
 
                 
@@ -42,11 +38,10 @@ class ScrollWidget(ctk.CTkFrame):
 
     def clear_view(self):
         """Hide the scroll view"""
-        print("hid the scroll")
         if self.view is not None:
             self.view.update_event.remove_listener(self.__on_view_update)
             self.view = None
-        self.pack_forget()
+        self.place_forget()
 
     def __on_view_update(self, view):
         """Event to bae called (automatically) when the view info is updated."""
@@ -89,9 +84,7 @@ class ScrollManager():
         scroll.place(relx=scroll_box.get_left(),
                    rely=1-scroll_box.get_top(),
                    relwidth = scroll_box.get_width(),
-                   relheight = scroll_box.get_height(),
                    anchor='nw')
-        print(f"got a scroll... {cls.__used_scrolls}")
         scroll.set_view(view=view)
 
     @classmethod

@@ -145,9 +145,9 @@ class viewSetManager:
         """
         self.is_linked = False
         self.views:list[ViewInfo_base] = []
+        self.additional_views:list[ViewInfo_base] = []
 
         if view_info is not None:
-            print("linking set")
             self.link(view_info)
 
         "Link new plot vertically if stack set to true. " 
@@ -165,6 +165,7 @@ class viewSetManager:
             self.is_linked = True
             view_info.pos_in_set = 0
             self.views.append(view_info)
+            self.additional_views += view_info.get_set_views()
             return True
 
         # The base type view is not compatible, event with itself, by default.
@@ -175,18 +176,17 @@ class viewSetManager:
         self.views[-1].last_in_set = False
         view_info.last_in_set = True
         self.views.append(view_info)
+        self.additional_views += view_info.get_set_views()
 
         return True
     
     def get_desired_hight(self):
         """Returns the desired hight of the full view set"""
-        return sum([sum(view.get_desired_size()) for view in self.views])
+        return sum([sum(view.get_desired_size()) for view in self.views+self.additional_views])
     
     def plot(self, ax:Axes, size:tuple[int,int], plot_box:Box):
         """Plot all views in the view set on the given axes"""
-
-        print(f"plotting set {len(self.views)}")
-
+        
         # Get addtional views from the group:
         additional_views = []
         for view in self.views:
@@ -206,7 +206,6 @@ class viewSetManager:
         right_edge = plot_box.get_right()
         for view in _views:
             axs =[] 
-            print("here?")
             # Move top edge down as more axes are packed 
             start_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
             for _ in range(view.get_plot_count()):

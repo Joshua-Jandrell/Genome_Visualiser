@@ -48,6 +48,14 @@ class VariantGridView(ViewInfo_base):
         # Key formats
         self.key_row_hight = 0.07
         self.key_column_width = 0.6
+
+    def _do_base_config(self,axs:list[Axes]):
+        """
+        Simple method to re-used common configuration settings.
+        """
+        if self.is_fist_in_set():
+            # Set axis title
+            axs[0].title("Genotype grid")
         
 
     def fit_to_size(self,size:tuple[int,int]):
@@ -90,7 +98,7 @@ class VariantGridScrollView(ViewInfo_base):
     def __init__(self) -> None:
         super().__init__()
 
-        self.scroll_size = 30
+        self.scroll_size = 60
 
     def set_target_view(self,view:VariantGridView):
         self.target_view = view
