@@ -133,9 +133,9 @@ class ViewInfo_base:
 
 class viewSetManager:
     """Class used to store information about a group of linked (or similar) views."""
-    TOP_PADDING = 50
-    BOTTOM_PADDING = 20
-    LEFT_PADDING = 30
+    TOP_PADDING = 60
+    BOTTOM_PADDING = 60
+    LEFT_PADDING = 60
     RIGHT_PADDING = 20
   
     def __init__(self,view_info:ViewInfo_base|None = None) -> None:

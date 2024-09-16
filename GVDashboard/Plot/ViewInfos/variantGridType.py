@@ -55,7 +55,7 @@ class VariantGridView(ViewInfo_base):
         """
         if self.is_fist_in_set():
             # Set axis title
-            axs[0].title("Genotype grid")
+            axs[0].set_title("Genotype Variant-Position Grid")
         
 
     def fit_to_size(self,size:tuple[int,int]):

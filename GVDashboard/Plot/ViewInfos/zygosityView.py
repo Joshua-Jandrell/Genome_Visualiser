@@ -43,6 +43,7 @@ class ZygoteView(VariantGridView):
         return [min(wrapped_data.n_samples,self.max_weight)]
     
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->str:
+        
         axis = axs[0]
         self.active_axis = axis
         # Get wrapped data and make the plot
@@ -50,14 +51,20 @@ class ZygoteView(VariantGridView):
         axis.pcolorfast(np.matrix(wrapped_data.get_zygosity()), cmap=self.colors, vmax=2, vmin=-1)
         #axis.matshow(wrapped_data.get_zygosity(), cmap=self.colors, vmax=2, vmin=-1)
 
-        if self.pos_in_set == 0:
+        if self.is_fist_in_set():
             self.fit_to_size(size=size)
+        self._do_base_config(axs)
 
         # Clear ticks from x axis
-        axis.set_xticks([])
+        # axis.set_xticks(np.arange(0.5,wrapped_data.n_variants,1))
+        # axis.set_xticklabels(labels=wrapped_data.get_pos(), fontsize=8, rotation=90)
 
         # Add tick to y-axis only if scaling permits TODO: Implement this 
-        axis.set_yticks([])
+        #axis.set_yticks()
+        axis.set_yticks(np.arange(0.5,wrapped_data.n_samples,1))
+        #axis.set_yticklabels(fontsize=8)
+        print("Need to get sample numbers form data wrapper")
+        axis.set_ylabel("Sample Number")
 
         # Set x label
         if "top" in label or "bottom" in label:
@@ -66,6 +73,8 @@ class ZygoteView(VariantGridView):
         # Set y label
         if "left" in label or "right" in label:
             axis.set_ylabel("Sample")
+
+
 
         return ""
 

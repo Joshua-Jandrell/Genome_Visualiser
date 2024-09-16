@@ -69,6 +69,8 @@ class RefView(VariantGridView):
         if self.pos_in_set == 0:
             self.fit_to_size(size=size)
 
+        self._do_base_config(axs)
+
     def make_allele_plot(self, axis:Axes, data:np.matrix, label:str, data_labels, wrapped_data: DataWrapper):
         # linewidth=1,edgecolors="k"
         axis.pcolorfast(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
