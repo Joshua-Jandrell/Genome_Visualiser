@@ -53,7 +53,7 @@ class PlotOptionCard(OptionCard):
                 self.update_event.invoke(self)
 
     def set_value(self, value):
-        """Override of set value method. Value must inherit for `ViewInfo_base`."""
+        """Override of set value method. Value must inherit from `ViewInfo_base`."""
         super().set_value(value)
         # update data to register on new plot info
         assert(isinstance(value,ViewInfo_base))

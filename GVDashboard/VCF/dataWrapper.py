@@ -112,11 +112,11 @@ class VcfDataWrapper:
         return df["POS"].to_numpy()
     
     def get_file_pos_range(self):
-        """Returns max possible range of genome sequence positons."""
+        """Returns (min, max) possible range of genome sequence positons."""
         self.df = self.df.sort_values(by=["POS"], ascending=True)   ### All the 'by=...' stuff needs: ""
         
-        min_pos = self.df["POS"].iloc[[0]]
-        max_pos = self.df["POS"].iloc[[-1]]
+        min_pos = self.df["POS"].iloc[0]
+        max_pos = self.df["POS"].iloc[-1]
         return(min_pos, max_pos)
     
     def set_pos_range(self, min_pos:int, max_pos:int):

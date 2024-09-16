@@ -5,9 +5,15 @@ import customtkinter as ctk
 from UI.optionPanel import OptionCard
 from UI.optionPanel import OptionCtrl, OptionList
 
+from VCF.datasetDropDown import DatasetMenu
+
 from VCF.filterInfo import DataSetInfo
 from VCF.dataSetConfig import DataSetConfig
 from VCF.globalDatasetManger import GlobalDatasetManager
+
+from VCF.dataWrapper import VcfDataWrapper
+from Plot.plotInfo import ViewInfo_base
+
 
 # Panel used to add and remove Datasets and the filter options of each "Dataset".
 class DataPanel(ctk.CTkFrame):
@@ -71,23 +77,155 @@ class DataPanel(ctk.CTkFrame):
         GlobalDatasetManager.reconfigure(datasets = [])
         return super().destroy()
 
-#DataOptionCard:                #### Currently:: Initialises and says hi :)
+#DataOptionCard:
+_entry_padx = 3
 class DataOptionCard(OptionCard):
     """
-    Special instance of option card used to make plots. Contains useful methods for constructing common plot option widgets.\n
+    Special instance of dataset option card used to make plots. Contains useful methods for constructing common plot option widgets.\n
     The `self.value` field of a plot option card should alway inherit from `ViewInfo_base` so that it can be used to plot views.
     """
-    def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master, option_ctrl, option_key: str, option_value:DataSetInfo, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+        
+        #__init__(self, *args, **kwargs):
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
-
+        
+        #super().__init__(*args, **kwargs)
         # Set default width of menu buttons
         self.MENU_W = 125
+#####################################################################################################
+    #### Position range
+        assert(isinstance(self.value, DataSetInfo))
+        print(self.value.get_source_path())
+        dw = self.value.get_data_wrapper()
+        min_pos, max_pos = dw.get_file_pos_range()
+        print(f"the min is: {min_pos}")
+        print(f"the max is: {max_pos}")
+        
+        #Position heading Textbox:
+        self.position_headingLabel = ctk.CTkLabel(self.content, text=" Genome Position Range", justify="center",)
+        self.position_headingLabel.grid(row=0, column=0, columnspan=3, padx=20, pady=10, sticky="ew")
+        #Textbox:
+        self.position_startLabel = ctk.CTkLabel(self.content, text="From:")
+        self.position_startLabel.grid(row=1, column=0,columnspan=1, padx=20, pady=10, sticky="w") #
+        #input field:
+        self.input_pos_start = ctk.StringVar(value=" - ") # A custom tkinter variable that can be linked to a UI input element 
+        self.position_start = ctk.CTkEntry(self.content, textvariable=self.input_pos_start, width= 70) #begin_posrange=self.input_pos_start)
+        self.position_start.grid(row=1, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") #padx=0, pady=0, 
+        #Textbox:
+        self.position_minstartLabel = ctk.CTkLabel(self.content, text=(min_pos,"(min)"))
+        self.position_minstartLabel.grid(row=1, column=2, columnspan=1, padx=0, pady=10, sticky="w")
+        
+        #Next row:
+        #Textbox:
+        self.position_endLabel = ctk.CTkLabel(self.content, text="To:") #, compound="top", justify="left", anchor="w")
+        self.position_endLabel.grid(row=2, column=0,columnspan=1, padx=20, pady=10, sticky="w")
+        #input field:
+        self.input_pos_end = ctk.StringVar(value=" - ") # A custom tkinter variable that can be linked to a UI input element 
+        self.position_end = ctk.CTkEntry(self.content,textvariable=self.input_pos_end, width= 70) # end_posrange=self.input_pos_end)
+        self.position_end.grid(row=2, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") 
+        #Textbox:
+        self.position_maxendLabel = ctk.CTkLabel(self.content, text=(max_pos,"(max)"))
+        self.position_maxendLabel.grid(row=2, column=2, columnspan=1, padx=0, pady=10, sticky="w")
+        
+        # Add traces to read in position input values:
+        self.input_pos_start.trace_add(mode="read", callback=self.read_in_pos)
+        self.input_pos_end.trace_add(mode="read", callback=self.read_in_pos)
+        
+        
+    #### quality range:
+        assert(isinstance(self.value, DataSetInfo))
+        print(self.value.get_source_path())
+        dw = self.value.get_data_wrapper()
+        min_pos, max_pos = dw.get_file_pos_range()   ##############   REDO
+        print(f"the min is: {min_pos}")              ##############  THESE
+        print(f"the max is: {max_pos}")              ############## PARAMETERS
+        
+        #Quality heading Textbox:
+        self.quality_headingLabel = ctk.CTkLabel(self.content, text="Sample Quality Range", justify="center",)
+        self.quality_headingLabel.grid(row=3, column=0, columnspan=3, padx=20, pady=10, sticky="ew")
+        #Textbox:
+        self.quality_startLabel = ctk.CTkLabel(self.content, text="From:")
+        self.quality_startLabel.grid(row=4, column=0,columnspan=1, padx=20, pady=10, sticky="w") #
+        #input field:
+        self.input_qual_start = ctk.StringVar(value=" - ") # A custom tkinter variable that can be linked to a UI input element 
+        self.quality_start = ctk.CTkEntry(self.content, textvariable=self.input_qual_start, width= 70) #begin_posrange=self.input_pos_start)
+        self.quality_start.grid(row=4, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") #padx=0, pady=0, 
+        #Textbox:
+        self.quality_minstartLabel = ctk.CTkLabel(self.content, text=("0 (min)"))
+        self.quality_minstartLabel.grid(row=4, column=2, columnspan=1, padx=0, pady=10, sticky="w")
+        
+        #Next row:
+        #Textbox:
+        self.quality_endLabel = ctk.CTkLabel(self.content, text="To:") #, compound="top", justify="left", anchor="w")
+        self.quality_endLabel.grid(row=5, column=0,columnspan=1, padx=20, pady=10, sticky="w")
+        #input field:
+        self.input_qual_end = ctk.StringVar(value=" - ") # A custom tkinter variable that can be linked to a UI input element 
+        self.quality_end = ctk.CTkEntry(self.content,textvariable=self.input_qual_end, width= 70) # end_posrange=self.input_pos_end)
+        self.quality_end.grid(row=5, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") 
+        #Textbox:
+        self.quality_maxendLabel = ctk.CTkLabel(self.content, text=("100 (max)"))
+        self.quality_maxendLabel.grid(row=5, column=2, columnspan=1, padx=0, pady=10, sticky="w")
+
+###### Sort options:
+     #Sort heading Textbox:
+        self.quality_headingLabel = ctk.CTkLabel(self.content, text="Sort by:", justify="left",)
+        self.quality_headingLabel.grid(row=6, column=0, columnspan=2, padx=20, pady=7, sticky="ew")
+    ##### 
+    #     self.text_var = ctk.StringVar(value="words") # A custom tkinter variable that can be linked to a UI input element 
+    #     self.text_input = ctk.CTkEntry(self.content,textvariable=self.text_var)
+    #     self.text_input.grid(row=3, column=1, columnspan=1, padx=10, pady=10) 
+    
+    # Quality and Population Radio Buttons:
+        self.genderVar = ctk.StringVar(value="")
  
-        ###
-        #Add range selection functions from DataWrapper here
-        ###
+        self.qualityRadioButton = ctk.CTkRadioButton(self, text="Sample Quality (100 to 0)", variable=self.genderVar, value="He is")
+        self.qualityRadioButton.grid(row=7, column=0, padx=10, pady=20, sticky="ew")
+ 
+        self.populationRadioButton = ctk.CTkRadioButton(self, text="Sample Population (alphabetically)", variable=self.genderVar, value="She is")
+        self.populationRadioButton.grid(row=7, column=1, padx=10, pady=20, sticky="ew")
+        
+        
+    # dropdown 
+        #~self.sort_option = ctk.CTkOptionMenu(self)
+
+    def read_in_pos(self, *args):
+        _start_pos_input = self.input_pos_start.get()
+        number_input = [c for c in _start_pos_input if c.isdigit()]
+        if _start_pos_input  != number_input:
+            self.input_pos_end.set()
+        
+        _end_pos_input = self.input_pos_end.get()
+        number_input = [c for c in _end_pos_input if c.isdigit()]
+        if _end_pos_input  != number_input:
+            self.input_pos_end.set()
             
-            #From, file: plotCard.py --> class: PlotOptionCard 
+    def read_in_qual(self, *args):
+        _start_input = self.input_pos_start.get()
+        number_input = [c for c in _start_input if c.isdigit()]
+        if _start_input  != number_input:
+            self.input_pos_end.set()
+        
+        _end_input = self.input_pos_end.get()
+        number_input = [c for c in _end_input if c.isdigit()]
+        if _end_input  != number_input:
+            self.input_pos_end.set()    
+
+# For example here is a simple button:
+        # apply_filter_button = ctk.CTkButton(master=self.content, # Note that master is content.
+        #                               text="Apply filters",  # This text will display on the button
+        #                               command=self.say_hi) # The command is a function that is called when the button is pressed
+        #                                                    # NOTE this function will not work until say hi is implemented 
+       
+        # NB once an element is made it must be packed/placed in the content panel:
+        #apply_filter_button.grid(row=8, column=0, columnspan=2, padx=10, pady=10) # The button will be in the 2nd row and span two columns
+
+
+#### noice & words textbox
+        self.text_var = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
+        self.text_input = ctk.CTkEntry(self.content,textvariable=self.text_var)
+        self.text_input.grid(row=9, column=0, columnspan=1, padx=10, pady=10, sticky="ew") 
+    
+############# From, file: plotCard.py --> class: PlotOptionCard 
             # def set_value(self, value):
             #     """Override of set value method. Value must inherit for `ViewInfo_base`."""
             #     super().set_value(value)
@@ -98,19 +236,6 @@ class DataOptionCard(OptionCard):
         # So you can add any number of tkinter or custom tkinter elements to the card.  <<< That's pretty cool!!
         # Used `self.content` as the master (root) for all elements you add (this way you won't need to worry about the card label)  <<< A... content creator?!??!!? 
     
-    ############### JOSH'S  CODE :: (look out below):: 
-        # For example here is a simple button:
-        random_button = ctk.CTkButton(master=self.content, # Note that master is content.
-                                      text="Cool button",  # This text will display on the button
-                                      command=self.say_hi) # The command is a function that is called when the button is pressed
-                                                           # NOTE this function will not work until say hi is implemented 
-       
-        # NB once an element is made it must be packed/placed in the content panel:
-        random_button.grid(row=1, column=0, columnspan=2, padx=10, pady=10) # The button will be in the 2nd row and span two columns
-
-        self.text_var = ctk.StringVar(value="words") # A custom tkinter variable that can be linked to a UI input element 
-        self.text_input = ctk.CTkEntry(self.content,textvariable=self.text_var)
-        self.text_input.grid(row=0, column=1, columnspan=1, padx=10, pady=10) 
     
                 
     def say_hi(self):
@@ -124,7 +249,7 @@ class DataOptionCard(OptionCard):
         assert(isinstance(self.value, DataSetInfo))
         dw = self.value.get_data_wrapper() # NB please PULL from git to get this to work without loading a new datawrapper each time
         # now, for example, you could use that number extracting code to get numeric values form textbox input...
-                   
+    
 
 
 # Class used to create dataset option panels
@@ -145,9 +270,9 @@ class DataOptionCtrl(OptionCtrl):
         # NOTE: This method is called whenever a dataset is registered. DO NOT register dataset here.
 
         assert(isinstance(self.dataset_info,DataSetInfo)) # Option should never be selected when info is not set
-        op = DataOptionCard(self.option_list, self, self.key)
+        op = DataOptionCard(self.option_list, self, self.key, option_value=self.dataset_info)
         # op = DatasetOptionCard(self.option_list, self, "eee")  <<< For error checking I'm guessing
-        op.reconfigure_option(option_key=self.dataset_info.get_dataset_name(), option_value=self.dataset_info)
+        op.reconfigure_option(option_key=self.dataset_info.get_dataset_name())
 
         # Clear reference to dataset_info to ensure that configuration always occurs
         self.dataset_info = None
@@ -159,36 +284,3 @@ class DataOptionCtrl(OptionCtrl):
         GlobalDatasetManager.deregister(opt.value)
         super().deselect(opt)
 
-      ###################~~ JOSH'S CODE FOR: DataOptionCard ~~############################################
- 
-# class DatasetOptionCard(OptionCard):   ### MUST TAKE out later
-#     "Example class - will not commit to avoid comflicts"
-    # def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
-    #     super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
-
-    #     # So you can add any number od tkinter or custom tkinter elements to the card.
-    #     # Used `self.content` as the master (root) for all elements you add (this way you won't need to worry about the card label)
-
-    #     # For example here is a simple button:
-    #     random_button = ctk.CTkButton(master=self.content, # Note that master is content.
-    #                                   text="Cool button",  # This text will display on the button
-    #                                   command=self.say_hi) # The command is a function that is called when the button is pressed
-    #                                                        # NOTE this function will not work until say hi is implemented 
-    #     # NB once an element is made it must be packed/placed in the content panel:
-    #     random_button.grid(row=1, column=0, columnspan=2, padx=10, pady=10) # The button will be in the 2nd row and span two columns
-
-    #     self.text_var = ctk.StringVar(value="words") # A custom tkinter variable that can be linked to a UI input element 
-    #     self.text_input = ctk.CTkEntry(self.content,textvariable=self.text_var)
-    #     self.text_input.grid(row=0, column=1, columnspan=1, padx=10, pady=10) 
-    
-    # def say_hi(self):
-    #     text_val = self.text_var.get() # Can get value form text variable 
-    #     text_val2 = self.text_input.get() # Can also get value directly from tet input 
-    #     print(f"Hi {text_val} and {text_val2}")
-
-    #     self.text_var.set("Noice") # can also set value of variable to change the text which is displayed 
-
-    #     # In this case the `self.value` variable will be a data info (which hold a reference to a datawrapper)
-    #     assert(isinstance(self.value, DataSetInfo))
-    #     dw = self.value.get_data_wrapper() # NB please PULL from git to get this to work without loading a new datawrapper each time
-    #     # now, for example, you could use that number extracting code to get numeric values form textbox input...
