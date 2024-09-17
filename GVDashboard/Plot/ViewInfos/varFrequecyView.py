@@ -20,6 +20,7 @@ class FrequencyView(ViewInfo_base):
     def __init__(self) -> None:
         self.min_window = 400
         self.plot_density = False
+        self.n_bins = 50
         super().__init__()
 
     def get_desired_hight(self) -> list[int]:
@@ -28,13 +29,16 @@ class FrequencyView(ViewInfo_base):
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->str:
         axis = axs[0]
         
-        # setup windows   #  bin_size:  Ratio recommened:  (750:100000)
-        bin_size = 750
         
         wrapped_data = self.dataset_info.get_data_wrapper()
         pos = wrapped_data.get_pos()
+
+        min = pos.min()
+        max = pos.max()
+        # setup windows   #  bin_size:  Ratio recommened:  (750:100000)
+        bin_size = (max-min)/self.n_bins
         
-        bins = np.arange(pos.min(), pos.max(), bin_size)
+        bins = np.arange(min, max, bin_size)
         
         if self.plot_density == False:
             axis.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow

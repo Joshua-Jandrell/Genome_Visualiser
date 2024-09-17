@@ -134,8 +134,6 @@ class DataOptionCard(OptionCard):
       ####### quality range:   ##############
         dw = self.get_datawrap()
         min_pos, max_pos = dw.get_file_pos_range()   ##############   REDO
-        print(f"the min is: {min_pos}")              ##############  THESE
-        print(f"the max is: {max_pos}")              ############## PARAMETERS
         
         #Quality heading Textbox:
         self.quality_headingLabel = ctk.CTkLabel(self.content, text="Sample Quality Range", justify="center",)
