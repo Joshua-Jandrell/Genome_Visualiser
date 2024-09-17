@@ -28,13 +28,13 @@ class FrequencyView(ViewInfo_base):
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->str:
         axis = axs[0]
         
+        # setup windows   #  bin_size:  Ratio recommened:  (750:100000)
+        bin_size = 750
+        
         wrapped_data = self.dataset_info.get_data_wrapper()
         pos = wrapped_data.get_pos()
         
-        # setup windows   #  Window_size:  Ratio recommened:  (750:100000)
-        window_size = self.min_window
-        
-        bins = np.arange(pos.min(), pos.max(), window_size)
+        bins = np.arange(pos.min(), pos.max(), bin_size)
         
         if self.plot_density == False:
             axis.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow
@@ -48,7 +48,7 @@ class FrequencyView(ViewInfo_base):
         
             # compute variant density in each window
             h, _ = np.histogram(pos, bins=bins)
-            y = h / window_size
+            y = h / bin_size
 
             axis.bar(_[:-1], y, width=np.diff(_), align='edge', edgecolor='black', color='#CC6677')
             axis.set_mouseover(True)

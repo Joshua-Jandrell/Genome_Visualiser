@@ -11,7 +11,7 @@ from VCF.filterInfo import DataSetInfo
 from VCF.dataSetConfig import DataSetConfig
 from VCF.globalDatasetManger import GlobalDatasetManager
 
-from VCF.dataWrapper import VcfDataWrapper
+from VCF.dataWrapper import VcfDataWrapper, SortMode
 from Plot.plotInfo import ViewInfo_base
 
 
@@ -92,11 +92,10 @@ class DataOptionCard(OptionCard):
         #super().__init__(*args, **kwargs)
         # Set default width of menu buttons
         self.MENU_W = 125
-#####################################################################################################
-    #### Position range
-        assert(isinstance(self.value, DataSetInfo))
-        print(self.value.get_source_path())
-        dw = self.value.get_data_wrapper()
+     #####################################################################################################
+     #### Position range
+        
+        dw = self.get_datawrap()
         min_pos, max_pos = dw.get_file_pos_range()
         print(f"the min is: {min_pos}")
         print(f"the max is: {max_pos}")
@@ -108,8 +107,8 @@ class DataOptionCard(OptionCard):
         self.position_startLabel = ctk.CTkLabel(self.content, text="From:")
         self.position_startLabel.grid(row=1, column=0,columnspan=1, padx=20, pady=10, sticky="w") #
         #input field:
-        self.input_pos_start = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
-        self.position_start = ctk.CTkEntry(self.content, textvariable=self.input_pos_start, width= 70) #begin_posrange=self.input_pos_start)
+        self.input_pos_min = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
+        self.position_start = ctk.CTkEntry(self.content, textvariable=self.input_pos_min, width= 70) #begin_posrange=self.input_pos_start)
         self.position_start.grid(row=1, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") #padx=0, pady=0, 
         #Textbox:
         self.position_minstartLabel = ctk.CTkLabel(self.content, text=(min_pos,"(min)"))
@@ -120,22 +119,20 @@ class DataOptionCard(OptionCard):
         self.position_endLabel = ctk.CTkLabel(self.content, text="To:") #, compound="top", justify="left", anchor="w")
         self.position_endLabel.grid(row=2, column=0,columnspan=1, padx=20, pady=10, sticky="w")
         #input field:
-        self.input_pos_end = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
-        self.position_end = ctk.CTkEntry(self.content,textvariable=self.input_pos_end, width= 70) # end_posrange=self.input_pos_end)
+        self.input_pos_max = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
+        self.position_end = ctk.CTkEntry(self.content,textvariable=self.input_pos_max, width= 70) # end_posrange=self.input_pos_end)
         self.position_end.grid(row=2, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") 
         #Textbox:
         self.position_maxendLabel = ctk.CTkLabel(self.content, text=(max_pos,"(max)"))
         self.position_maxendLabel.grid(row=2, column=2, columnspan=1, padx=0, pady=10, sticky="w")
         
         # Add traces to read in position input values:
-        self.input_pos_start.trace_add(mode="read", callback=self.read_in_pos)
-        self.input_pos_end.trace_add(mode="read", callback=self.read_in_pos)
+        self.input_pos_min.trace_add(mode="read", callback=self.read_in_pos)
+        self.input_pos_max.trace_add(mode="read", callback=self.read_in_pos)
         
         
-####### quality range:   ##############
-        assert(isinstance(self.value, DataSetInfo))
-        print(self.value.get_source_path())
-        dw = self.value.get_data_wrapper()
+      ####### quality range:   ##############
+        dw = self.get_datawrap()
         min_pos, max_pos = dw.get_file_pos_range()   ##############   REDO
         print(f"the min is: {min_pos}")              ##############  THESE
         print(f"the max is: {max_pos}")              ############## PARAMETERS
@@ -147,8 +144,8 @@ class DataOptionCard(OptionCard):
         self.quality_startLabel = ctk.CTkLabel(self.content, text="From:")
         self.quality_startLabel.grid(row=4, column=0,columnspan=1, padx=20, pady=10, sticky="w") #
         #input field:
-        self.input_qual_start = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
-        self.quality_start = ctk.CTkEntry(self.content, textvariable=self.input_qual_start, width= 70) #begin_posrange=self.input_pos_start)
+        self.input_qual_min = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
+        self.quality_start = ctk.CTkEntry(self.content, textvariable=self.input_qual_min, width= 70) #begin_posrange=self.input_pos_start)
         self.quality_start.grid(row=4, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") #padx=0, pady=0, 
         #Textbox:
         self.quality_minstartLabel = ctk.CTkLabel(self.content, text=("0 (min)"))
@@ -159,53 +156,83 @@ class DataOptionCard(OptionCard):
         self.quality_endLabel = ctk.CTkLabel(self.content, text="To:") #, compound="top", justify="left", anchor="w")
         self.quality_endLabel.grid(row=5, column=0,columnspan=1, padx=20, pady=10, sticky="w")
         #input field:
-        self.input_qual_end = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
-        self.quality_end = ctk.CTkEntry(self.content,textvariable=self.input_qual_end, width= 70) # end_posrange=self.input_pos_end)
+        self.input_qual_max = ctk.StringVar(value="-") # A custom tkinter variable that can be linked to a UI input element 
+        self.quality_end = ctk.CTkEntry(self.content,textvariable=self.input_qual_max, width= 70) # end_posrange=self.input_pos_end)
         self.quality_end.grid(row=5, column=1, columnspan=1, padx=_entry_padx, pady=10, sticky="w") 
         #Textbox:
         self.quality_maxendLabel = ctk.CTkLabel(self.content, text=("100 (max)"))
         self.quality_maxendLabel.grid(row=5, column=2, columnspan=1, padx=0, pady=10, sticky="w")
+        
+        # Add traces to read in sample quality input values:
+        self.input_qual_min.trace_add(mode="read", callback=self.read_in_qual)
+        self.input_qual_max.trace_add(mode="read", callback=self.read_in_qual)
 
-###### Sort options:    ##############
+     ###### Sort options:    ##############
      #Sort heading Textbox:
         self.quality_headingLabel = ctk.CTkLabel(self.content, text="Sort Samples by :", justify="center",)
         self.quality_headingLabel.grid(row=6, column=0, columnspan=3, padx=20, pady=5, sticky="ew")
     
-    # Quality and Population Radio Buttons:
-        self.set_sort_mode = ctk.BooleanVar(value=False)
+     # Quality and Population Radio Buttons:
+        self.set_sort_mode = ctk.Variable(value=SortMode.BY_POPULATION)
  
-        self.qualityRadioButton = ctk.CTkRadioButton(self, text="Quality\n(100 to 0)", variable=self.set_sort_mode, value=True)
+        self.qualityRadioButton = ctk.CTkRadioButton(self, text="Quality\n(100 to 0)", variable=self.set_sort_mode, value=SortMode.BY_QUALITY)
         self.qualityRadioButton.grid(row=7, column=0, padx=20, pady=5, sticky="w")
  
-        self.populationRadioButton = ctk.CTkRadioButton(self, text="Population\n(alphabetically)", variable=self.set_sort_mode, value=True)
+        self.populationRadioButton = ctk.CTkRadioButton(self, text="Population\n(alphabetically)", variable=self.set_sort_mode, value=SortMode.BY_POPULATION)
         self.populationRadioButton.grid(row=7, column=1, padx=5, pady=5, sticky="w")
-        
         
     # dropdown 
         #~self.sort_option = ctk.CTkOptionMenu(self)
+        
+    def get_datawrap(self) -> VcfDataWrapper:
+        
+        assert(isinstance(self.value, DataSetInfo))
+        dw = self.value.get_data_wrapper()
+        
+        return dw
 
     def read_in_pos(self, *args):
-        _start_pos_input = self.input_pos_start.get()
+        _start_pos_input = self.input_pos_min.get()
         number_input = [c for c in _start_pos_input if c.isdigit()]
         if _start_pos_input  != number_input:
-            self.input_pos_end.set()
+            self.input_pos_min.set()
         
-        _end_pos_input = self.input_pos_end.get()
+        _end_pos_input = self.input_pos_max.get()
         number_input = [c for c in _end_pos_input if c.isdigit()]
         if _end_pos_input  != number_input:
-            self.input_pos_end.set()
+            self.input_pos_max.set()
+        
+        dw = self.get_datawrap()
+        dw.set_pos_range(self.input_pos_min,self.input_pos_max)
             
     def read_in_qual(self, *args):
-        _start_input = self.input_pos_start.get()
-        number_input = [c for c in _start_input if c.isdigit()]
-        if _start_input  != number_input:
-            self.input_pos_end.set()
+        _start_qual_input = self.input_qual_min.get()
+        number_input = [c for c in _start_qual_input if c.isdigit()]
+        if _start_qual_input  != number_input:
+            self.input_qual_min.set()
         
-        _end_input = self.input_pos_end.get()
-        number_input = [c for c in _end_input if c.isdigit()]
-        if _end_input  != number_input:
-            self.input_pos_end.set()    
+        _end_qual_input = self.input_qual_max.get()
+        number_input = [c for c in _end_qual_input if c.isdigit()]
+        if _end_qual_input  != number_input:
+            self.input_qual_max.set()  
 
+        dw = self.get_datawrap()
+        dw.set_qual_range(self.input_qual_min,self.input_qual_max)
+
+
+
+    # def say_hi(self):
+    #     text_val = self.text_var.get() # Can get value form text variable 
+    #     text_val2 = self.text_input.get() # Can also get value directly from tet input 
+    #     print(f"Hi {text_val} and {text_val2}")
+
+    #     self.text_var.set("Noice") # can also set value of variable to change the text which is displayed 
+
+    #     # In this case the `self.value` variable will be a data info (which hold a reference to a datawrapper)
+    #     assert(isinstance(self.value, DataSetInfo))
+    #     dw = self.value.get_data_wrapper() # NB please PULL from git to get this to work without loading a new datawrapper each time
+    #     # now, for example, you could use that number extracting code to get numeric values form textbox input...
+     
 # For example here is a simple button:
         # apply_filter_button = ctk.CTkButton(master=self.content, # Note that master is content.
         #                               text="Apply filters",  # This text will display on the button
@@ -226,20 +253,7 @@ class DataOptionCard(OptionCard):
         # So you can add any number of tkinter or custom tkinter elements to the card.  <<< That's pretty cool!!
         # Used `self.content` as the master (root) for all elements you add (this way you won't need to worry about the card label)  <<< A... content creator?!??!!? 
     
-    
-                
-    def say_hi(self):
-        text_val = self.text_var.get() # Can get value form text variable 
-        text_val2 = self.text_input.get() # Can also get value directly from tet input 
-        print(f"Hi {text_val} and {text_val2}")
 
-        self.text_var.set("Noice") # can also set value of variable to change the text which is displayed 
-
-        # In this case the `self.value` variable will be a data info (which hold a reference to a datawrapper)
-        assert(isinstance(self.value, DataSetInfo))
-        dw = self.value.get_data_wrapper() # NB please PULL from git to get this to work without loading a new datawrapper each time
-        # now, for example, you could use that number extracting code to get numeric values form textbox input...
-    
 
 
 # Class used to create dataset option panels
