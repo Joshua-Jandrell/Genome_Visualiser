@@ -22,7 +22,7 @@ def inch_to_cm(inches:float)->float:
 BASE_TYPE_KEY = "BASE"
 X_STACK = 0
 Y_STACK =1
-STACK_MODE = X_STACK
+STACK_MODE = Y_STACK
 
 class ViewInfo_base:
     """

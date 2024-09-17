@@ -54,12 +54,10 @@ class VcfDataWrapper:
         vcf_data[ID] = vcf_data[ID][:max_vars]
         vcf_data[POS] = vcf_data[POS][:max_vars]
         vcf_data[QUAL] = vcf_data[QUAL][:max_vars]
-        
+        self.df = df.iloc[:max_vars]
         # ------------------------
         self.data = vcf_data
         self.gt_data = GTArr(self.data[DATA])
-        self.n_samples = len(vcf_data[SAMPLES])
-        self.n_variants = len(vcf_data[ID])
 
         # clear pre-constructed arrays
         self._zygos = None
@@ -72,8 +70,7 @@ class VcfDataWrapper:
         
         # Default range of quality scores in a .vcf file:
         self.first_qual=0
-        self.last_qual=100
-        
+        self.last_qual=100        
         #Default setting: don't sort by quality
         self.sort_mode = SortMode.BY_POSITION
 
@@ -86,12 +83,18 @@ class VcfDataWrapper:
         2 = homozygous mutation\\
         -1 = no-data
         """
-        gt_data = self.gt_data
+        gt_data = self.__get_filtered_genotype_array()
         self._zygos = gt_data.is_hom_alt()*2 + gt_data.is_het()*1 + gt_data.is_missing()*(-1)
         return self._zygos   #.transpose()[::-1,:] # Flip order so that first entry is on the top
     
     # Returns a list indicating the nucleotide type of ref sequences
     # 0 = multi-nucleotide, -1 is no-data
+    def get_n_samples(self):
+        return len(self.get_samples())
+    def get_n_variants(self):
+        return len(self.get_pos())
+    def get_samples(self):
+        return self.__get_filtered_samples()
     def get_ref(self):
         """Returns a `list` indicating the nucleotide type of the reference (`REF`) sequence.\\
         0 = multiple-nucleotides\\
@@ -176,7 +179,18 @@ class VcfDataWrapper:
         if self.sort_mode is SortMode.BY_POPULATION:
             new_df = sort_popualtion(new_df)
     
-        return new_df        
+        return new_df
+
+    def __get_filtered_genotype_array(self)->GTArr:
+        """Find the filtered genotype array."""
+        df = self.__get_filtered_df()
+        return GTArr((self.data[DATA])[df.index,:])
+
+    def __get_filtered_samples(self):
+        """Find the filtered pos."""
+        df = self.__get_filtered_df()
+        return self.data[SAMPLES]
+
     
     def set_sort_by_position(self):
         return self.sort_mode == SortMode.BY_POSITION

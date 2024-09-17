@@ -51,7 +51,7 @@ if __name__ == "__main__":
     divider = make_axes_locatable(cax_1)
     cax_2 = divider.append_axes('right', size='20%', pad=0.0)
     slider_pos = 0
-    s = Slider(ax=cax_2, label="Pos", valmin=0, valmax=dw.n_variants-span, orientation="vertical")
+    s = Slider(ax=cax_2, label="Pos", valmin=0, valmax=dw.get_n_variants()-span, orientation="vertical")
     s.on_changed(update)
     plt.show()
 
