@@ -12,7 +12,7 @@ from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
 from .viewInfo import ViewInfo_base
-from .variantGridType import GRID_TYPE_KEY, GridParams, VariantGridView
+from .variantGridType import GRID_TYPE_KEY, VariantGridView
 from Util.box import Box
 
 
@@ -22,12 +22,11 @@ class FrequencyView(ViewInfo_base):
         self.plot_density = False
         super().__init__()
 
-    def get_desired_size(self) -> list[int]:
+    def get_desired_hight(self) -> list[int]:
         return [self.min_window]
     
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->str:
         axis = axs[0]
-        print("plotting")
         
         wrapped_data = self.dataset_info.get_data_wrapper()
         pos = wrapped_data.get_pos()

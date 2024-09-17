@@ -9,7 +9,7 @@ class VarPosView(VariantGridView):
     """
     A Heatmap-style view to show the position of each variant.
     """
-    def get_desired_size(self) -> list[int]:
+    def get_desired_hight(self) -> list[int]:
         return [self.ideal_block_size*3]
 
     def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:

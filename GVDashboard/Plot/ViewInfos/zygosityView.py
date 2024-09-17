@@ -17,7 +17,7 @@ from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
 from .viewInfo import ViewInfo_base
-from .variantGridType import GRID_TYPE_KEY, GridParams, VariantGridView
+from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK, X_STACK
 from Util.box import Box
 
 # Plotter for zygosity view
@@ -31,11 +31,13 @@ class ZygoteView(VariantGridView):
         self.colors = colors.ListedColormap(self.MUTATION_COLORS)
         self.min_block_size = 0.25
 
+        self._can_compress = True
+
         self._has_key = True
-    
-    def get_desired_size(self) -> list[int]:
-        wrapped_data = self.dataset_info.get_data_wrapper()
-        return [self.ideal_block_size * wrapped_data.n_samples]
+
+    # def get_samples_size(self) -> list[int]:
+    #     wrapped_data = self.dataset_info.get_data_wrapper()
+    #     return [self.ideal_block_size * wrapped_data.n_samples]
 
 
     def get_height_weights(self) -> list[int]:
@@ -48,10 +50,15 @@ class ZygoteView(VariantGridView):
         self.active_axis = axis
         # Get wrapped data and make the plot
         wrapped_data = self.dataset_info.get_data_wrapper()
-        axis.pcolorfast(np.matrix(wrapped_data.get_zygosity()), cmap=self.colors, vmax=2, vmin=-1)
+
+        zygos_matrix = wrapped_data.get_zygosity()
+        if self.stack_mode == X_STACK:
+            zygos_matrix = np.transpose(zygos_matrix)
+
+        axis.pcolorfast(zygos_matrix, cmap=self.colors, vmax=2, vmin=-1)
         #axis.matshow(wrapped_data.get_zygosity(), cmap=self.colors, vmax=2, vmin=-1)
 
-        if self.is_fist_in_set():
+        if self.is_fist_in_set() or self.stack_mode == X_STACK:
             self.fit_to_size(size=size)
         self._do_base_config(axs)
 
@@ -61,6 +68,7 @@ class ZygoteView(VariantGridView):
 
         # Add tick to y-axis only if scaling permits TODO: Implement this 
         #axis.set_yticks()
+        
         axis.set_yticks(np.arange(0.5,wrapped_data.n_samples,1))
         #axis.set_yticklabels(fontsize=8)
         print("Need to get sample numbers form data wrapper")

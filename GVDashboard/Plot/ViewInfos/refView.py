@@ -18,7 +18,7 @@ from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from .viewInfo import ViewInfo_base
-from .variantGridType import GRID_TYPE_KEY, GridParams, VariantGridView
+from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK
 
 from Util.box import Box
 
@@ -43,7 +43,8 @@ class RefView(VariantGridView):
         self._view_type = GRID_TYPE_KEY
 
         self.h_slider = None
-    def get_desired_size(self) -> list[int]:
+
+    def _get_samples_size(self) -> list[int]:
         l = [self.ideal_block_size]
         if self.plot_alt:
             wrapped_data = self.dataset_info.get_data_wrapper()
@@ -62,9 +63,15 @@ class RefView(VariantGridView):
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->Axes:
         self.active_axis = axs[0]
         wrapped_data = self.dataset_info.get_data_wrapper()
-        self.make_allele_plot(axs[0], np.matrix(wrapped_data.get_ref()),self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
+        data_matrix = np.matrix(wrapped_data.get_ref())
+        if self.stack_mode != Y_STACK:
+            data_matrix = np.transpose(data_matrix)
+        self.make_allele_plot(axs[0], np.matrix(data_matrix),self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
         if self.plot_alt:
-            self.make_allele_plot(axs[1], np.matrix(wrapped_data.get_alt()),self.ALT_LABEL,wrapped_data.data[dw.ALT], wrapped_data)
+            data_matrix = np.matrix(wrapped_data.get_alt())
+            if self.stack_mode != Y_STACK:
+                data_matrix = np.transpose(data_matrix)
+            self.make_allele_plot(axs[1], data_matrix,self.ALT_LABEL,wrapped_data.data[dw.ALT], wrapped_data)
 
         if self.pos_in_set == 0:
             self.fit_to_size(size=size)

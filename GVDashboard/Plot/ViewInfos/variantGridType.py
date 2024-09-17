@@ -16,26 +16,18 @@ from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
-from .viewInfo import ViewInfo_base
+from .viewInfo import ViewInfo_base, X_STACK, Y_STACK, STACK_MODE
 from Util.box import Box
 
 # For scroll view 
 from Plot.scrollWidget import ScrollWidget, ScrollManager
-
 GRID_TYPE_KEY = "Var-Grid"
-MIN_BLOCKS_PER_COL = 20
-"""The Minimum number of blocks allowed per column.\n
-If the number of blocks is smaller than this then a larger block size is used.
-"""
-class GridParams():
-    """
-    Simple static class that contains genal grid-based parameters.
-    """
-
 
 class VariantGridView(ViewInfo_base):
     def __init__(self) -> None:
         super().__init__()
+
+        self.stack_mode = STACK_MODE
 
         self.ideal_block_size = 10
         self.active_axis:Axes|None = None
@@ -56,20 +48,44 @@ class VariantGridView(ViewInfo_base):
         if self.is_fist_in_set():
             # Set axis title
             axs[0].set_title("Genotype Variant-Position Grid")
-        
+
+    def get_desired_hight(self) -> list[int]:
+        if self.stack_mode == Y_STACK: return self._get_samples_size()
+        else: return self._get_variants_size()
+
+    def get_desired_width(self) -> list[int]:
+        if self.stack_mode != Y_STACK: return self._get_samples_size()
+        else: return self._get_variants_size()
+    
+    
+    def _get_samples_size(self)-> list[int]:
+        wrapped_data = self.dataset_info.get_data_wrapper()
+        return [wrapped_data.n_samples * self.ideal_block_size]
+    
+    def _get_variants_size(self)-> list[int]:
+        wrapped_data = self.dataset_info.get_data_wrapper()
+        return [wrapped_data.n_variants * self.ideal_block_size]
 
     def fit_to_size(self,size:tuple[int,int]):
         if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:
-        x_lim = int(np.round(size[0]/self.ideal_block_size))
-        self.active_axis.set_xlim(0,x_lim)
-        self._blocks_per_window_x = x_lim
+        _lim = np.round(size[0]/self.ideal_block_size)
+        self._blocks_per_window_x = _lim
+        if self.stack_mode == Y_STACK:
+            self.active_axis.set_xlim(0,_lim)
+        else:
+            #self.active_axis.set_ylim(0,_lim)
+            if self.is_compressible():
+                wrapped_data = self.dataset_info.get_data_wrapper()
+                _lim = min(wrapped_data.n_samples, _lim)
+                self.active_axis.set_xlim(0,_lim)
+
 
         self.update_event.invoke(self)
 
     def get_set_views(self) -> list:
         views = super().get_set_views()
-        if self.is_fist_in_set():
+        if self.is_fist_in_set() and self.stack_mode == Y_STACK:
             scroll_view = VariantGridScrollView()
             scroll_view.set_target_view(self)
             views += [scroll_view]
@@ -103,7 +119,7 @@ class VariantGridScrollView(ViewInfo_base):
     def set_target_view(self,view:VariantGridView):
         self.target_view = view
 
-    def get_desired_size(self) -> list[int]:
+    def get_desired_hight(self) -> list[int]:
         return [self.scroll_size]
     
     def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:

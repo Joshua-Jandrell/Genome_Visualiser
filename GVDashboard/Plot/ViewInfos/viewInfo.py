@@ -20,6 +20,9 @@ def inch_to_cm(inches:float)->float:
     return inches * 2.54
 
 BASE_TYPE_KEY = "BASE"
+X_STACK = 0
+Y_STACK =1
+STACK_MODE = X_STACK
 
 class ViewInfo_base:
     """
@@ -34,6 +37,7 @@ class ViewInfo_base:
         self._view_type = BASE_TYPE_KEY
         """Defines what type of views this view can be combined with."""
 
+        self._can_compress = False
         
         self.update_event = Event()
         """
@@ -69,11 +73,17 @@ class ViewInfo_base:
     def get_key_size(self)->int:
         return 4 * self.key_row_size
     
-    def get_desired_size(self)->list[int]:
+    def get_desired_hight(self)->list[int]:
         """
         Returns the the hight, in pixes, that the given plot will ideally occupy.
         """
         return [500]
+    
+    def get_desired_width(self)->list[int]:
+        return [500]
+    
+
+    
     
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box)->str:
         """
@@ -99,6 +109,9 @@ class ViewInfo_base:
         return self._has_key
     
     # === Group/set type information ===
+    def is_compressible(self)->bool:
+        """Returns true if the given view can be scaled down."""
+        return self._can_compress
 
     def is_fist_in_set(self):
         return self.pos_in_set == 0
@@ -182,10 +195,15 @@ class viewSetManager:
     
     def get_desired_hight(self):
         """Returns the desired hight of the full view set"""
-        return sum([sum(view.get_desired_size()) for view in self.views+self.additional_views])
+        if STACK_MODE == Y_STACK: return sum([sum(view.get_desired_hight()) for view in self.views+self.additional_views])
+        else: return sum(self.views[0].get_desired_hight())
     
     def plot(self, ax:Axes, size:tuple[int,int], plot_box:Box):
         """Plot all views in the view set on the given axes"""
+        ax.set_axis_off()
+        if STACK_MODE == X_STACK:
+            self.__plot_vertical_stack(ax,size,plot_box)
+            return
         
         # Get addtional views from the group:
         additional_views = []
@@ -194,9 +212,8 @@ class viewSetManager:
 
         _views:list[ViewInfo_base] = additional_views + self.views
         hights=[]
-        ax.set_axis_off()
         for view in _views:
-            hights += view.get_desired_size()
+            hights += view.get_desired_hight()
         h, ratios = length_and_ratios(hights)
         bounds = np.concatenate((np.array([0]), np.cumsum(ratios)),axis=0)
 
@@ -216,6 +233,79 @@ class viewSetManager:
             end_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
             
             view.make_plots(axs=axs, size=size, plot_box=Box.from_points(top_left=(left_edge,start_bound), bottom_right=(right_edge, end_bound)))
+
+    def __plot_vertical_stack(self, ax:Axes, size:tuple[int,int], plot_box:Box):
+        """Method used to pack like views horizontally instead of vertically."""
+
+        widths = []
+        fixed_width = 0
+        n_compressible = 0
+        for view in self.views:
+            widths += view.get_desired_width()
+            if not view.is_compressible():
+                fixed_width += sum(view.get_desired_width())
+            else:
+                n_compressible +=1 
+        w = sum(widths)
+        if w > size[0]:
+
+            # Find the width available for compressible views 
+            rem_width = size[0]-fixed_width
+            compressible_width = rem_width/n_compressible
+
+            # Get array of all widths
+            widths = []
+            for view in self.views:
+                if view.is_compressible(): widths.append(compressible_width)
+                else: widths += view.get_desired_width()
+        else:
+            widths += [size[0]-w]
+        # find hights 'normally'
+        heights=[]
+        for view in self.additional_views + [self.views[0]]: # only the first view is needed here... all have same hight
+            heights += view.get_desired_hight()
+
+        h, ratios = length_and_ratios(heights)
+        bounds = np.concatenate((np.array([0]), np.cumsum(ratios)),axis=0)
+        bound_index = 0
+        # Get relative box bounds
+        left_edge, top_edge = plot_box.get_top_left() # Get the top of the bounding plot box (which hold the size relative to the the full figure)
+        right_edge = plot_box.get_right()
+        # Plot addtional views (on top) only
+        for view in self.additional_views:
+            axs =[] 
+            # Move top edge down as more axes are packed 
+            start_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
+            for _ in range(view.get_plot_count()):
+                bottom = 1-bounds[bound_index+1]
+                top = 1-bounds[bound_index]
+                axs.append(ax.inset_axes([0,bottom,1,top-bottom],sharex=ax))
+                bound_index += 1  
+            end_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
+            
+            view.make_plots(axs=axs, size=size, plot_box=Box.from_points(top_left=(left_edge,start_bound), bottom_right=(right_edge, end_bound)))
+
+        # Now plot vertical views 
+        w, ratios = length_and_ratios(widths)
+        bounds = np.concatenate((np.array([0]), np.cumsum(ratios)),axis=0)
+        bound_index = 0
+        for view in self.views:
+            axs =[] 
+            # Move top edge down as more axes are packed 
+            start_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
+            for _ in range(view.get_plot_count()):
+                left = bounds[bound_index]
+                right = bounds[bound_index+1]
+                axs.append(ax.inset_axes([left,0,right-left,1],sharey=ax))
+                bound_index += 1  
+            end_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
+            
+            view.make_plots(axs=axs, size=size, plot_box=Box.from_points(top_left=(left_edge,start_bound), bottom_right=(right_edge, end_bound)))
+
+
+
+        
+
 
 def get_view_sets(view_infos:ViewInfo_base)->list[viewSetManager]:
     """Iterate through a list of view infos and return a list of view set managers for those views"""
