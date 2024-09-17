@@ -3,15 +3,18 @@
 from typing import Tuple
 import customtkinter as ctk
 from UI.optionPanel import OptionCtrl, OptionCard, OptionPanel
-from Plot.plotInfo import ZygoteView, RefView, DataSetInfo, ViewInfo_base, FrequencyView
+from Plot.plotInfo import DataSetInfo, ViewInfo_base
+from Plot.ViewInfos import ZygoteView, RefView
 
 from VCF.datasetDropDown import DatasetMenu
 
-from Plot.OptionCards import FreqOptionCtrl, ZygoteOptionCtrl, RefOptionCtrl, PlotOptionCard
+from Plot.OptionCards import FreqOptionCtrl, ZygoteOptionCtrl, RefOptionCtrl, PosOptionCtrl, PlotOptionCard
 
 ZYGOSITY_OPT = "Zygosity"
 REF_OPT = "Ref. Genome"
 FREQUENCY_OPT = "Mutation Frequency"
+
+POS_OPT = "Position"
 
 class PlotOptionPanel(OptionPanel):
     __instance = None
@@ -54,4 +57,5 @@ class PlotOptionPanel(OptionPanel):
         self.content.register_option(ZygoteOptionCtrl(self.content,ZYGOSITY_OPT))
         self.content.register_option(RefOptionCtrl(self.content,REF_OPT))
         self.content.register_option(FreqOptionCtrl(self.content,FREQUENCY_OPT))
+        self.content.register_option(PosOptionCtrl(self.content,POS_OPT))
     

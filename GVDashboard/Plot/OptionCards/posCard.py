@@ -1,10 +1,10 @@
 from Plot.OptionCards import PlotOptionCard, PlotOptionCtrl, OptionCard
-from Plot.ViewInfos import RefView
+from Plot.ViewInfos import VarPosView
 from typing import Tuple
 
-class RefOptionCard(PlotOptionCard):
+class PosOptionCard(PlotOptionCard):
     """
-    A plot option card specifically used to optionally plot reference sequence data
+    A plot option card specifically used to optionally plot zygosity data
     """
     # Useful constants 
     COUNTS_VALUE = 'counts'
@@ -24,15 +24,16 @@ class RefOptionCard(PlotOptionCard):
         #                                        values=[self.COUNTS_VALUE,self.DENSITY_VALUE], # Values that can be selected on segmented button
         #                                        command=self.__on_count_toggle_change # The command to be called when the value is changed: will return the value of the toggle as an argument.
         #                                        )
-        
+                
         # # Put toggle in the content grind
         # counts_toggle.grid(row=1, column=0, padx=5, pady=5)
         # # Select default toggle value to counts:
         # counts_toggle.set(self.COUNTS_VALUE)
 
-    # def __on_count_toggle_change(self,value):
+    #### TODO: Maybe we can toggle homo or hetero on??? We shall ask in usability tests tho
+    # def __on_homo_toggle_change(self,value):
     #     """Private method called when the value of the counts toggle is updated."""
-    #     assert(isinstance(self.value, RefView)) # Ensure that view info is of type frequency view
+    #     assert(isinstance(self.value, ZygoteView)) # Ensure that view info is of type frequency view
     #     if value == self.COUNTS_VALUE:
     #         print("Plot counts")
     #         ### TODO: Add code to update view info here
@@ -41,11 +42,14 @@ class RefOptionCard(PlotOptionCard):
     #         print("Plot densities")
 
 
-class RefOptionCtrl(PlotOptionCtrl):
+# Option control specifcally for zygosity info
+class PosOptionCtrl(PlotOptionCtrl):
     def make_option_card(self) -> OptionCard:
-        op = RefOptionCard(master=self.option_list, # The UI container the option card goes into (should be an option list)
-                           option_ctrl=self, # The option control that created this option card (should be this option control)
-                           option_key="Reference Sequence" # The `option_key` is essentially just the text displayed on the option card label
-                           )
-        op.set_value(RefView())
+        # op = PosOptionCard(master=self.option_list, # The UI container the option card goes into (should be an option list)
+        #                    option_ctrl=self, # The option control that created this option card (should be this option control)
+        #                    option_key="Position" # The `option_key` is essentially just the text displayed on the option card label
+        #                    )
+        op = super().make_option_card()
+        op.set_value(VarPosView())
         return op
+        

@@ -20,9 +20,11 @@ from UI.searchPanel import SearchPanel
 
 from Plot.plotInfo import ViewInfo_base
 from Plot.autoPlotter import AutoPlotter
+from Plot.keyCanvas import KeyCanvas
+
 # Constants
-DEFAULT_WIDTH = 800
-DEFAULT_HIGHT = 300
+DEFAULT_WIDTH = 1200
+DEFAULT_HIGHT = 600
 MIN_WIDTH = 400
 MIN_HIGHT = 150
 PANEL_WIDTH = 200
@@ -66,6 +68,10 @@ class App(ctk.CTk):
         self.search_panel = SearchPanel(self.left.content)
         self.search_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
+        # Put key key canvas on the right panel 
+        self.key_canvas = KeyCanvas(self.right.content)
+        self.key_canvas.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
+
         # Makes plot button -- might get depricated
         self.left.plot_button = ctk.CTkButton(self.search_panel.button_panel,text="Plot",command=self.makePlot)
         self.left.plot_button.pack(fill=ctk.BOTH)
@@ -85,6 +91,7 @@ class App(ctk.CTk):
             # self.main_frame.pack_forget()
             # self.main_frame.destroy()
             # self.main_frame = None
+            ViewPanel.set_active(False)
             AutoPlotter.set_active(False)
             self.destroy()
 
@@ -98,6 +105,8 @@ class App(ctk.CTk):
 
 # Makes app if run as main
 if __name__ == "__main__":
+    ctk.set_default_color_theme("green")
+    ctk.set_appearance_mode("light")
     app = App()
     app.mainloop()
 

@@ -8,3 +8,4 @@ from Plot.OptionCards.plotCard import *
 from Plot.OptionCards.zygosityOption import ZygoteOptionCtrl
 from Plot.OptionCards.frequencyOption import FreqOptionCtrl
 from Plot.OptionCards.refOption import RefOptionCtrl
+from .posCard import PosOptionCtrl

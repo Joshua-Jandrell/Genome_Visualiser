@@ -6,16 +6,26 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavToolbar
 
 from matplotlib.figure import Figure 
+from matplotlib.gridspec import GridSpec as GridSpec
 
 from Plot.plotInfo import ViewPlotter, ViewInfo_base
 from VCF.dataSetConfig import DataSetConfig
 
+from Plot.keyCanvas import KeyCanvas
+from Plot.scrollWidget import ScrollManager
+from Plot.plotUpdate import PlotUpdate
+
+from Util.event import Event
 
 class ViewPanel(ctk.CTkFrame):
     __instance = None
+    __active = True
+
+    def set_active(active:bool):
+        ViewPanel.__active = active
 
     def set_plots(views:list[ViewInfo_base]):
-        if isinstance(ViewPanel.__instance, ViewPanel):
+        if ViewPanel.__active and isinstance(ViewPanel.__instance, ViewPanel):
             ViewPanel.__instance.make_plot(views=views)
 
     def __init__(self, master):
@@ -36,6 +46,12 @@ class ViewPanel(ctk.CTkFrame):
         self.toolbar = NavToolbar(window=self,canvas=self.canvas)
         self.plot = self.canvas.get_tk_widget()
 
+        # Set canvas to be used by scroll widgets 
+        ScrollManager.set_scroll_canvas(self.plot)
+
+        # Set plot update to update the plot
+        PlotUpdate.set_canvas(self.canvas)
+
 
         # Create button to let users quickly select datasets
         self.data_select_button = ctk.CTkButton(self, text="Select Dataset File",
@@ -48,7 +64,7 @@ class ViewPanel(ctk.CTkFrame):
     def __hide_plots(self):
         """Hides the plot canvas. Should be called when no figures are plotted."""
         # hide canvas and toolbar
-        self.plot.pack_forget()
+        self.canvas_frame.pack_forget()
         self.toolbar.pack_forget()
         self.hidden = True
 
@@ -62,25 +78,55 @@ class ViewPanel(ctk.CTkFrame):
         self.toolbar.pack(side="top",fill="x")
         self.toolbar.update()
         self.canvas_frame.pack(side="top", fill="both", expand=True)
-        self.plot.pack(side="top", fill="both", expand=True)
+        self.plot.pack(side="top", fill='x', expand='true')
         self.hidden = False
 
-    def make_plot(self, views:list[ViewInfo_base])->FigCanvas:
+    def make_plot(self, views:list[ViewInfo_base])->None:
 
-        # Scale figure based on window size
-        plot_good = self.view_plotter.plot_figure(views)
+        ScrollManager.clear_scrolls()
 
-        if plot_good:
-            if self.hidden: self.__show_plots()
-            self.canvas.draw()
-            self.toolbar.update()
-        elif not plot_good and not self.hidden:
+        # Filter for only valid views
+        views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
+        if len(views) == 0: 
             self.__hide_plots()
             return
 
-           
-    
+        # Scale figure based on window size
+        plot_width, plot_hight = self.view_plotter.plot_figure(views,
+                                                   size=tuple([self.winfo_width(), 0]),
+                                                   can_expand = [False, True])
+
+        if plot_hight != 0:
+            self.plot.configure(height=plot_hight)
+            self.canvas.draw()
+            if self.hidden: self.__show_plots()
+
+            # Plot keys if possible
+            make_keys(views=views)
+                
+        elif plot_hight == 0 and not self.hidden:
+            self.__hide_plots()
+            return    
 
         #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)
         return self.canvas
 
+def make_keys(views:list[ViewInfo_base]):
+    key_fig = KeyCanvas.get_figure()
+    key_fig.clear()
+    if not isinstance(key_fig, Figure): return
+    
+    # Find the number keys that need to be plotted
+    key_views = [view for view in views if view.has_key()]
+    key_count = len(key_views)
+    if key_count == 0:
+        KeyCanvas.hide_canvas()
+        return
+    
+    # Make a gridspec for all keys
+    gs = GridSpec(nrows=key_count, ncols=1)
+    for i, view in enumerate(key_views):
+        ax = key_fig.add_subplot(gs[i])
+        view.make_key(ax,(0,0))
+
+    KeyCanvas.show_canvas()

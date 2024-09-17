@@ -4,7 +4,7 @@ from typing import Tuple
 import customtkinter as ctk
 
 from Plot.OptionCards.plotCard import PlotOptionCard, PlotOptionCtrl, OptionCard
-from Plot.plotInfo import FrequencyView
+from Plot.ViewInfos import FrequencyView
 
 class FreqOptionCard(PlotOptionCard):
     """
@@ -45,7 +45,6 @@ class FreqOptionCard(PlotOptionCard):
         self.update_event.invoke(self)
         
         
-
 class FreqOptionCtrl(PlotOptionCtrl):
     def make_option_card(self) -> OptionCard:
         #op = super().make_option_card()

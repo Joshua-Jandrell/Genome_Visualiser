@@ -1,5 +1,5 @@
 from Plot.OptionCards import PlotOptionCard, PlotOptionCtrl, OptionCard
-from Plot.plotInfo import ZygoteView
+from Plot.ViewInfos import ZygoteView
 from typing import Tuple
 
 class ZygoOptionCard(PlotOptionCard):
