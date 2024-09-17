@@ -15,5 +15,18 @@ o	3 Dataset filter options:
 2.	By mutation frequency (zygosity)
 3.	By ref/alt sequence (length or value)
 o	1 Dataset sort option:
-1.	By Quality 
+1.	By Quality
 
+## Requirments
+To run the genome visuliser python3 and the required libraries mus be installed. To install these requiremnts in a virtual envrioments (in the directry `.venv`) run the command below:
+```bash
+bash make_venv.sh
+```
+❗NOTE: Some required librbaies like scikit-allele have further requirements which must be satesfied.
+
+## Running
+In order run the genome visuliser use the command:
+```bash
+.venv/Scripts/python.exe ./GVDashboard/app.py
+```
+❗ NOTE there many be issues with reltive script impots, to avoid this please navgate to `./GVDashboard/`.
