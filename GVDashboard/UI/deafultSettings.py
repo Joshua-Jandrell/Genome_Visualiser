@@ -5,7 +5,7 @@ class Dimenations():
     DEFAULT_HIGHT = 500
     MIN_WIDTH = 400
     MIN_HIGHT = 150
-    PANEL_WIDTH = 300
+    PANEL_WIDTH = 350
     HIDE_BAR_WIDTH = 10
     MIN_VIEW_WIDTH = 400
 

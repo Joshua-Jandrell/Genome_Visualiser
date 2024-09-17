@@ -10,14 +10,14 @@ class VarPosView(VariantGridView):
     A Heatmap-style view to show the position of each variant.
     """
     def get_desired_hight(self) -> list[int]:
-        return [self.ideal_block_size*3]
+        return [self.ideal_block_size]
 
     def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:
         self.active_axis = ax = axs[0]
         wrapped_data = self.dataset_info.get_data_wrapper()
         pos_mat = np.matrix(wrapped_data.get_pos())
 
-        ax.pcolorfast(pos_mat, cmap='RdPu')
+        ax.pcolorfast(pos_mat, cmap='plasma')
         #ax.plot(wrapped_data.get_pos())
         #ax.stem(wrapped_data.get_pos())
         #ax.bar(wrapped_data.get_pos())

@@ -40,10 +40,10 @@ class DataSetInfo:
         self.configure(source_path, save_path, name=name)
         self.get_save_path()
         self.get_dataset_name()
-        print(f"Make {self.__name}")
+        #print(f"Make {self.__name}")
 
     def __del__(self):
-        print(f"killed {self.__name}")
+        #print(f"killed {self.__name}")
         DataSetInfo.clear_name(self.__name)
 
     def configure(self,source_path:str|None = None, save_path:str|None = None, filters:DataFilter_base|None = None, name:str|None = None):
@@ -94,7 +94,7 @@ class DataSetInfo:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
         if self.dw is None:
             self.dw = DataFetcher.load_data(self.get_source_path())
-            print("not using old wrapper?")
+            #print("not using old wrapper?")
         return self.dw
     
         

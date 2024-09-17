@@ -193,11 +193,11 @@ class OptionPanel(ctk.CTkFrame):
 #class ListChangeType(Enum)
 
 
-class OptionList(ctk.CTkFrame):
+class OptionList(ctk.CTkScrollableFrame):
     def __init__(self, master, has_swaps:bool = True, opts_update_command:Callable[[],Any]|None=None, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
         
-        # Coningure local valriables
+        # Configure local valriables
         self.PAD = 5
         self.opt_ctrls = {}
         self.opts_update_command = opts_update_command # Command called when a new option is registered
