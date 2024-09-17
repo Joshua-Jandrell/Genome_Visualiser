@@ -13,7 +13,9 @@ from Plot.OptionCards import FreqOptionCtrl, ZygoteOptionCtrl, RefOptionCtrl, Po
 ZYGOSITY_OPT = "Zygosity"
 REF_OPT = "Ref. Genome"
 FREQUENCY_OPT = "Mutation Frequency"
+
 POS_OPT = "Position"
+
 class PlotOptionPanel(OptionPanel):
     __instance = None
 

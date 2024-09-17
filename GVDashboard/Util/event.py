@@ -8,6 +8,8 @@ class Event():
         self.listeners = []
 
     def invoke(self,*args):
+        """ Calls all listeners simultaneously. Listeners are functions. 
+        """
         [listener(*args) for listener in self.listeners]
     
     def add_listener(self,command:Callable):
