@@ -8,3 +8,6 @@ class NumberEntry(ctk.CTkEntry):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, text_color, placeholder_text_color, textvariable, placeholder_text, font, state, **kwargs)
 
         # Add trace to command to see when 
+
+    # def get()->int:
+        

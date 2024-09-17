@@ -97,8 +97,8 @@ class DataOptionCard(OptionCard):
         
         dw = self.get_datawrap()
         min_pos, max_pos = dw.get_file_pos_range()
-        print(f"the min is: {min_pos}")
-        print(f"the max is: {max_pos}")
+        # print(f"the min is: {min_pos}")
+        # print(f"the max is: {max_pos}")
         
         #Position heading Textbox:
         self.position_headingLabel = ctk.CTkLabel(self.content, text=" Genome Position Range", justify="center",)
@@ -127,8 +127,8 @@ class DataOptionCard(OptionCard):
         self.position_maxendLabel.grid(row=2, column=2, columnspan=1, padx=0, pady=10, sticky="w")
         
         # Add traces to read in position input values:
-        self.input_pos_min.trace_add(mode="read", callback=self.read_in_pos)
-        self.input_pos_max.trace_add(mode="read", callback=self.read_in_pos)
+        self.input_pos_min.trace_add(mode="write", callback=self.read_in_pos)
+        self.input_pos_max.trace_add(mode="write", callback=self.read_in_pos)
         
         
       ####### quality range:   ##############
@@ -136,7 +136,7 @@ class DataOptionCard(OptionCard):
         min_pos, max_pos = dw.get_file_pos_range()   ##############   REDO
         
         #Quality heading Textbox:
-        self.quality_headingLabel = ctk.CTkLabel(self.content, text="Sample Quality Range", justify="center",)
+        self.quality_headingLabel = ctk.CTkLabel(self.content, text="Variant Quality Range", justify="center",)
         self.quality_headingLabel.grid(row=3, column=0, columnspan=3, padx=20, pady=10, sticky="ew")
         #Textbox:
         self.quality_startLabel = ctk.CTkLabel(self.content, text="From:")
@@ -162,8 +162,8 @@ class DataOptionCard(OptionCard):
         self.quality_maxendLabel.grid(row=5, column=2, columnspan=1, padx=0, pady=10, sticky="w")
         
         # Add traces to read in sample quality input values:
-        self.input_qual_min.trace_add(mode="read", callback=self.read_in_qual)
-        self.input_qual_max.trace_add(mode="read", callback=self.read_in_qual)
+        self.input_qual_min.trace_add(mode="write", callback=self.read_in_qual)
+        self.input_qual_max.trace_add(mode="write", callback=self.read_in_qual)
 
      ###### Sort options:    ##############
      #Sort heading Textbox:
@@ -171,13 +171,13 @@ class DataOptionCard(OptionCard):
         self.quality_headingLabel.grid(row=6, column=0, columnspan=3, padx=20, pady=5, sticky="ew")
     
      # Quality and Population Radio Buttons:
-        self.set_sort_mode = ctk.Variable(value=SortMode.BY_POPULATION)
+        self.set_sort_mode = ctk.IntVar(value=int(SortMode.BY_POSITION))
  
-        self.qualityRadioButton = ctk.CTkRadioButton(self, text="Quality\n(100 to 0)", variable=self.set_sort_mode, value=SortMode.BY_QUALITY)
+        self.qualityRadioButton = ctk.CTkRadioButton(self, text="Quality\n(100 to 0)", variable=self.set_sort_mode, value=SortMode.BY_QUALITY, command=self.set_dw_sortmode)
         self.qualityRadioButton.grid(row=7, column=0, padx=20, pady=5, sticky="w")
  
-        self.populationRadioButton = ctk.CTkRadioButton(self, text="Population\n(alphabetically)", variable=self.set_sort_mode, value=SortMode.BY_POPULATION)
-        self.populationRadioButton.grid(row=7, column=1, padx=5, pady=5, sticky="w")
+        self.positionRadioButton = ctk.CTkRadioButton(self, text="Position\n(alphabetically)", variable=self.set_sort_mode, value=SortMode.BY_POSITION, command=self.set_dw_sortmode)
+        self.positionRadioButton.grid(row=7, column=1, padx=5, pady=5, sticky="w")
         
     # dropdown 
         #~self.sort_option = ctk.CTkOptionMenu(self)
@@ -188,34 +188,39 @@ class DataOptionCard(OptionCard):
         dw = self.value.get_data_wrapper()
         
         return dw
+    
+    def set_dw_sortmode(self):
+        dw = self.get_datawrap()
+        dw.set_sort_mode(self.set_sort_mode.get())
 
     def read_in_pos(self, *args):
+        "Print Read the pos"
         _start_pos_input = self.input_pos_min.get()
-        number_input = [c for c in _start_pos_input if c.isdigit()]
+        number_input = "".join([c for c in _start_pos_input if c.isdigit()])
         if _start_pos_input  != number_input:
-            self.input_pos_min.set()
+            self.input_pos_min.set(number_input)
         
         _end_pos_input = self.input_pos_max.get()
-        number_input = [c for c in _end_pos_input if c.isdigit()]
+        number_input = "".join([c for c in _end_pos_input if c.isdigit()])
         if _end_pos_input  != number_input:
-            self.input_pos_max.set()
+            self.input_pos_max.set(number_input)
         
         dw = self.get_datawrap()
-        dw.set_pos_range(self.input_pos_min,self.input_pos_max)
+        dw.set_pos_range(int("0"+self.input_pos_min.get()),int("0"+self.input_pos_max.get()))
             
     def read_in_qual(self, *args):
         _start_qual_input = self.input_qual_min.get()
-        number_input = [c for c in _start_qual_input if c.isdigit()]
+        number_input = "".join([c for c in _start_qual_input if c.isdigit()])
         if _start_qual_input  != number_input:
-            self.input_qual_min.set()
+            self.input_qual_min.set(number_input)
         
         _end_qual_input = self.input_qual_max.get()
-        number_input = [c for c in _end_qual_input if c.isdigit()]
+        number_input = "".join([c for c in _end_qual_input if c.isdigit()])
         if _end_qual_input  != number_input:
-            self.input_qual_max.set()  
+            self.input_qual_max.set(number_input)  
 
         dw = self.get_datawrap()
-        dw.set_qual_range(self.input_qual_min,self.input_qual_max)
+        dw.set_qual_range(int("0"+self.input_qual_min.get()),int("0"+self.input_qual_max.get()))
 
 
 

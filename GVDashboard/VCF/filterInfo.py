@@ -94,6 +94,7 @@ class DataSetInfo:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
         if self.dw is None:
             self.dw = DataFetcher.load_data(self.get_source_path())
+            print("not using old wrapper?")
         return self.dw
     
         

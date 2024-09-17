@@ -48,14 +48,14 @@ class RefView(VariantGridView):
         l = [self.ideal_block_size]
         if self.plot_alt:
             wrapped_data = self.dataset_info.get_data_wrapper()
-            l += [wrapped_data.get_alt().shape[0] * self.ideal_block_size]
+            l += [wrapped_data.get_alt_int().shape[0] * self.ideal_block_size]
         return l
 
     def get_height_weights(self) -> list[int]:
         weight = [1]
         if self.plot_alt:
             wrapped_data = self.dataset_info.get_data_wrapper()
-            weight += [wrapped_data.get_alt().shape[0]]
+            weight += [wrapped_data.get_alt_int().shape[0]]
         return weight
     def get_plot_count(self) -> int:
         if self.plot_alt: return 2
@@ -63,12 +63,12 @@ class RefView(VariantGridView):
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->Axes:
         self.active_axis = axs[0]
         wrapped_data = self.dataset_info.get_data_wrapper()
-        data_matrix = np.matrix(wrapped_data.get_ref())
+        data_matrix = np.matrix(wrapped_data.get_ref_ints())
         if self.stack_mode != Y_STACK:
             data_matrix = np.transpose(data_matrix)
         self.make_allele_plot(axs[0], np.matrix(data_matrix),self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
         if self.plot_alt:
-            data_matrix = np.matrix(wrapped_data.get_alt())
+            data_matrix = np.matrix(wrapped_data.get_alt_int())
             if self.stack_mode != Y_STACK:
                 data_matrix = np.transpose(data_matrix)
             self.make_allele_plot(axs[1], data_matrix,self.ALT_LABEL,wrapped_data.data[dw.ALT], wrapped_data)
@@ -98,7 +98,8 @@ class RefView(VariantGridView):
                                   fontsize=8)
                     
     def should_annotate(self,wrapped_data:DataWrapper)->bool:
-        return self.annotated and wrapped_data.get_alt().shape[1] < self.ANNOTATION_MAX
+        return False
+        #return self.annotated and wrapped_data.get_alt().shape[1] < self.ANNOTATION_MAX
     
     def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
             key_txt = [["   ","A"],

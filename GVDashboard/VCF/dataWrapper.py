@@ -4,9 +4,9 @@ import allel as allel
 from allel import GenotypeArray as GTArr
 from pandas import DataFrame
 
-from enum import Enum
+from enum import IntEnum
 
-class SortMode(Enum):
+class SortMode(IntEnum):
     BY_POSITION=0,
     BY_QUALITY=1,
     BY_POPULATION = 2,
@@ -72,7 +72,7 @@ class VcfDataWrapper:
         self.first_qual=0
         self.last_qual=100        
         #Default setting: don't sort by quality
-        self.sort_mode = SortMode.BY_POSITION
+        self.sort_mode:SortMode = SortMode.BY_POSITION
 
     # Returns a matrix of zygosities for each sample variant.
     # 0 = no mutation, 1 = heterozygous, 2 = homozygous mutation, -1 = no-data
@@ -95,19 +95,26 @@ class VcfDataWrapper:
         return len(self.get_pos())
     def get_samples(self):
         return self.__get_filtered_samples()
-    def get_ref(self):
+    
+    def get_ref_ints(self):
         """Returns a `list` indicating the nucleotide type of the reference (`REF`) sequence.\\
         0 = multiple-nucleotides\\
         -1 = no-data
         """
-        self._refs = alleles_to_numbs(self.data[REF])
-        return self._refs
+        return alleles_to_numbs(self.get_ref())
 
-    def get_alt(self):
-        self._alts = np.array([alleles_to_numbs(alts) for alts in self.data[ALT]])
-        filter_mask = np.array([np.max(self._alts,axis=0) >= 0][0]) # filter out empty columns
-        self._alts = self._alts[:,filter_mask].transpose()[::-1,:] # Put samples on the rows in descending order
-        return self._alts
+    
+        return self._refs
+    
+    def get_ref(self):
+        df = self.__get_filtered_df()
+        return df["REF"].to_numpy()
+    
+    def get_alt_int(self):
+        _alts = np.array([alleles_to_numbs(alts) for alts in self.data[ALT][self.__get_filtered_df().index]])
+        filter_mask = np.array([np.max(_alts,axis=0) >= 0][0]) # filter out empty columns
+        _alts = _alts[:,filter_mask].transpose()[::-1,:] # Put samples on the rows in descending order
+        return _alts
 
     def get_pos(self):
         """Returns an array of chromosome positions, for plotting."""
@@ -159,7 +166,7 @@ class VcfDataWrapper:
 
     def __get_filtered_df(self)->DataFrame:
         """Applies all filters and returns a dataframe containing only the desired values."""
-        if isinstance(self.filtered_df, DataFrame): return self.filtered_df
+        #if isinstance(self.filtered_df, DataFrame): return self.filtered_df
         new_df = self.df
         
         # filter by position range:
@@ -174,10 +181,14 @@ class VcfDataWrapper:
         #sort by quality
         if self.sort_mode is SortMode.BY_QUALITY:
             new_df = sort_qual(new_df)
+        elif self.sort_mode is SortMode.BY_POSITION:
+            new_df = sort_position(new_df)
             
         #sort alphabetically by population
         if self.sort_mode is SortMode.BY_POPULATION:
             new_df = sort_popualtion(new_df)
+
+        self.filtered_df = new_df
     
         return new_df
 
@@ -193,13 +204,17 @@ class VcfDataWrapper:
 
     
     def set_sort_by_position(self):
-        return self.sort_mode == SortMode.BY_POSITION
+        self.sort_mode == SortMode.BY_POSITION
     
     def set_sort_by_qual(self):
-        return self.sort_mode == SortMode.BY_QUALITY
+        self.sort_mode == SortMode.BY_QUALITY
 
     def set_sort_by_population(self):
-       return self.sort_mode == SortMode.BY_POPULATION
+        self.sort_mode == SortMode.BY_POPULATION
+
+    def set_sort_mode(self, mode_int:int):
+        sort_mode = SortMode(mode_int)
+        self.sort_mode = sort_mode
     
     
 
@@ -233,8 +248,11 @@ def select_by_pos(df: DataFrame, first, last)-> DataFrame:
 def select_by_qual(df: DataFrame, first, last)-> DataFrame:
     return df[df["QUAL"].between(first, last, inclusive = 'both')]
 
+def sort_position(df:DataFrame):
+    return df.sort_values(by=["POS"], ascending=True)
+
 def sort_qual(df:DataFrame):
-    return df.sort_values(by=["QUAL"], descending=True)
+    return df.sort_values(by=["QUAL"], ascending=False)
 
 def sort_popualtion(df:DataFrame):
     return df.sort_values(by=['samples'], ascending=True)
