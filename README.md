@@ -1,21 +1,25 @@
 # Genome_Visualiser
-Code final year dynamic genome visualiser project
 
-Version 1.0 of the Genome Visualiser Application supports basic functionality for visualising `.vcf` and `.vcf.gz` files. Unfortunately `.bcf` files are not supported for visualisation. Version 1.0 is best suited for initial Usability Testing, alowing developers to understand which features of the visualiser need to be further developed and improved in future App releases.
+`Version 1.0` of the Genome Visualiser Application supports basic functionality for visualising `.vcf` and `.vcf.gz` files. Unfortunately `.bcf` files are not supported for visualisation. Version 1.0 is best suited for initial Usability Testing, alowing developers to understand which features of the visualiser need to be further developed and improved in future App releases.
 
-Version 1.0 features:
-o	3 View options:
-1.	Reference sequence table 
-2.	Zygosity colormap 
-3.	Mutation frequency histogram
-o	Implemented Dataset management
-o	Input validation for acceptable VCF validation
-o	3 Dataset filter options:
-1.	By zygosity
-2.	By mutation frequency (zygosity)
-3.	By ref/alt sequence (length or value)
-o	1 Dataset sort option:
-1.	By Quality
+## `Version 1.0` Features:
+- [x] User specified data subset management
+- [x] Input validation for acceptable VCF file formats
+
+#### _Visualization_:
+- [x] Reference and alternate genome nucleotide-encoded sequences
+- [x] Zygosity colormap 
+- [x] Mutation count-frequence and density histograms
+- [x] An exploratory macro-view of the genome positions as a "heatmap"
+
+**Dataset subset selection using any combination of the following**:
+- [x] Inputting the range of genome positions shown 
+- [x] Inputting a range of min and max sample quality values
+
+**Sorting the genome dataset by**:
+* [Default] Position (lowest to highest)
+* Quality (high to lowest)
+
 
 ## Requirments
 To run the genome visuliser python3 and the required libraries mus be installed. To install these requiremnts in a virtual envrioments (in the directry `.venv`) run the command below:
