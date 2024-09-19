@@ -15,7 +15,7 @@ from VCF.vcfTest import getData
 from VCF.vcfTest import TEST_FILE
 
 def update(val):
-    ax.set_ylim(dw.n_variants-val, dw.n_variants-val-span)
+    ax.set_ylim(dw.get_n_variants()-val, dw.get_n_variants()-val-span)
     
 if __name__ == "__main__":
     dw = DataFetcher.load_data("./Data/afr-small.vcf")
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     gs = GridSpec(ncols=3, nrows=1, width_ratios=[8, 0.5, 2])
     ax = fig.add_subplot(gs[0])
     #a = ax.matshow(dw.get_zygosity().transpose(), cmap=cmap, vmax=2, vmin=-1)
-    a = ax.pcolorfast(dw.get_zygosity().transpose(), cmap=cmap, vmax=2, vmin=-1)
+    a = ax.pcolorfast(dw.get_zygosity(), cmap=cmap, vmax=2, vmin=-1)
 
     span = 150
     ax.set_ylim(span,0)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # divider = make_axes_locatable(ax)
     # cax_1 = divider.append_axes('right', size='5%', pad=0.05)
     cax_1 = fig.add_subplot(gs[1])
-    cax_1.matshow(dw.get_zygosity().transpose(), cmap=cmap, vmax=2, vmin=-1)
+    cax_1.matshow(dw.get_zygosity(), cmap=cmap, vmax=2, vmin=-1)
     divider = make_axes_locatable(cax_1)
     cax_2 = divider.append_axes('right', size='20%', pad=0.0)
     slider_pos = 0
