@@ -31,5 +31,5 @@ def im_show(data, fig:figure.Figure):
 
 # Useful constants 
 
-ZYGO_PLOT_METHOD_NAMES = ["pcolor", "plcolorfast", "pcolormesh", "matshow", "imshow"]
+ZYGO_PLOT_METHOD_NAMES = ["pcolor", "pcolorfast", "pcolormesh", "matshow", "imshow"]
 ZYGO_PLOT_METHODS = [pcolor_plot, pcolor_fast, pcolor_mesh, mat_show, im_show]

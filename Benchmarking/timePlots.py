@@ -17,13 +17,13 @@ BLOCK_SIZE = 10
 SAVE_DIR = os.path.join(RESULT_DIR,"Plots","ZygsityPlottingTimes")
 
 
-N_CYCLES = 1
+N_CYCLES = 10
 """The number of times each plot is run, taken as an average to improve reliability."""
 
-VAR_COUNTS = [50]#, 500, 500, 50000, 500000]
+VAR_COUNTS = [50, 500, 500, 50000]
 """Variant volume counts used for benchmarking."""
 
-SAMPLE_COUNTS = [10]#, 100]#, 1000, 10000]
+SAMPLE_COUNTS = [10, 100, 1000, 10000]
 """Number of samples to be used in moc data sets when benchmarking."""
 
 DPI_VALS = [50, 100, 200]
@@ -87,38 +87,5 @@ def make_verification_images():
     pcolor_plot(data=data, fig=fig)
     #fig.draw()
 
-
-# def time_zygosity_plots(n_variants, n_samples):
-#     data = get_random_zygoisty(n_variants=n_variants, n_samples=n_samples)
-#     fig, ax = get_plot_figure(n_variants*BLOCK_SIZE, n_samples*BLOCK_SIZE)
-#     start = time.time()
-    
-#     end = time.time()-start
-#     print(end)
-
-#     # fig.clear()
-#     # start = time.time()
-#     # ax.imshow(data, cmap=CMAP)
-#     # end = time.time()-start
-#     # print(end)
-
-#     # fig.clear()
-#     # start = time.time()
-#     # ax.pcolorfast(data, cmap=CMAP)
-#     # end = time.time()-start
-#     # print(end)
-#     jou = 3
-
-#     for _ in range(10):
-#         tracemalloc.start()
-#         #fig.clear()
-#         fig, ax = get_plot_figure(n_variants*BLOCK_SIZE, n_samples*BLOCK_SIZE)
-#         start = time.time()
-#         ax.matshow(data, cmap=ZYGOSITY_CMAP)
-#         end = time.time()-start
-#         print(end)
-#         print(tracemalloc.get_traced_memory())
-
-#         tracemalloc.stop()
 if __name__ == "__main__":
     time_zygoisty_plots()
