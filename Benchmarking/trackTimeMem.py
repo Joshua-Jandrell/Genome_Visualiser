@@ -25,6 +25,7 @@ def monitor_memory(fxn:Callable, n_runs = 10)->tuple[list[float], list[float]]:
         _mem, _peak_meme = tracemalloc.get_traced_memory()
         _mems.append(_mem)
         _peak_mems.append(_peak_meme)
+        tracemalloc.stop()
     return _mems, _peak_mems
     
 def monitor_time_and_mem(fxn:Callable, n_runs = 10):

@@ -26,7 +26,7 @@ def get_csv_header():
     return main_heads
 
 
-def time_zygoisty_plots(output_file:str = "zygosity_plotting_memory.csv"):
+def track_zygoisty_plots(output_file:str = "zygosity_plotting_memory.csv"):
 
     # Make results directory if required 
     os.makedirs(SAVE_DIR, exist_ok=True)
@@ -78,4 +78,4 @@ def make_verification_images():
     #fig.draw()
 
 if __name__ == "__main__":
-    time_zygoisty_plots()
+    track_zygoisty_plots()
