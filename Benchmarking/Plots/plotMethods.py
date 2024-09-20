@@ -17,17 +17,17 @@ def pcolor_fast(data, fig:figure.Figure):
 def pcolor_mesh(data, fig:figure.Figure):
     fig.clear()
     axes = fig.add_subplot(111)
-    axes.pcolormesh(data,cmap=ZYGOSITY_CMAP)
+    axes.pcolormesh(data,cmap=ZYGOSITY_CMAP, vmin=-1, vmax=2)
 
 def mat_show(data, fig:figure.Figure):
     fig.clear()
     axes = fig.add_subplot(111)
-    axes.matshow(data,cmap=ZYGOSITY_CMAP)
+    axes.matshow(data,cmap=ZYGOSITY_CMAP, vmin=-1, vmax=2)
 
 def im_show(data, fig:figure.Figure):
     fig.clear()
     axes = fig.add_subplot(111)
-    axes.imshow(data, cmap=ZYGOSITY_CMAP)
+    axes.imshow(data, cmap=ZYGOSITY_CMAP, vmin=-1, vmax=2)
 
 # Useful constants 
 

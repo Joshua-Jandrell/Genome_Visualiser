@@ -12,22 +12,7 @@ from Plots.plotMethods import *
 from trackTimeMem import monitor_time
 from config import *
 
-BLOCK_SIZE = 10
-
 SAVE_DIR = os.path.join(RESULT_DIR,"Plots","ZygsityPlottingTimes")
-
-
-N_CYCLES = 10
-"""The number of times each plot is run, taken as an average to improve reliability."""
-
-VAR_COUNTS = [50, 500, 500, 50000]
-"""Variant volume counts used for benchmarking."""
-
-SAMPLE_COUNTS = [10, 100, 1000, 10000]
-"""Number of samples to be used in moc data sets when benchmarking."""
-
-DPI_VALS = [50, 100, 200]
-"""DPI Values for figures, used to see if this impacts plot time."""
 
 def get_csv_header():
     main_heads = ["plot_type", "n_variants", "n_samples", "n_values", "dpi", "average"]
