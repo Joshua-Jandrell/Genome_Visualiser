@@ -74,7 +74,7 @@ class App(ctk.CTk):
     def ooo(self,event):
         if self.config_watch:
             #if event.width <= KEY_W and event.height <= KEY_H and event.widget == self.fig_frame.xy_canvas:
-            if self.fig_frame.xy_canvas:
+            if  event.widget == self.fig_frame.xy_canvas:
                 print(event)
                 print(event.widget)
                 print(event.x)
