@@ -23,7 +23,7 @@ APP_Y = 500
 
 DEFAULT_FIG = 200
 
-DATA_DIMS = [(5,20),(500,2000)]#,(50,200),(500,200),(500,2000)]
+DATA_DIMS = [(500,2000)]#,(500,2000)]#,(50,200),(500,200),(500,2000)]
 """Data sizes used for plotting tests."""
 DPIS = [50]#, 100, 150]
 
@@ -224,7 +224,7 @@ class CTkScrollAgg(ctk.CTk):
         self.plot_t = time.time()-_ts
 
         self.start_t = time.time()
-        
+
         self.fig_widget.configure(width=_s*BLOCK_SIZE, height=_v*BLOCK_SIZE)
         self.fig.subplots_adjust(top=1, bottom=0, left=0, right=1)
         self.agg_canvas.draw()
@@ -247,6 +247,14 @@ class MPLScrollAgg(ctk.CTk):
         self.info = InfoBar(self, command=self.next_plot)
         self.info.pack(side=ctk.TOP, fill=ctk.X)
 
+        # Scroll bar for x values
+        self.x_slider = ctk.CTkSlider(self, command=self.scroll_fig_x)
+        self.x_slider.pack(side=ctk.BOTTOM, fill=ctk.X)
+
+        # Scroll bar for y slider
+        self.y_slider = ctk.CTkSlider(self, command=self.scroll_fig_y, orientation='vertical')
+        self.y_slider.pack(side=ctk.RIGHT, fill=ctk.Y)
+
         # Scroll frame used to hold the panel
         self.canvas_frame = ctk.CTkFrame(self)
         self.canvas_frame.pack(side=ctk.TOP, fill=ctk.BOTH, expand=True)
@@ -257,7 +265,7 @@ class MPLScrollAgg(ctk.CTk):
         self.fig_widget.pack()
 
         self.size_i = 0
-        self.method_i = 0
+        self.method_i = 1
         self.dpi_i = 0
         self.set_defaults()
 
@@ -265,19 +273,20 @@ class MPLScrollAgg(ctk.CTk):
         self.plot_t = 0
         self.start_t = 0
         self.render_t = 0
-        self.resized = False
+        self.resized = True
         self.method_name = ""
         self.v = 0
         self.s = 0
         self.dpi = 0
 
-        # Bind configure event to find when final plot configuration is completed
-        self.fig_widget.bind_all("<Configure>",self.on_configure_end)
+        self.x_window = 0
+        self.y_window = 0
 
     def on_configure_end(self,event):
         # In most cases the resizing of the canvas signals the end os scaling
-        if self.watch_config and event.widget == self.canvas_frame:
-
+        if self.watch_config: # and event.widget == self.canvas_frame:
+            print(event)
+            print(event.widget)
             self.render_t = time.time() - self.start_t
 
             # Stop checking for canvas config to avoid recoding new times when the frame is scrolled
@@ -295,6 +304,12 @@ class MPLScrollAgg(ctk.CTk):
         self.resized = False
         self.clear = True
         self.info.set_action("plot next")
+
+        # Configure e scroll bars
+        self.x_slider.configure(state="disabled", button_length=self.x_slider.winfo_width())
+        self.x_slider.set(0)
+        self.y_slider.configure(state="disabled", button_length=self.y_slider.winfo_height())
+        self.y_slider.set(0)
 
     def set_plotted(self):
         self.clear = False
@@ -362,18 +377,57 @@ class MPLScrollAgg(ctk.CTk):
             self.destroy()
             
     def plot_on_canvas(self, data, plot_method):
-        _ts = time.time()
         _v, _s = data.shape
-        #self.scroll_frame.xy_canvas.configure(width=_n*BLOCK_SIZE, height=_v*BLOCK_SIZE)
-        self.fig_widget.configure(width=_s*BLOCK_SIZE, height=_v*BLOCK_SIZE)
+
+        _ts = time.time()
         plot_method(data, self.fig)
-        self.fig.subplots_adjust(top=1, bottom=0, left=0, right=1)
-        self.agg_canvas.draw()
         self.plot_t = time.time()-_ts
+
+        # Check to see if scroll is required 
+        if BLOCK_SIZE * _s > self.canvas_frame.winfo_width():
+            self.fig_widget.configure(width=self.canvas_frame.winfo_width())
+            # Find ideal x window size (NOTE use canvas frame size here, not figure widget which tends to be unreliable)
+            self.x_window = self.canvas_frame.winfo_width()/BLOCK_SIZE
+            # Configure y scroll bar 
+            self.x_slider.configure(from_=0, to=_s-self.x_window, state="normal", button_length=(self.x_window/_s)*self.x_slider.winfo_width())
+
+            # do initial scroll
+            self.scroll_fig_x(0)
+        else:
+            self.fig_widget.configure(width=BLOCK_SIZE*_s)
+
+        if BLOCK_SIZE * _v > self.canvas_frame.winfo_height():
+            self.fig_widget.configure(height=self.canvas_frame.winfo_height())
+            # Find ideal y window size (NOTE use canvas frame size here, not figure widget which tends to be unreliable)
+            self.y_window = self.canvas_frame.winfo_height()/BLOCK_SIZE
+            # Configure y scroll bar 
+            self.y_slider.configure(from_=0, to=_v-self.y_window, state="normal", button_length=(self.y_window/_s)*self.y_slider.winfo_height())
+            # do initial scroll
+            self.scroll_fig_y(_v-self.y_window)
+            self.y_slider.set(_v-self.y_window)
+        else:
+            self.fig_widget.configure(height=BLOCK_SIZE*_v)
 
         # Set start time and start tracking for configure event
         self.watch_config = True
         self.start_t = time.time()
+
+
+        self.fig_widget.configure(width=_s*BLOCK_SIZE, height=_v*BLOCK_SIZE)
+        self.fig.subplots_adjust(top=1, bottom=0, left=0, right=1)
+        self.agg_canvas.draw()
+
+    def scroll_fig_x(self,value):
+        if self.method_name in ["matshow", "imshow"]:
+            value -= 0.5
+        self.fig.axes[0].set_xlim([value, value+self.x_window])
+        self.agg_canvas.draw_idle()
+
+    def scroll_fig_y(self, value):
+        if self.method_name in ["matshow", "imshow"]:
+            value -= 0.5
+        self.fig.axes[0].set_ylim([value, value+self.y_window])
+        self.agg_canvas.draw_idle()
 
 class CanvasScrollAgg(ctk.CTk):
     """
@@ -517,7 +571,10 @@ class CanvasScrollAgg(ctk.CTk):
         self.start_t = time.time()
 
 def run_all_plot_app_tests():
-    ctk_agg = CTkScrollAgg()
-    ctk_agg.mainloop()
+    # ctk_agg = CTkScrollAgg()
+    # ctk_agg.mainloop()
+
+    mpl_scroll_agg = MPLScrollAgg()
+    mpl_scroll_agg.mainloop()
 
     ResultsCSV.close()

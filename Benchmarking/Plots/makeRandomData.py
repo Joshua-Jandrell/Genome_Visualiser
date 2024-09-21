@@ -8,7 +8,10 @@ def get_random_zygoisty(n_variants:int=5000, n_samples:int=500, value_range:tupl
     """
     Creates a random zygositiy matrix with the given dimensions
     """
-    return np.random.random_integers(value_range[0], value_range[1], (n_variants, n_samples))
+    dummy = np.random.random_integers(0, value_range[1], (n_variants, n_samples))
+    dummy[0,0] = -1
+    dummy[-1,-1] = -1
+    return dummy
 
 
 
