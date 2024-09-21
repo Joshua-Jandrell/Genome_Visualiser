@@ -29,8 +29,12 @@ from trackTimeMem import monitor_time
 
 from CTkXYFrame import CTkXYFrame
 
+
 APP_X = 500
 APP_Y = 500
+
+KEY_W = 598
+KEY_H = 598
 
 class App(ctk.CTk):
     def __init__(self, dpi:int, fg_color: str | Tuple[str, str] | None = None, **kwargs):
@@ -39,6 +43,7 @@ class App(ctk.CTk):
 
         # Canvas and figure object used to display interactive mpl plots
         self.fig, _ = get_plot_figure(APP_X, APP_Y, dpi=dpi)
+        self.fig.clear()
         self.fig_frame = CTkXYFrame(self)
         self.fig_frame.pack(expand=True, fill=ctk.BOTH)
         self.agg = FigCanvas(self.fig, master=self.fig_frame)
@@ -47,7 +52,7 @@ class App(ctk.CTk):
         self.fig_widget.pack()
 
         # Wait for app window to open before testing plots
-        self.after(1000, lambda:self.test_plot_times())
+        self.after(100, lambda:self.test_plot_times())
 
        # self.plot_on_canvas(data, ZYGO_PLOT_METHODS[1])
 
@@ -58,6 +63,34 @@ class App(ctk.CTk):
         # img_frame = ctk.CTkLabel(master=self, image=img, text="", width=400)
         # img_frame.pack(fill=ctk.X, expand=True)
 
+        # Messing around with how to bind final configure scale event
+        #self.fig_frame.xy_canvas.bind_all("<Configure>",self.ooo)
+        self.config_watch = False
+        self.iter = 4
+        """Will watch for next config event if set to true."""
+
+        self.fig_widget.bind_all("<Configure>",self.ooo)
+
+    def ooo(self,event):
+        if self.config_watch:
+            #if event.width <= KEY_W and event.height <= KEY_H and event.widget == self.fig_frame.xy_canvas:
+            if self.fig_frame.xy_canvas:
+                print(event)
+                print(event.widget)
+                print(event.x)
+                self.config_watch = False
+                self.next_event()
+
+    def next_event(self):
+        self.iter -= 1
+        if self.iter > 0:
+            print(f"========= {self.iter} ==============")
+            self.test_plot_times()
+        else:
+            print("done")
+        #self.config_watch = True
+
+
     def test_plot_times(self):
         # loop through variant counts and sample counts
         for _v in VAR_COUNTS[:1]:
@@ -66,27 +99,26 @@ class App(ctk.CTk):
                 data = get_random_zygoisty(n_variants=2000, n_samples=100)
                 
                 # Loop though all plot types
-                for i, method in enumerate(ZYGO_PLOT_METHODS[3:4]):
+                for i, method in enumerate(ZYGO_PLOT_METHODS[1:2]):
                     # Make plot
                     print("Hmm")
                     _times = monitor_time(fxn=lambda:self.plot_on_canvas(data, method),n_runs=2)
                     print(_times)
                     
 
-    def set_fig_default(self):
-        """Sets figure to default size so that scaling can be included as part of plotting time."""
-        self.fig_widget.configure(width=APP_X, height=APP_Y)
-
-
     def plot_on_canvas(self, data, plot_method):
         _v, _n = data.shape
-        self.fig.set_size_inches(10,20)
-        plot_method(data, self.fig)
+        #self.fig.set_size_inches(10,20)
         # Set image size
+        self.fig_widget.pack_forget()
+        self.fig_frame.xy_canvas.configure(width=_n*BLOCK_SIZE, height=_v*BLOCK_SIZE)
         self.fig_widget.configure(width=_n*BLOCK_SIZE, height=_v*BLOCK_SIZE)
+        plot_method(data, self.fig)
         self.fig.subplots_adjust(top=1, bottom=0, left=0, right=1)
         self.agg.draw()
-        self.fig_widget.pack(fill=ctk.BOTH, expand=True)
+        self.fig_widget.pack()
+        self.config_watch = True
+
 
 
 
