@@ -11,6 +11,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from PIL import Image
 
 import customtkinter as ctk
+import tkinter as tk
 from CTkXYFrame import CTkXYFrame
 
 from .plotSetup import get_plot_figure
@@ -25,7 +26,7 @@ APP_Y = 500
 
 DEFAULT_FIG = 200
 
-DATA_DIMS = [(200,500)]#,(500,2000)]#,(50,200),(500,200),(500,2000)]
+DATA_DIMS = [(2000,500)]#,(500,2000)]#,(50,200),(500,200),(500,2000)]
 """Data sizes used for plotting tests."""
 DPIS = [100]#, 100, 150]
 
@@ -566,7 +567,7 @@ class CTkScrollImg(ctk.CTk):
 
         self.start_t = time.time()
 
-        self.img_label.configure(width=_s*BLOCK_SIZE, height=_v*BLOCK_SIZE, image=ctk_img, bg_color="pink")
+        self.img_label.configure(width=_s*BLOCK_SIZE, height=_v*BLOCK_SIZE, image=ctk_img)
 
 
         # Set start time and start tracking for configure event
