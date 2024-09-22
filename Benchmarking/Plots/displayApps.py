@@ -26,7 +26,7 @@ APP_Y = 500
 
 DEFAULT_FIG = 200
 
-DATA_DIMS = [(2000,500)]#,(500,2000)]#,(50,200),(500,200),(500,2000)]
+DATA_DIMS = [(500,200),(500,2000)]
 """Data sizes used for plotting tests."""
 DPIS = [100]#, 100, 150]
 
@@ -222,6 +222,7 @@ class CTkScrollAgg(ctk.CTk):
             
     def plot_on_canvas(self, data, plot_method):
         _v, _s = data.shape
+        scale_figure(self.fig,_s*BLOCK_SIZE,_v*BLOCK_SIZE)
         _ts = time.time()
         plot_method(data, self.fig)
         self.plot_t = time.time()-_ts
@@ -242,7 +243,7 @@ class MPLScrollAgg(ctk.CTk):
     """
     def __init__(self, fg_color: str | Tuple[str, str] | None = None, **kwargs):
         super().__init__(fg_color, **kwargs)
-        self.title("Interactive plot with tkinter scroll")
+        self.title("Interactive plot with matplotlib scroll")
         self.geometry(f"{APP_X}x{APP_Y}")
 
         # Display bar
@@ -251,6 +252,7 @@ class MPLScrollAgg(ctk.CTk):
 
         # Scroll bar for x values
         self.x_slider = ctk.CTkSlider(self, command=self.scroll_fig_x)
+        #self.x_slider = ctk.CTkScrollbar(self, command=self.scroll_fig_x, orientation='horizontal')
         self.x_slider.pack(side=ctk.BOTTOM, fill=ctk.X)
 
         # Scroll bar for y slider
@@ -379,6 +381,8 @@ class MPLScrollAgg(ctk.CTk):
             self.x_window = self.canvas_frame.winfo_width()/BLOCK_SIZE
             # Configure y scroll bar 
             self.x_slider.configure(from_=0, to=_s-self.x_window, state="normal", button_length=(self.x_window/_s)*self.x_slider.winfo_width())
+            #self.x_slider.configure(width=self.x_window)
+            self.x_slider.set(0, _s-self.x_window)
 
             # do initial scroll
             self.scroll_fig_x(0)
@@ -390,7 +394,7 @@ class MPLScrollAgg(ctk.CTk):
             # Find ideal y window size (NOTE use canvas frame size here, not figure widget which tends to be unreliable)
             self.y_window = self.canvas_frame.winfo_height()/BLOCK_SIZE
             # Configure y scroll bar 
-            self.y_slider.configure(from_=0, to=_v-self.y_window, state="normal", button_length=(self.y_window/_s)*self.y_slider.winfo_height())
+            self.y_slider.configure(from_=0, to=_v-self.y_window, state="normal", button_length=(self.y_window/_v)*self.y_slider.winfo_height())
             # do initial scroll
             self.scroll_fig_y(_v-self.y_window)
             self.y_slider.set(_v-self.y_window)
@@ -715,11 +719,11 @@ class CanvasScrollAgg(ctk.CTk):
         self.start_t = time.time()
 
 def run_all_plot_app_tests():
-    # ctk_agg = CTkScrollAgg()
-    # ctk_agg.mainloop()
+    ctk_agg = CTkScrollAgg()
+    ctk_agg.mainloop()
 
-    # mpl_scroll_agg = MPLScrollAgg()
-    # mpl_scroll_agg.mainloop()
+    mpl_scroll_agg = MPLScrollAgg()
+    mpl_scroll_agg.mainloop()
 
     ctk_fig = CTkScrollImg()
     ctk_fig.mainloop()
