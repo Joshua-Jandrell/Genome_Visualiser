@@ -8,6 +8,7 @@ from typing import Tuple
 import os, time, csv
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
+from PIL import Image
 
 import customtkinter as ctk
 from CTkXYFrame import CTkXYFrame
@@ -17,15 +18,16 @@ from .plotMethods import *
 
 from config import BLOCK_SIZE, RESULT_DIR
 from .makeRandomData import get_random_zygoisty
+from .plotSetup import scale_figure
 
 APP_X = 500
 APP_Y = 500
 
 DEFAULT_FIG = 200
 
-DATA_DIMS = [(500,2000)]#,(500,2000)]#,(50,200),(500,200),(500,2000)]
+DATA_DIMS = [(200,500)]#,(500,2000)]#,(50,200),(500,200),(500,2000)]
 """Data sizes used for plotting tests."""
-DPIS = [50]#, 100, 150]
+DPIS = [100]#, 100, 150]
 
 SAVE_FOLDER = os.path.join(RESULT_DIR,"Plots","RenderTimes")
 
@@ -113,7 +115,7 @@ class CTkScrollAgg(ctk.CTk):
         self.fig_widget.pack()
 
         self.size_i = 0
-        self.method_i = 0
+        self.method_i = 1
         self.dpi_i = 0
         self.set_defaults()
 
@@ -233,7 +235,6 @@ class CTkScrollAgg(ctk.CTk):
         # Set start time and start tracking for configure event
         self.watch_config = True
 
-
 class MPLScrollAgg(ctk.CTk):
     """
     Interactive matplotlib canvas with scrolling and scaling managed by setting matplotlib limits.
@@ -281,21 +282,6 @@ class MPLScrollAgg(ctk.CTk):
 
         self.x_window = 0
         self.y_window = 0
-
-    def on_configure_end(self,event):
-        # In most cases the resizing of the canvas signals the end os scaling
-        if self.watch_config: # and event.widget == self.canvas_frame:
-            print(event)
-            print(event.widget)
-            self.render_t = time.time() - self.start_t
-
-            # Stop checking for canvas config to avoid recoding new times when the frame is scrolled
-            self.watch_config = False
-
-        # in some cases the scrollable frame must then adjust to accommodate the canvas resulting in longer scaling times
-        if event.widget == self.fig_widget:
-            self.render_t = time.time() - self.start_t
-            self.resized = True
 
     def set_defaults(self):
         self.fig.clear()
@@ -383,6 +369,8 @@ class MPLScrollAgg(ctk.CTk):
         plot_method(data, self.fig)
         self.plot_t = time.time()-_ts
 
+        #self.fig.axes[0].set_xticks(range(_s))
+
         # Check to see if scroll is required 
         if BLOCK_SIZE * _s > self.canvas_frame.winfo_width():
             self.fig_widget.configure(width=self.canvas_frame.winfo_width())
@@ -428,6 +416,161 @@ class MPLScrollAgg(ctk.CTk):
             value -= 0.5
         self.fig.axes[0].set_ylim([value, value+self.y_window])
         self.agg_canvas.draw_idle()
+
+class CTkScrollImg(ctk.CTk):
+    """
+    Static images with scrolling and scaling managed by tkinter scroll view.
+    """
+    def __init__(self, fg_color: str | Tuple[str, str] | None = None, **kwargs):
+        super().__init__(fg_color, **kwargs)
+        self.title("Pillow image plot with tkinter scroll")
+        self.geometry(f"{APP_X}x{APP_Y}")
+
+        # Display bar
+        self.info = InfoBar(self, command=self.next_plot)
+        self.info.pack(side=ctk.TOP, fill=ctk.X)
+
+        # Scroll frame used to hold the panel
+        self.scroll_frame = CTkXYFrame(self)
+        self.scroll_frame.pack(side=ctk.TOP, fill=ctk.BOTH, expand=True)
+        self.fig, _ = get_plot_figure()
+        
+        self.agg_canvas = FigCanvas(self.fig, master=self.scroll_frame)
+        self.img_label = ctk.CTkLabel(master=self.scroll_frame, text="")
+        #self.img_label = ctk.CTkLabel(master=self, text="")
+
+        self.size_i = 0
+        self.method_i = 1
+        self.dpi_i = 0
+        self.set_defaults()
+
+        self.watch_config = False
+        self.plot_t = 0
+        self.start_t = 0
+        self.render_t = 0
+        self.resized = False
+        self.method_name = ""
+        self.v = 0
+        self.s = 0
+        self.dpi = 0
+
+        # Bind configure event to find when final plot configuration is completed
+        #self.fig_widget.bind_all("<Configure>",self.on_configure_end)
+
+    # def on_configure_end(self,event):
+    #     # In most cases the resizing of the canvas signals the end os scaling
+    #     if self.watch_config and event.widget == self.scroll_frame:
+
+    #         self.render_t = time.time() - self.start_t
+
+    #         # Stop checking for canvas config to avoid recoding new times when the frame is scrolled
+    #         self.watch_config = False
+
+    #     # in some cases the scrollable frame must then adjust to accommodate the canvas resulting in longer scaling times
+    #     if event.widget == self.scroll_frame.xy_canvas:
+    #         self.render_t = time.time() - self.start_t
+    #         self.resized = True
+
+    def set_defaults(self):
+        self.fig.clear()
+        self.img_label.pack_forget()
+        self.agg_canvas.draw()
+        self.resized = False
+        self.clear = True
+        self.info.set_action("plot next")
+
+    def set_plotted(self):
+        self.clear = False
+        self.info.set_action("clear plot")
+
+    def record_data(self):
+        ResultsCSV.add_row([
+            "Figure",
+            "tkinter_widget",
+            self.method_name,
+            self.s,
+            self.v,
+            self.s * self.v,
+            self.dpi,
+            self.resized,
+            self.plot_t,
+            self.render_t
+        ])
+
+    def next_plot(self):
+        """
+        Call this function to run plotting and scrolling tests.
+        """
+        if not self.clear:
+            self.record_data()
+            self.set_defaults()
+            return
+        # Get next set of dimensions and plot types
+        if self.size_i < len(DATA_DIMS):
+            dim = DATA_DIMS[self.size_i]
+            self.s = _s = dim[0]
+            self.v = _v = dim[1]
+
+
+            # Make data
+            data = get_random_zygoisty(n_samples=_s, n_variants=_v)
+
+            # Get next plot method, or increment dimensions
+            if self.method_i < len(ZYGO_PLOT_METHODS):
+                method = ZYGO_PLOT_METHODS[self.method_i]
+                self.method_name = ZYGO_PLOT_METHOD_NAMES[self.method_i]
+                if self.dpi_i < len(DPIS):
+                    self.dpi = dpi = DPIS[self.dpi_i]
+                    self.fig.set_dpi(dpi)
+                    self.dpi_i += 1
+
+                    # Update top bar 
+                    self.info.set_text(self.method_name, _s, _v, dpi)
+
+                    # Indicate the canvas is not clear
+                    self.set_plotted()
+
+                    self.plot_on_canvas(data, method)
+                else:
+                    self.dpi_i = 0
+                    self.method_i+=1
+                    self.next_plot()
+
+            else:
+                self.size_i += 1
+                self.method_i = 0
+                self.next_plot()
+
+        else:
+            self.destroy()
+            
+    def plot_on_canvas(self, data, plot_method):
+        _v, _s = data.shape
+
+        scale_figure(self.fig,_s*BLOCK_SIZE,_v*BLOCK_SIZE)
+
+        _ts = time.time()
+        plot_method(data, self.fig)
+        self.plot_t = time.time()-_ts
+
+        self.img_label.pack()
+        self.fig.subplots_adjust(top=1, bottom=0, left=0, right=1)
+        self.agg_canvas.draw()
+
+        self.fig.savefig(os.path.realpath("plot.png"))
+
+
+        #img = Image.frombytes('RGB', self.fig.canvas.get_width_height(), self.fig.canvas.tostring_rgb())
+        img = Image.open(os.path.realpath("plot.png"))
+        ctk_img = ctk.CTkImage(img, size=(_s*BLOCK_SIZE,_v*BLOCK_SIZE))
+
+        self.start_t = time.time()
+
+        self.img_label.configure(width=_s*BLOCK_SIZE, height=_v*BLOCK_SIZE, image=ctk_img, bg_color="pink")
+
+
+        # Set start time and start tracking for configure event
+        self.watch_config = True
 
 class CanvasScrollAgg(ctk.CTk):
     """
@@ -574,7 +717,10 @@ def run_all_plot_app_tests():
     # ctk_agg = CTkScrollAgg()
     # ctk_agg.mainloop()
 
-    mpl_scroll_agg = MPLScrollAgg()
-    mpl_scroll_agg.mainloop()
+    # mpl_scroll_agg = MPLScrollAgg()
+    # mpl_scroll_agg.mainloop()
+
+    ctk_fig = CTkScrollImg()
+    ctk_fig.mainloop()
 
     ResultsCSV.close()

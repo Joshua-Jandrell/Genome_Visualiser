@@ -1,5 +1,2 @@
 canvas_type,scroll_type,plot_type,n_variants,n_samples,n_values,dpi,resized,plot_time,render_time
-Agg,tkinter_widget,pcolorfast,500,2000,1000000,50,True,0.008111238479614258,0
-Agg,tkinter_widget,pcolormesh,500,2000,1000000,50,False,0.04800772666931152,0
-Agg,tkinter_widget,matshow,500,2000,1000000,50,False,0.010005950927734375,0
-Agg,tkinter_widget,imshow,500,2000,1000000,50,False,0.006140470504760742,0
+Figure,tkinter_widget,pcolorfast,200,500,100000,100,False,0.011997461318969727,0
