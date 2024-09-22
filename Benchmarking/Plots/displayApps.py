@@ -307,7 +307,7 @@ class MPLScrollAgg(ctk.CTk):
     def record_data(self):
         ResultsCSV.add_row([
             "Agg",
-            "tkinter_widget",
+            "matplotlib_plot",
             self.method_name,
             self.s,
             self.v,
