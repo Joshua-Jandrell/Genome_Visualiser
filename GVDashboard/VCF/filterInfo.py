@@ -87,7 +87,7 @@ class DataSetInfo:
         return name not in DataSetInfo.names
 
 
-    def __init__(self,source_path:str|None = None,save_path:str|None = None,name:str|None = None, case_ctrl:str|None="") -> None:
+    def __init__(self,source_path:str|None = None,save_path:str|None = None,name:str|None = None, case_path:str|None="", ctrl_path:str|None="") -> None:
         self.filters:list[DataFilter_base] = []
         # Add make required filters
         # NOTE this must be done before configuration
@@ -106,7 +106,7 @@ class DataSetInfo:
             else:
                 name = "New Dataset"
         self.__set__name(name)
-        self.configure(source_path, save_path, name=name, case_ctrl = case_ctrl)
+        self.configure(source_path, save_path, name=name, case_path = case_path, ctrl_path=ctrl_path)
         if self.source_path is not None:
             self.__peak_data()
         self.get_save_path()
@@ -127,7 +127,8 @@ class DataSetInfo:
                   save_path:str|None = None,
                   filters:DataFilter_base|None = None,
                   name:str|None = None,
-                  case_ctrl:str|None = None
+                  case_path:str|None = None,
+                  ctrl_path:str|None = None
                   ):
         if source_path is not None and self.source_path != source_path:
             self.source_path = source_path
@@ -135,7 +136,8 @@ class DataSetInfo:
         if save_path is not None: self.save_path = save_path
         if filters is not None: self.filters = filters
         if name is not None: self.__set__name(name)
-        if case_ctrl is not None: self.set_case_ctrl(case_ctrl)
+        if case_path is not None: self.set_case(case_path)
+        if ctrl_path is not None: self.set_ctrl(ctrl_path=ctrl_path)
 
     def add_filter(self,filter:DataFilter_base):
         self.filters.append(filter)
@@ -221,8 +223,10 @@ class DataSetInfo:
         """
         return self.__quality_filter.get_range()
     
-    def set_case_ctrl(self,file_path:str):
-        self._case_ctrl = file_path
+    def set_case(self,case_path:str):
+        self._case = case_path
+    def set_ctrl(self, ctrl_path:str):
+        self._ctrl = ctrl_path
 
     
         
