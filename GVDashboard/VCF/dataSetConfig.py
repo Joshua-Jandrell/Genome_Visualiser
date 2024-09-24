@@ -11,6 +11,8 @@ from VCF.dataWrapper import VcfDataWrapper
 from VCF.filterInfo import DataSetInfo
 from VCF.globalDatasetManger import GlobalDatasetManager
 
+from VCF.datasetEditFrames.posEditFrame import FilterFrame
+
 from UI.tooltip import ToolTip
 
 # This class is used to select and return files throughout the application
@@ -167,7 +169,10 @@ class DataSetConfig(ctk.CTkToplevel):
         self.name_text = DatasetNameEdit(self)
         self.name_text.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=10)
         self.file_picker = FilePicker(self)
-        self.file_picker.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5,)
+        self.file_picker.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5)
+
+        self.filter_frame = FilterFrame(self)
+        self.filter_frame.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5)
 
         
         self.cancel_button = ctk.CTkButton(self, text="cancel", command=self._on_cancel)
@@ -200,7 +205,7 @@ class DataSetConfig(ctk.CTkToplevel):
         self.__close_config()
 
     def _on_create(self):
-
+ 
         # TODO Validate input
         
         # Update dataset according to settings
