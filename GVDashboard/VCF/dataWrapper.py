@@ -68,6 +68,7 @@ class VcfDataWrapper:
         self.first_pos, self.last_pos = self.get_file_pos_range()
         self._pop_tag = None
         
+        self.mutation_prob = None
         # Default range of quality scores in a .vcf file:
         self.first_qual=0
         self.last_qual=100        
@@ -87,6 +88,31 @@ class VcfDataWrapper:
         self._zygos = gt_data.is_hom_alt()*2 + gt_data.is_het()*1 + gt_data.is_missing()*(-1)
         return self._zygos   #.transpose()[::-1,:] # Flip order so that first entry is on the top
     
+    def get_mutation_probability(self):
+        """ Returns an array of probabilities (0 - 100 %) for any mutation (homo or hetero) occuring in a position, based on the queried data displayed.
+        """
+        gt_data = self.__get_filtered_genotype_array()
+        # Frequency of homzygos per position
+        zygo_total_probability = (((gt_data.is_hom_alt()*2).sum(axis=1)
+                                +(gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()*2))*100
+        return zygo_total_probability
+    
+    def get_homozygous_probability(self):
+        """ Returns an array of probabilities (0 - 100 %) for a homozygous mutation occuring in a position, based on the queried data displayed.
+        """
+        gt_data = self.__get_filtered_genotype_array()
+        # Frequency of homzygos per position
+        zygo_homo_probability = (((gt_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*100
+        return zygo_homo_probability
+    
+    def get_heterozygous_probability(self):
+        """ Returns an array of probabilities (0 - 100 %) for a heterozygous mutation occuring in a position, based on the queried data displayed.
+        """
+        gt_data = self.__get_filtered_genotype_array()
+        # Frequency of homzygos per position
+        zygo_hetero_probability = (((gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*100
+        return zygo_hetero_probability
+    
     # Returns a list indicating the nucleotide type of ref sequences
     # 0 = multi-nucleotide, -1 is no-data
     def get_n_samples(self):
@@ -102,9 +128,7 @@ class VcfDataWrapper:
         -1 = no-data
         """
         return alleles_to_numbs(self.get_ref())
-
-    
-        return self._refs
+        #return self._refs
     
     def get_ref(self):
         df = self.__get_filtered_df()
@@ -154,7 +178,7 @@ class VcfDataWrapper:
             """
         #Find population-tag samples in all 'samples' data:
                 #  _pop_tag (== target = "NA")     <<<< set by `set_population_tag()`
-        population_tag_samples = [self._pop_tag in eg for eg in self.data[SAMPLES]]    #####Should pop-tag be public or private??
+        population_tag_samples = [self._pop_tag in eg for eg in self.data[SAMPLES]]
         
         # Get zygosity that only has the "population-tag" from the vcf dataframe:
         zygosity = allel.GenotypeArray(self.data[DATA])[self.df.index,:]
@@ -216,17 +240,12 @@ class VcfDataWrapper:
         sort_mode = SortMode(mode_int)
         self.sort_mode = sort_mode
     
-    
-
     # def filter_ref_variant_length(self):  #Scott didn't think this was necessary
     #     return
-
     # def filter_zygosity_type(self):   #See in zygosityOption ~~~~  toggling
     #     return
-    
     # def filter_nucleotide_type(self):
     #     return
-   
 
 # Converts and allele character/string to an intagetr
 # 0 = multi-nucleotide, -1 = n0-data

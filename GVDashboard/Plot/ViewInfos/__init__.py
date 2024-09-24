@@ -8,3 +8,4 @@ from .refView import RefView
 from .posView import VarPosView
 from .varFrequecyView import FrequencyView
 from .varFrequecyView import FrequencyView
+from .mutFrequView import MutFreqView
