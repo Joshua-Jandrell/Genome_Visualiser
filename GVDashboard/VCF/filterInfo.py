@@ -7,11 +7,58 @@ from VCF.dataFetcher import DataFetcher
 class DataFilter_base():
     def __init__(self) -> None:
         pass
-    def get_filter_str(self):
+
+    def get_query_str(self, opt:str)->str:
+        """
+        Get string used to construct a bcftools query statement.\n.
+        The `opt` string is the bcftools query option that this filter will be appended to.
+        NOTE This function should be overridden by descendants
+        """
         return ""
+    
+class ParamRangeFilter(DataFilter_base):
+    """
+    Filter used to set the range of a given column parameter.
+    """
+    def __init__(self, column:str, min:float|int, max:float|int) -> None:
+        super().__init__()
+        assert(min <= max)
+        self.column_name = column
+        self.min = min
+        self.max = max
+    def get_query_str(self, opt: str) -> str:
+        if opt == "-i":
+            return f"{self.column_name}<={self.max} && {self.column_name}>={self.min}"
+        return super().get_query_str(opt)
+    
+    
+class RegionFiler(DataFilter_base):
+    def __init__(self, chromosome:int=1, min:int=0, max:int=10000) -> None:
+        super().__init__()
+        self.chromosome=chromosome
+        self.min = min
+        self.max = max
+
+    def configure(self, chromosome:int|None = None, min:int|None = None, max:int|None = None):
+        if chromosome is not None:
+            self.chromosome = chromosome
+        if min is not None:
+            self.min = min
+        if max is not None:
+            self.max = max
+
+    def get_query_str(self, opt:str) -> str:
+        if opt in ["", " "]: return f"-r chr{self.chromosome}:{self.min}-{self.max}"
+        return super().get_query_str(opt)
+    
+class QualityFilter(ParamRangeFilter):
+    def __init__(self, min:float=0, max:float=100):
+        super().__init__(column='QUAL', min=min, max=max)
+
 
 # Class used to store and apply various vcf filters
 class DataSetInfo:
+    POS_RANGE = 20000
     APPEND = "_subset"
     names = [] # List of all dataset names to help avoid tow datasets having the same name
     data_wrappers = {} # stores a list of pre-computed data wrappers 
@@ -26,6 +73,11 @@ class DataSetInfo:
 
     def __init__(self,source_path:str|None = None,save_path:str|None = None,name:str|None = None) -> None:
         self.filters = []
+        # Add required filters
+        # NOTE this must be done before configuration
+        self.__range_filter = RegionFiler()
+
+        self.add_filter(self.__range_filter)
         self.source_path = source_path
         self.save_path = save_path
         self.__name = None # Must set name to None here so that set name can use this variable 
@@ -42,12 +94,20 @@ class DataSetInfo:
         self.get_dataset_name()
         #print(f"Make {self.__name}")
 
+
     def __del__(self):
         #print(f"killed {self.__name}")
         DataSetInfo.clear_name(self.__name)
 
-    def configure(self,source_path:str|None = None, save_path:str|None = None, filters:DataFilter_base|None = None, name:str|None = None):
-        if source_path is not None: self.source_path = source_path
+    def configure(self,
+                  source_path:str|None = None,
+                  save_path:str|None = None,
+                  filters:DataFilter_base|None = None,
+                  name:str|None = None
+                  ):
+        if source_path is not None and self.source_path != source_path:
+            self.source_path = source_path
+            self.__peak_data()
         if save_path is not None: self.save_path = save_path
         if filters is not None: self.filters = filters
         if name is not None: self.__set__name(name)
@@ -89,6 +149,19 @@ class DataSetInfo:
 
         DataSetInfo.add_name(_name) # add new name to the list 
         self.__name = _name # set name
+
+    def __peak_data(self):
+        """
+        Called only when a new source file is set.\n
+        This function loads in default range value by peaking at the dataset loaded and finding its chromosome and first value.
+        """
+        print("NOTE: update data peaking")
+        dw = self.get_data_wrapper()
+        chromo = int(dw.get_chromosome()[0].strip("chr"))
+        min_pos = dw.get_pos()[0]
+        max_pos = min_pos + self.POS_RANGE
+
+        self.__range_filter.configure(chromosome=chromo, min=min_pos, max=max_pos)
     
     def get_data_wrapper(self)->DataWrapper:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
@@ -97,6 +170,19 @@ class DataSetInfo:
             #print("not using old wrapper?")
         return self.dw
     
+    # Filter parameters 
+    def set_range(self, chromosome:int|None = None, min:int|None = None, max:int|None = None):
+        self.__range_filter.configure(chromosome=chromosome, min=min, max=max)
+        # Set datawrapper to be None to force data reload
+        self.dw = None
+    def get_range(self)->tuple[int, int]:
+        """
+        Get the range of the dataset in the form (min, max)
+        """
+        return self.__range_filter.min, self.__range_filter.max
+        
+    def get_chromosome(self)->int:
+        return self.__range_filter.chromosome
         
 
 # ===================================================================

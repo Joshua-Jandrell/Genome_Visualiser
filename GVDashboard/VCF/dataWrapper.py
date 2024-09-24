@@ -49,6 +49,7 @@ class VcfDataWrapper:
 
         vcf_data[SAMPLES] = vcf_data[SAMPLES][:max_samples]   #samples is the number of people
         vcf_data[DATA] = vcf_data[DATA][:max_vars,:max_samples,]
+        vcf_data[CHROM] = vcf_data[CHROM][:max_vars]
         vcf_data[REF] = vcf_data[REF][:max_vars]
         vcf_data[ALT] = vcf_data[ALT][:max_vars]
         vcf_data[ID] = vcf_data[ID][:max_vars]
@@ -95,6 +96,9 @@ class VcfDataWrapper:
         return len(self.get_pos())
     def get_samples(self):
         return self.__get_filtered_samples()
+    
+    def get_chromosome(self):
+        return self.__get_filtered_df()["CHROM"].to_numpy()
     
     def get_ref_ints(self):
         """Returns a `list` indicating the nucleotide type of the reference (`REF`) sequence.\\

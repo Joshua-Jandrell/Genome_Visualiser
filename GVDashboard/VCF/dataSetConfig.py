@@ -11,7 +11,7 @@ from VCF.dataWrapper import VcfDataWrapper
 from VCF.filterInfo import DataSetInfo
 from VCF.globalDatasetManger import GlobalDatasetManager
 
-from VCF.datasetEditFrames.posEditFrame import FilterFrame
+from VCF.datasetEditFrames.datasetFilter import DatasetFilterFrame
 
 from UI.tooltip import ToolTip
 
@@ -171,7 +171,7 @@ class DataSetConfig(ctk.CTkToplevel):
         self.file_picker = FilePicker(self)
         self.file_picker.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5)
 
-        self.filter_frame = FilterFrame(self)
+        self.filter_frame = DatasetFilterFrame(self, dataset=dataset)
         self.filter_frame.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5)
 
         

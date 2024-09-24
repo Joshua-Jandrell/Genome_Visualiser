@@ -24,7 +24,9 @@ class NumberEntry(ctk.CTkEntry):
         if value is not None:
             if not self.is_int: value = float(value)
             else: value = int(value)
-            textvariable.set(f"{value}")
+            self._number_variable.set(value)
+ 
+        textvariable.set(f"{self._number_variable.get()}")
 
         self.min, self.max = value_range
         self.entry_above:'NumberEntry'|None = None
@@ -38,15 +40,19 @@ class NumberEntry(ctk.CTkEntry):
         self.__read_input()
         
         # Add trace to command to see when text is changed
-        textvariable.trace_add(mode="write", callback=self.__read_input)
+        self.__txtvar_callback = textvariable.trace_add(mode="write", callback=self.__read_input)
+
+        # Add tace command
+        self.__intvar_callback = self._number_variable.trace_add(mode="write", callback=self.__on_number_var_change)
 
         # Bind focus event to validate input when user is finished editing
-        self.bind("<FocusOut>", self.__on_focus_out)
+        self.__focuseOut_bind_id = self.bind("<FocusOut>", self.__on_focus_out)
 
-        def destroy():
-            textvariable.trace_remove(mode="write", callback=self.__read_input)
-            self.unbind("<FocusOut>", self.__on_focus_out)
-            super().destroy()
+    def destroy(self):
+        self._textvariable.trace_remove(mode="write", cbname=self.__txtvar_callback)
+        self._number_variable.trace_remove(mode="write", cbname=self.__intvar_callback)
+        self.unbind("<FocusOut>", self.__focuseOut_bind_id)
+        super().destroy()
 
     def __read_input(self, *args):
         # Do nothing is currently busy setting this input
@@ -99,6 +105,18 @@ class NumberEntry(ctk.CTkEntry):
         if self.max is not None:
             value = min(self.max, value)
         return value
+    
+    def __on_number_var_change(self, *args):
+        if self.__setting_flag: return
+        self.__setting_flag = True
+
+        _value = self._number_variable.get()
+        _new__value = self.__in_range(_value)
+        if _value != _new__value:
+            self._number_variable.set(_new__value)
+        self._textvariable.set(f"{self._number_variable.get()}")
+
+        self.__setting_flag = False
     
     def get(self)->float|int:
         """Returns the numerical value of the number entry."""
