@@ -22,6 +22,11 @@ class MutFreqView(VariantGridView):
         all_prob_mat = np.matrix(wrapped_data.get_mutation_probability())
 
         ax.pcolorfast(all_prob_mat, cmap=colors.ListedColormap(MUTATION_FREQ_SPECTRUM), vmin=0, vmax=100)
+        
+        if self.pos_in_set == 0:
+            self.fit_to_size(size=size)
+        
+        self._do_base_config(axs)
         return super().make_plots(axs, size, plot_box) 
     
 ############################### KEY FUNCTS  (literally) ###########

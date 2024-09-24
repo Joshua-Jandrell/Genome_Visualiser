@@ -13,7 +13,7 @@ from Plot.OptionCards import FreqOptionCtrl, ZygoteOptionCtrl, RefOptionCtrl, Po
 ZYGOSITY_OPT = "Zygosity"
 REF_OPT = "Ref. Genome"
 FREQUENCY_OPT = "Mutation Frequency Histograms"
-MUTATION_FREQUENCY_OPT = "Mutation Frequency Key"
+MUTATION_FREQUENCY_OPT = "Mutation Probabilities"
 POS_OPT = "Position"
 
 class PlotOptionPanel(OptionPanel):
@@ -56,7 +56,7 @@ class PlotOptionPanel(OptionPanel):
         # Add plot options
         self.content.register_option(ZygoteOptionCtrl(self.content,ZYGOSITY_OPT))
         self.content.register_option(RefOptionCtrl(self.content,REF_OPT))
-        self.content.register_option(PosOptionCtrl(self.content,MUTATION_FREQUENCY_OPT))
+        self.content.register_option(MutFreqOptionCtrl(self.content,MUTATION_FREQUENCY_OPT))
         self.content.register_option(FreqOptionCtrl(self.content,FREQUENCY_OPT))
         self.content.register_option(PosOptionCtrl(self.content,POS_OPT))
     
