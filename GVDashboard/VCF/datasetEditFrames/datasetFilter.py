@@ -1,7 +1,8 @@
 from typing import Any, Tuple, Callable
 import customtkinter as ctk 
 
-from UI.numberEntry import NumberEntry      
+from UI.numberEntry import NumberEntry  
+from UI.filePicker import FilePicker    
 from VCF.filterInfo import DataSetInfo
 
 
@@ -23,6 +24,7 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.pos_max = ctk.IntVar()
         self.qual_min = ctk.DoubleVar()
         self.qual_max = ctk.DoubleVar()
+        self.case_ctrl_path = ctk.StringVar(value="")
 
         # NOTE dataset should only be set after variable have been constructed
         self.set_dataset(dataset)
@@ -33,6 +35,7 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.__max_pos_call__ = self.pos_max.trace_add('write', self.__on_max_pos_change)
         self.__qual_min_call__ = self.qual_min.trace_add('write', self.__on_qual_change)
         self.__qual_max_call__ = self.qual_max.trace_add('write', self.__on_qual_change)
+        self.__case_ctrl_call__ = self.case_ctrl_path.trace_add('write', self.__on_case_ctrl_change)
         
         # ==== Regional UI elements ====
         chromo_label = ctk.CTkLabel(self, text="Chromosome:")
@@ -73,6 +76,21 @@ class DatasetFilterFrame(ctk.CTkFrame):
         qual_max_label.grid(row=_qual_row, column=2, padx=0)
         self.qual_max_entry.grid(row=_qual_row, column=3, padx=_padx)
 
+        # ==== case control elements ====
+        _case_ctrl_row = 3
+        case_ctrl_label = ctk.CTkLabel(self, text="Case/Ctrl:")
+        case_ctrl_label._font.configure(weight="bold")
+        case_ctrl_label.grid(row=_case_ctrl_row, column=0, columnspan=1, padx=_padx, pady=_pady)
+        self.case_ctrl_picker = FilePicker(master=self, width=100,
+                                           filetypes=[("Case/Ctrl text file", "*.txt")],
+                                           path_variable=self.case_ctrl_path,
+                                           button_text="select",
+                                           clear_button=True
+                                           )
+        self.case_ctrl_picker.grid(row=_case_ctrl_row, column=1, columnspan=3, padx=_padx, sticky='ew')
+
+    
+
     def destroy(self):
         self.dataset = None           
         self.chromo.trace_remove('write', self.__chrom_call__)
@@ -80,6 +98,7 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.pos_max.trace_remove('write', self.__max_pos_call__)
         self.qual_min.trace_remove('write', self.__qual_min_call__)
         self.qual_max.trace_remove('write', self.__qual_max_call__)
+        self.case_ctrl_path.trace_remove('write', self.__case_ctrl_call__)
         return super().destroy()
     
     def set_dataset(self, dataset:DataSetInfo|None):
@@ -116,5 +135,8 @@ class DatasetFilterFrame(ctk.CTkFrame):
     def __on_qual_change(self, *args):
         if self.dataset is not None:
             self.dataset.set_quality(min=self.qual_min.get(), max=self.qual_max.get())
+    def __on_case_ctrl_change(self, *args):
+        if self.dataset is not None:
+            self.dataset.set_case_ctrl(self.case_ctrl_path.get())
 
 

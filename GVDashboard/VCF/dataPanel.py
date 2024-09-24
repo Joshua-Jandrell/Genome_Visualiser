@@ -124,9 +124,10 @@ class DataOptionCard(OptionCard):
     #     # self.populationRadioButton = ctk.CTkRadioButton(self, text="Population\n(alphabetically)", variable=self.set_sort_mode, value=SortMode.BY_POPULATION, command=self.set_dw_sortmode)
     #     # self.populationRadioButton.grid(row=7, column=1, padx=5, pady=5, sticky="w")
         
-    #     #Sort heading Textbox:
-    #     self.instruct_headingLabel = ctk.CTkLabel(self.content, text="Click the Plot button to apply filter options.", justify="center", fg_color='light green')
-    #     self.instruct_headingLabel.grid(row=9, column=0, columnspan=3, padx=_padx_lastcol, pady=_pady, sticky="ew")
+        #Sort heading Textbox:
+        self.instruct_headingLabel = ctk.CTkLabel(self.content, text="Click the Plot button to apply filter options.", justify="center", fg_color='light green')
+        self.instruct_headingLabel.pack(side=ctk.BOTTOM, fill=ctk.X, pady=_pady)
+        #self.instruct_headingLabel.grid(row=9, column=0, columnspan=3, padx=_padx_lastcol, pady=_pady, sticky="ew")
         
     # dropdown 
         #~self.sort_option = ctk.CTkOptionMenu(self)
