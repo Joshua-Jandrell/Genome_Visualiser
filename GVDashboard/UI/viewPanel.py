@@ -89,6 +89,7 @@ class ViewPanel(ctk.CTkFrame):
         views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
         if len(views) == 0: 
             self.__hide_plots()
+            KeyCanvas.hide_canvas()
             return
 
         # Scale figure based on window size
@@ -107,6 +108,7 @@ class ViewPanel(ctk.CTkFrame):
         elif plot_hight == 0 and not self.hidden:
             self.__hide_plots()
             return    
+        
 
         #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)
         return self.canvas
@@ -122,7 +124,7 @@ def make_keys(views:list[ViewInfo_base]):
     if key_count == 0:
         KeyCanvas.hide_canvas()
         return
-    
+
     # Make a gridspec for all keys
     gs = GridSpec(nrows=key_count, ncols=1)
     for i, view in enumerate(key_views):
