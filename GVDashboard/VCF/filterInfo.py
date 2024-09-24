@@ -15,6 +15,12 @@ class DataFilter_base():
         NOTE This function should be overridden by descendants
         """
         return ""
+    def apply_to_wrapper(self,dw:DataWrapper):
+        """
+        Used to configure the values of a datawrapper.\n
+        NOTE This function should be overridden by descendants
+        """
+        return dw
     
 class ParamRangeFilter(DataFilter_base):
     """
@@ -26,6 +32,11 @@ class ParamRangeFilter(DataFilter_base):
         self.column_name = column
         self.min = min
         self.max = max
+    def set_range(self, min:float|int|None=None, max:float|int|None=None):
+        if min is not None: self.min = min
+        if max is not None: self.max = max
+    def get_range(self):
+        return self.min, self.max
     def get_query_str(self, opt: str) -> str:
         if opt == "-i":
             return f"{self.column_name}<={self.max} && {self.column_name}>={self.min}"
@@ -50,10 +61,15 @@ class RegionFiler(DataFilter_base):
     def get_query_str(self, opt:str) -> str:
         if opt in ["", " "]: return f"-r chr{self.chromosome}:{self.min}-{self.max}"
         return super().get_query_str(opt)
+    def apply_to_wrapper(self, dw: DataWrapper):
+        dw.set_pos_range(min_pos=self.min, max_pos=self.max)
     
 class QualityFilter(ParamRangeFilter):
     def __init__(self, min:float=0, max:float=100):
         super().__init__(column='QUAL', min=min, max=max)
+    def apply_to_wrapper(self,dw: DataWrapper):
+        dw.set_qual_range(min_qual=self.min, max_qual=self.max)
+
 
 
 # Class used to store and apply various vcf filters
@@ -72,12 +88,13 @@ class DataSetInfo:
 
 
     def __init__(self,source_path:str|None = None,save_path:str|None = None,name:str|None = None) -> None:
-        self.filters = []
-        # Add required filters
+        self.filters:list[DataFilter_base] = []
+        # Add make required filters
         # NOTE this must be done before configuration
         self.__range_filter = RegionFiler()
+        self.__quality_filter = QualityFilter()
 
-        self.add_filter(self.__range_filter)
+
         self.source_path = source_path
         self.save_path = save_path
         self.__name = None # Must set name to None here so that set name can use this variable 
@@ -90,9 +107,15 @@ class DataSetInfo:
                 name = "New Dataset"
         self.__set__name(name)
         self.configure(source_path, save_path, name=name)
+        if self.source_path is not None:
+            self.__peak_data()
         self.get_save_path()
         self.get_dataset_name()
         #print(f"Make {self.__name}")
+
+        # Add required filters to filter stack
+        self.add_filter(self.__range_filter)
+        self.add_filter(self.__quality_filter)
 
 
     def __del__(self):
@@ -167,22 +190,35 @@ class DataSetInfo:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
         if self.dw is None:
             self.dw = DataFetcher.load_data(self.get_source_path())
+            for filter in self.filters:
+                filter.apply_to_wrapper(self.dw)
             #print("not using old wrapper?")
         return self.dw
     
-    # Filter parameters 
+    # Range Filter parameters 
     def set_range(self, chromosome:int|None = None, min:int|None = None, max:int|None = None):
         self.__range_filter.configure(chromosome=chromosome, min=min, max=max)
         # Set datawrapper to be None to force data reload
         self.dw = None
     def get_range(self)->tuple[int, int]:
         """
-        Get the range of the dataset in the form (min, max)
+        Get the position range of the dataset in the form (min, max)
         """
         return self.__range_filter.min, self.__range_filter.max
         
     def get_chromosome(self)->int:
         return self.__range_filter.chromosome
+    
+    # Quality filter parameters 
+    def set_quality(self, min:float|None=None, max:float|None=None):
+        self.__quality_filter.set_range(min,max)
+        self.dw = None
+    def get_quality(self)->tuple[float, float]:
+        """
+        Get the quality range of the dataset
+        """
+        return self.__quality_filter.get_range()
+    
         
 
 # ===================================================================

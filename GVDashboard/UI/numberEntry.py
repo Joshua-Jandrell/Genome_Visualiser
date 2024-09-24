@@ -62,7 +62,8 @@ class NumberEntry(ctk.CTkEntry):
         _value = self._textvariable.get()
 
         # construct string of only numerical input characters 
-        _numerical_str =  "".join([c for c in _value if c.isdigit() or (c == '.' and not self.is_int) or c == '-'])
+        _numerical_str =  "".join([c for c in _value if c.isdigit() or (c == '.' and not self.is_int)])
+        if _value != "" and _value[0] == "-": _numerical_str = "-" + _numerical_str
 
         #  Store string valarie to set as display text
         _new_value =  _numerical_str

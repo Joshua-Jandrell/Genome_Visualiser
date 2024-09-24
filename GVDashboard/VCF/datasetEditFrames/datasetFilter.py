@@ -31,7 +31,9 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.__chrom_call__ = self.chromo.trace_add('write', self.__on_chromo_change)
         self.__min_pos_call__ = self.pos_min.trace_add('write', self.__on_min_pos_change)
         self.__max_pos_call__ = self.pos_max.trace_add('write', self.__on_max_pos_change)
-
+        self.__qual_min_call__ = self.qual_min.trace_add('write', self.__on_qual_change)
+        self.__qual_max_call__ = self.qual_max.trace_add('write', self.__on_qual_change)
+        
         # ==== Regional UI elements ====
         chromo_label = ctk.CTkLabel(self, text="Chromosome:")
         chromo_label._font.configure(weight="bold")
@@ -76,6 +78,8 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.chromo.trace_remove('write', self.__chrom_call__)
         self.pos_min.trace_remove('write', self.__min_pos_call__)
         self.pos_max.trace_remove('write', self.__max_pos_call__)
+        self.qual_min.trace_remove('write', self.__qual_min_call__)
+        self.qual_max.trace_remove('write', self.__qual_max_call__)
         return super().destroy()
     
     def set_dataset(self, dataset:DataSetInfo|None):
@@ -87,6 +91,9 @@ class DatasetFilterFrame(ctk.CTkFrame):
         _min, _max = dataset.get_range()
         self.pos_min.set(_min)
         self.pos_max.set(_max)
+        _min, _max = dataset.get_quality()
+        self.qual_min.set(_min)
+        self.qual_max.set(_max)
 
     def update_all(self):
         """
@@ -95,6 +102,7 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.__on_chromo_change()
         self.__on_max_pos_change()
         self.__on_min_pos_change()
+        self.__on_qual_change()
 
     def __on_chromo_change(self, *args):
         if self.dataset is not None:
@@ -105,5 +113,8 @@ class DatasetFilterFrame(ctk.CTkFrame):
     def __on_max_pos_change(self, *args):
         if self.dataset is not None:
             self.dataset.set_range(max=self.pos_max.get())
+    def __on_qual_change(self, *args):
+        if self.dataset is not None:
+            self.dataset.set_quality(min=self.qual_min.get(), max=self.qual_max.get())
 
 
