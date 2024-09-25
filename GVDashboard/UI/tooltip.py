@@ -28,6 +28,9 @@ class ToolTip(object):
         widget.bind('<Enter>', self.showtip)
         widget.bind('<Leave>', self.hidetip)
 
+    def set_text(self,text:str):
+        self.text = text
+
     def showtip(self,event):
         "Display text in tooltip window"
 

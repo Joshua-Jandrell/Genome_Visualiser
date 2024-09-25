@@ -48,6 +48,7 @@ class KeyCanvas(ctk.CTkFrame):
 
     def show(self):
         self.widget.pack(side="top", expand=True, fill="both")
+        self.canvas.draw()
 
     def hide(self):
         self.widget.pack_forget()
