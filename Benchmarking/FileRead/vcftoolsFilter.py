@@ -1,5 +1,6 @@
 import os, time, csv
 import pandas as pd
+pd.set_option('future.no_silent_downcasting', True) # Opt in to future pd dataframe replace behavior used by allel
 import allel as al
 
 
@@ -22,9 +23,10 @@ def get_qual_filter(min:float, max:float)->str:
     return f" -i\"QUAL>={min} && QUAL<={max}\""
 
 def get_filter_str(chrom:int, start:int, stop:int, min_qual:float|None=None, max_qual:float|None=None):
-    query_str = f"-r {chrom}:{start}-{stop}"
+    # NOTE chr may or may not be appended in front of chromosome so both queries must be used
+    query_str = f"-r chr{chrom}:{start}-{stop},{chrom}:{start}-{stop}"
     if min_qual is not None and max_qual is not None:
-        query_str = get_qual_filter(min_qual, max_qual) #+ " " + query_str
+        query_str = get_qual_filter(min_qual, max_qual) + " " + query_str
     return query_str
 
 def filter_file(data_path:str, chrom:int, start:int, stop:int, min_qual:float|None=None, max_qual:float|None=None)->str:
@@ -41,21 +43,21 @@ def get_case_ctrl_paths(data_path:str)->tuple[str,str]:
 def filter_case_oneshot(data_path:str, case_path:str, chrom:int, start:int, stop:int, min_qual:float|None=None, max_qual:float|None=None):
     filter_str = get_filter_str(chrom,start,stop,min_qual,max_qual)
     case_file, ctrl_file = get_case_ctrl_paths(data_path)
-    os.system(f"bcftools view {filter_str} -S {case_path} {data_path} -o {case_file}")
-    os.system(f"bcftools view {filter_str} -S ^{case_path} {data_path} -o {ctrl_file}")
+    os.system(f"bcftools view {filter_str} -S \"{case_path}\" {data_path} -o {case_file}")
+    os.system(f"bcftools view {filter_str} -S \"^{case_path}\" {data_path} -o {ctrl_file}")
     return case_file, ctrl_file
 
 def get_case_ctrl(data_path:str, case_path:str)->tuple[str, str]:
     case_file, ctrl_file = get_case_ctrl_paths(data_path)
-    os.system(f"bcftools view -S {case_path} {data_path} -o {case_file}")
-    os.system(f"bcftools view -S ^{case_path} {data_path} -o {ctrl_file}")
+    os.system(f"bcftools view -S \"{case_path}\" {data_path} -o {case_file}")
+    os.system(f"bcftools view -S\"^{case_path}\" {data_path} -o {ctrl_file}")
     return  case_file, ctrl_file
     
 
 def read_case_ctrl(case_file:str, ctrl_file:str)->tuple[dict, pd.DataFrame, dict, pd.DataFrame]:
-    return al.read_vcf(case_file), al.vcf_to_dataframe(case_file), al.read_vcf(ctrl_file), al.vcf_to_dataframe(ctrl_file)
+    return al.read_vcf(case_file), al.read_vcf(ctrl_file)
 
-def run_vcf_speedtests(data_file:str, case_file:str, save_file:str = os.path.join(OUT_DIR, "times.csv"), n_iters:int = 10, chr=1, start:int=1, stop:int=20000, min_qual:float=80,max_qual:float=100):
+def run_bcftools_speedtests(data_file:str, case_file:str, save_file:str|None = os.path.join(OUT_DIR, "times.csv"), n_iters:int = 10, chr=1, start:int=1, stop:int=20000, min_qual:float=None,max_qual:float=None):
     index_times:list[float] = [] # Time taken to generate a bcftools csi index file
     pos_filter_times:list[float] = [] # Time taken to extract to a file based on pos
     pos_and_qual_filter_times:list[float] = [] # Time taken to extract to a file based on pos and quality 
@@ -69,7 +71,6 @@ def run_vcf_speedtests(data_file:str, case_file:str, save_file:str = os.path.joi
     case_df = None
     ctrl_data = None
     ctrl_df = None
-
 
     for _ in range(n_iters):
         # Clear all files
@@ -109,7 +110,7 @@ def run_vcf_speedtests(data_file:str, case_file:str, save_file:str = os.path.joi
 
         # Time data reading
         _t = time.time()
-        case_data, case_df, ctrl_data, ctrl_df = read_case_ctrl(case_data_path, ctrl_data_path)
+        case_data, ctrl_data = read_case_ctrl(case_data_path, ctrl_data_path)
         read_times.append(time.time()-_t)
 
         # calculate total times
@@ -117,22 +118,24 @@ def run_vcf_speedtests(data_file:str, case_file:str, save_file:str = os.path.joi
         oneshot_total_time.append(index_times[_]+oneshot_times[_]+read_times[_])
 
     # Write results to csv
-    with open(save_file, mode="w", newline="") as f:
-        writer = csv.writer(f)
-        iter_heads = [f"iter_{n+1}" for n in range(n_iters)]
-        writer.writerow(["Operation", "Average"] + iter_heads)
-        writer.writerow(["Indexing", sum(index_times)/n_iters] + index_times)
-        writer.writerow(["Pos filtering", sum(pos_filter_times)/n_iters] + pos_filter_times)
-        writer.writerow(["Pos and qual filtering", sum(pos_and_qual_filter_times)/n_iters] + pos_and_qual_filter_times)
-        writer.writerow(["Case-control splitting", sum(case_ctrl_times)/n_iters] + case_ctrl_times)
-        writer.writerow(["One shot filter and split", sum(oneshot_times)/n_iters] + oneshot_times)
-        writer.writerow(["Read case and ctrl in to memory", sum(read_times)/n_iters] + read_times)
-        writer.writerow(["Total (separate operations)", sum(split_total_time)/n_iters] + split_total_time)
-        writer.writerow(["Total (one shot)", sum(oneshot_total_time)/n_iters] + oneshot_total_time)
-        f.close()
+    if save_file is not None:
+        with open(save_file, mode="w", newline="") as f:
+            writer = csv.writer(f)
+            iter_heads = [f"iter_{n+1}" for n in range(n_iters)]
+            writer.writerow(["Operation", "Average"] + iter_heads)
+            writer.writerow(["Indexing", sum(index_times)/n_iters] + index_times)
+            writer.writerow(["Pos filtering", sum(pos_filter_times)/n_iters] + pos_filter_times)
+            writer.writerow(["Pos and qual filtering", sum(pos_and_qual_filter_times)/n_iters] + pos_and_qual_filter_times)
+            writer.writerow(["Case-control splitting", sum(case_ctrl_times)/n_iters] + case_ctrl_times)
+            writer.writerow(["One shot filter and split", sum(oneshot_times)/n_iters] + oneshot_times)
+            writer.writerow(["Read case and ctrl in to memory", sum(read_times)/n_iters] + read_times)
+            writer.writerow(["Total (separate operations)", sum(split_total_time)/n_iters] + split_total_time)
+            writer.writerow(["Total (one shot)", sum(oneshot_total_time)/n_iters] + oneshot_total_time)
+            f.close()
+    return case_data, ctrl_data 
 
 
 if __name__ == "__main__":
     path = os.path.relpath('Data/afr-small.vcf.gz')
     case_path = os.path.relpath('Data/afr-small.case.tsv')
-    run_vcf_speedtests(path,case_path,chr=9,n_iters=1)
+    run_bcftools_speedtests(path,case_path,chr=9,n_iters=1)
