@@ -13,13 +13,18 @@ class MutFreqView(VariantGridView):
     """
     A Heatmap-style view to show the probability of a mutation occuring at each position.
     """
-    def get_desired_height(self) -> list[int]:
+    
+    def _get_samples_size(self) -> list[int]:
         return [self.ideal_block_size]
 
     def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:
         self.active_axis = ax = axs[0]
         wrapped_data = self.dataset_info.get_data_wrapper()
         all_prob_mat = np.matrix(wrapped_data.get_mutation_probability())
+        
+        # Label y-axis
+        ax.set_ylabel(ylabel="Mut.\nprob", rotation=0, va="center", ha="right")
+        
 
         ax.pcolorfast(all_prob_mat, cmap=colors.ListedColormap(MUTATION_FREQ_SPECTRUM), vmin=0, vmax=100)
         

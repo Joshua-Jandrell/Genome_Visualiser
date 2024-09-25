@@ -26,7 +26,7 @@ def update(val):
     ax.set_ylim(dw.get_n_variants()-val, dw.get_n_variants()-val-span)
     
 if __name__ == "__main__":
-    dw = DataFetcher.load_data("./Data/med.vcf")
+    dw = DataFetcher.load_data("./Data/afr-small.vcf")
     assert(isinstance(dw,DataWrapper))
     
     

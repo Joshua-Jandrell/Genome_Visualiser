@@ -39,14 +39,14 @@ class FrequencyView(ViewInfo_base):
         bin_size = (max-min)/self.n_bins
         
         bins = np.arange(min, max, bin_size)
-        
+        bin_size = int(bin_size)
         if self.plot_density == False:
             axis.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow
             axis.set_mouseover(True)
             axis.set_facecolor('#FEFBE9')
             axis.set_xlabel('Chromosome position (bp)')
             axis.set_ylabel('Variant count, bp$^{-1}$')
-            axis.set_title('Mutation Count frequency')
+            axis.set_title(f'Number of Mutations per {bin_size} positions')
 
         else:     
         
@@ -59,7 +59,7 @@ class FrequencyView(ViewInfo_base):
             axis.set_facecolor('#E8ECFB')
             axis.set_xlabel('Chromosome position (bp)')
             axis.set_ylabel('Variant density (count per bp $^{-1}$)')
-            axis.set_title('Mutation Density frequency')
+            axis.set_title('Mutation Frequency Density')
             
         return axis
     

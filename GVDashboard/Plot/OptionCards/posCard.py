@@ -6,9 +6,6 @@ class PosOptionCard(PlotOptionCard):
     """
     A plot option card specifically used to optionally plot zygosity data
     """
-    # Useful constants 
-    COUNTS_VALUE = 'counts'
-    DENSITY_VALUE = 'density'
     def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
     #def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str = "transparent", fg_color = None, border_color = None, background_corner_colors = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         # Stupidly long list of constructor arguments (may be shortened in future)
