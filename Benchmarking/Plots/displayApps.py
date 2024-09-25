@@ -26,7 +26,7 @@ APP_Y = 500
 
 DEFAULT_FIG = 200
 
-DATA_DIMS = [(500,200),(500,2000)]
+DATA_DIMS = [(500,200)] #,(500,2000)]
 """Data sizes used for plotting tests."""
 DPIS = [100]#, 100, 150]
 
@@ -600,7 +600,7 @@ class CanvasScrollAgg(ctk.CTk):
         self.fig_widget.pack()
 
         self.size_i = 0
-        self.method_i = 0
+        self.method_i = 1
         self.dpi_i = 0
         self.set_defaults()
 
