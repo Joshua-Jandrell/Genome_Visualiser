@@ -5,8 +5,7 @@ import sys, os
 import allel as al
 import random
 def makeRandomCaseCtrl(file_path):
-    data = al.read_vcf(file_path)
-    samples = data['samples']
+    fields, samples, headers, it = al.iter_vcf_chunks(file_path, chunk_length=5000)
     cases = [s for s in samples if random.choice([True, False])]
     return cases
 

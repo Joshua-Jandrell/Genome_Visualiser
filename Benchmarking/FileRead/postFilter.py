@@ -4,7 +4,7 @@ Used to filter vcf files after reding it in via scikit allele
 import time, csv, os
 import allel as al
 import pandas as pd
-#pd.set_option('future.no_silent_downcasting', True) # Opt in to future pd dataframe replace behavior used by allel
+pd.set_option('future.no_silent_downcasting', True) # Opt in to future pd dataframe replace behavior used by allel
 import numpy as np
 
 OUT_DIR = os.path.realpath('Data')
@@ -49,7 +49,9 @@ def select_case_ctrl(data:dict, cases:list[str])->tuple[list[str], al.GenotypeAr
 
 def get_case_list(case_file:str)->list[str]:
     f = open(case_file, mode='r')
-    return f.read().split()
+    case_list = f.read().split()
+    f.close()
+    return case_list
 
 
 def run_al_speedtests(data_file:str, case_file:str, save_file:str|None = os.path.join(OUT_DIR, "post_times.csv"), n_iters:int = 10, chr=1, start:int=1, stop:int=20000, min_qual:float=0,max_qual:float=100):
