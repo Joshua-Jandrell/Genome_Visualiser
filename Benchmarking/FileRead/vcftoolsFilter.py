@@ -55,7 +55,7 @@ def get_case_ctrl(data_path:str, case_path:str)->tuple[str, str]:
 def read_case_ctrl(case_file:str, ctrl_file:str)->tuple[dict, pd.DataFrame, dict, pd.DataFrame]:
     return al.read_vcf(case_file), al.vcf_to_dataframe(case_file), al.read_vcf(ctrl_file), al.vcf_to_dataframe(ctrl_file)
 
-def run_speedtests(data_file:str, case_file:str, save_file:str = os.path.join(OUT_DIR, "times.csv"), n_iters:int = 10, chr=1, start:int=1, stop:int=20000, min_qual:float=80,max_qual:float=100):
+def run_vcf_speedtests(data_file:str, case_file:str, save_file:str = os.path.join(OUT_DIR, "times.csv"), n_iters:int = 10, chr=1, start:int=1, stop:int=20000, min_qual:float=80,max_qual:float=100):
     index_times:list[float] = [] # Time taken to generate a bcftools csi index file
     pos_filter_times:list[float] = [] # Time taken to extract to a file based on pos
     pos_and_qual_filter_times:list[float] = [] # Time taken to extract to a file based on pos and quality 
@@ -126,18 +126,13 @@ def run_speedtests(data_file:str, case_file:str, save_file:str = os.path.join(OU
         writer.writerow(["Pos and qual filtering", sum(pos_and_qual_filter_times)/n_iters] + pos_and_qual_filter_times)
         writer.writerow(["Case-control splitting", sum(case_ctrl_times)/n_iters] + case_ctrl_times)
         writer.writerow(["One shot filter and split", sum(oneshot_times)/n_iters] + oneshot_times)
+        writer.writerow(["Read case and ctrl in to memory", sum(read_times)/n_iters] + read_times)
         writer.writerow(["Total (separate operations)", sum(split_total_time)/n_iters] + split_total_time)
         writer.writerow(["Total (one shot)", sum(oneshot_total_time)/n_iters] + oneshot_total_time)
         f.close()
 
 
-
-
-
-
-
 if __name__ == "__main__":
     path = os.path.relpath('Data/afr-small.vcf.gz')
-    case_path = os.path.relpath('Data/med.case.tsv')
-    run_speedtests(path,case_path,chr=9,n_iters=1)
-    #clear_index(path)
+    case_path = os.path.relpath('Data/afr-small.case.tsv')
+    run_vcf_speedtests(path,case_path,chr=9,n_iters=1)
