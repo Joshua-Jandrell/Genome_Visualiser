@@ -19,10 +19,8 @@ def map_chr(file:str):
 
 if __name__ == "__main__":
     os.makedirs(SAVE_DIR, exist_ok=True)
-    for test_file in [SMALL_FILE, MED_FILE, LARGE_FILE]:
+    for test_file in [LARGE_FILE]:#[SMALL_FILE, MED_FILE, LARGE_FILE]:
         n_iters = N_SAMPLES
-        if test_file == LARGE_FILE:
-            n_iters = 3
 
         chr = map_chr(test_file)
         
@@ -37,6 +35,6 @@ if __name__ == "__main__":
                         os.path.join(SAVE_DIR,test_file+"_bcftools_times.csv"),
                         chr=chr, start=10000, stop=11000,
                         min_qual=80, max_qual=100,
-                        n_iters=N_SAMPLES)
+                        n_iters=n_iters)
     
     

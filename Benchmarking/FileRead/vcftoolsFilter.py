@@ -26,7 +26,7 @@ def get_filter_str(chrom:int, start:int, stop:int, min_qual:float|None=None, max
     # NOTE chr may or may not be appended in front of chromosome so both queries must be used
     query_str = f"-r chr{chrom}:{start}-{stop},{chrom}:{start}-{stop}"
     if min_qual is not None and max_qual is not None:
-        query_str = get_qual_filter(min_qual, max_qual) + " " + query_str
+        query_str += get_qual_filter(min_qual, max_qual)
     return query_str
 
 def filter_file(data_path:str, chrom:int, start:int, stop:int, min_qual:float|None=None, max_qual:float|None=None)->str:
@@ -68,9 +68,7 @@ def run_bcftools_speedtests(data_file:str, case_file:str, save_file:str|None = o
     oneshot_total_time:list[float] =  [] # Total time taken where filtering and case/control are combined
     
     case_data = None
-    case_df = None
     ctrl_data = None
-    ctrl_df = None
 
     for _ in range(n_iters):
         # Clear all files

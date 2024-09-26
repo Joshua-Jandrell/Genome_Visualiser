@@ -17,7 +17,7 @@ class TestBcftoolsRead(unittest.TestCase):
     def test_pos_range_selected(self):
         case_data, ctrl_data = run_bcftools_speedtests(data_path, case_file, save_file=None,
                                                                                      chr=1, start=10492, stop=10815,
-                                                                                     min_qual=None, max_qual=None,
+                                                                                     min_qual=1, max_qual=99,
                                                                                      n_iters=1)
         
 
