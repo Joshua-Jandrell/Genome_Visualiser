@@ -19,6 +19,10 @@ class DatasetMenu(ctk.CTkOptionMenu):
     def __init__(self, master: Any, width: int = 140, height: int = 28, corner_radius: int | None = None, bg_color: str | tuple[str, str] = "transparent", fg_color: str | tuple[str, str] | None = None, button_color: str | tuple[str, str] | None = None, button_hover_color: str | tuple[str, str] | None = None, text_color: str | tuple[str, str] | None = None, text_color_disabled: str | tuple[str, str] | None = None, dropdown_fg_color: str | tuple[str, str] | None = None, dropdown_hover_color: str | tuple[str, str] | None = None, dropdown_text_color: str | tuple[str, str] | None = None, font: tuple | CTkFont | None = None, dropdown_font: tuple | CTkFont | None = None, values: list | None = None, variable: Variable | None = None, state: str = ..., hover: bool = True, command: Callable[[str], Any] | None = None, dynamic_resizing: bool = True, anchor: str = "w", **kwargs):
         super().__init__(master, width, height, corner_radius, bg_color, fg_color, button_color, button_hover_color, text_color, text_color_disabled, dropdown_fg_color, dropdown_hover_color, dropdown_text_color, font, dropdown_font, values, variable, state, hover, command, dynamic_resizing, anchor, **kwargs)
 
+        # Intercept own command 
+        self.__true_command = self._command
+        self.configure(command = self.__on_command)
+
         # Ensure that self is set to a valid option
         self.set(self.UNSELECTED_VALUE)
         # Configure dataset options
@@ -26,10 +30,6 @@ class DatasetMenu(ctk.CTkOptionMenu):
         dataset_names = GlobalDatasetManager.get_dataset_names()
         self.__update_options(dataset_names)
         self.__previous_opt = self.get()
-
-        # Intercept own command 
-        self.__true_command = self._command
-        self.configure(command = self.__on_command)
 
         # Register new dropdown with global dataset manager 
         GlobalDatasetManager.add_listener(self.__update_options)

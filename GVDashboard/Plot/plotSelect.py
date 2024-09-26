@@ -47,7 +47,17 @@ class PlotOptionPanel(OptionPanel):
 
 
     def __init__(self, master, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
-        super().__init__(master, True, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
+        super().__init__(master, True, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, text="Plots", add_text="New plot", **kwargs)
+
+        # Make dataset dropdown 
+        self._dataset_menu = DatasetMenu(self, width=self.BUTTON_W*2, height=self.BUTTON_H)
+
+        # Reposition some elements to fit dataset dropdown
+        self._opt_add_button.grid(row=0, column=2)
+        self.content.grid(row=1, column=0, columnspan=3)
+
+        # Place dataset dropdown menu
+        self._dataset_menu.grid(row=0, column=1)
 
         # There should only be one instance
         assert(not isinstance(PlotOptionPanel.__instance, PlotOptionPanel))
