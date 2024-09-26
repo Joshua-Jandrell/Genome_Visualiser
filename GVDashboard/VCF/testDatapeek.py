@@ -8,6 +8,13 @@ MED_PATH = os.path.realpath('Data/med.vcf.gz')
 AFR_SMALL_PATH = os.path.realpath('Data/afr-small.vcf.gz')
 
 class Test_peek_vcf_data(unittest.TestCase):
+    def test_unformated_chr_number_is_found(self):
+        afr_small = peek_vcf_data(AFR_SMALL_PATH)
+        self.assertEqual(afr_small['CHROM/number'], 9)
+
+    def test_formated_chr_number_is_found(self):
+        med = peek_vcf_data(MED_PATH)
+        self.assertEqual(med['CHROM/number'], 1)
     def test_peek_gets_chr_format(self):
         med = peek_vcf_data(MED_PATH)
         self.assertEqual(med['CHROM/prefix'],"chr")

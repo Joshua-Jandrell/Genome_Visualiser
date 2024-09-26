@@ -7,6 +7,7 @@ import allel as al
 def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
     """
     'peek' into a vcf file to see the following:\n
+    - The number of the first listed chromosome. `['CHROM/number']`
     - How chromosomes are formatted. `['CHROM/prefix']`
     - The position of the first variant. `['POS/first']`
     - The position of the last variant if sampling by the given variant count. `['POS/last']`
@@ -19,6 +20,7 @@ def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
     data, count, _, pos  = it.__next__()
 
     chr_format = "".join([c for c in data['variants/CHROM'][0] if not c.isdigit()])
+    chr_n = int(data['variants/CHROM'][0].strip(chr_format))
  
     first_pos = data['variants/POS'][0]
     last_pos = data['variants/POS'][-2] # use second last value to account for extended peek length 
@@ -33,6 +35,7 @@ def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
 
 
     return {
+        'CHROM/number':chr_n,
         'CHROM/prefix':chr_format,
         'POS/first':first_pos,
         'POS/last':last_pos,

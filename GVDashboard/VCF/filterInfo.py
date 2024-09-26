@@ -2,6 +2,9 @@
 from os import path
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 from VCF.dataFetcher import DataFetcher
+from .dataPeek import peek_vcf_data
+
+DEFAULT_VARIANTS = 5000
 # Class used to define how bcf filters should be applied
 # Acts as a base class for more advanced data filters
 class DataFilter_base():
@@ -98,6 +101,13 @@ class DataSetInfo:
         self.source_path = source_path
         self.save_path = save_path
         self.__name = None # Must set name to None here so that set name can use this variable 
+
+        # Initial region info
+        self.chr = None
+        self.chr_prefix=""
+        self.abs_start = 1
+        self.abs_end = None
+
         # If a path was given, use this to name the dataset 
         self.dw = None
         if name is None:
@@ -182,13 +192,14 @@ class DataSetInfo:
         Called only when a new source file is set.\n
         This function loads in default range value by peaking at the dataset loaded and finding its chromosome and first value.
         """
-        print("NOTE: update data peaking")
-        dw = self.get_data_wrapper()
-        chromo = int(dw.get_chromosome()[0].strip("chr"))
-        min_pos = dw.get_pos()[0]
-        max_pos = min_pos + self.POS_RANGE
+        peek_info = peek_vcf_data(self.source_path, DEFAULT_VARIANTS)
+        chr = peek_info['CHROM/number']
+        self.abs_start = min_pos = peek_info['POS/first']
+        max_pos = peek_info['POS/last']
+        if peek_info['POS/at_end']:
+            self.abs_end = max_pos
 
-        self.__range_filter.configure(chromosome=chromo, min=min_pos, max=max_pos)
+        self.__range_filter.configure(chromosome=chr, min=min_pos, max=max_pos)
     
     def get_data_wrapper(self)->DataWrapper:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
