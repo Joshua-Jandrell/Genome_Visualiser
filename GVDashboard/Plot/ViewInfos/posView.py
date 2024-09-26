@@ -21,5 +21,10 @@ class VarPosView(VariantGridView):
         #ax.plot(wrapped_data.get_pos())
         #ax.stem(wrapped_data.get_pos())
         #ax.bar(wrapped_data.get_pos())
+        
+        if self.pos_in_set == 0:
+            self.fit_to_size(size=size)
+        
+        self._do_base_config(axs)
 
         return super().make_plots(axs, size, plot_box)
