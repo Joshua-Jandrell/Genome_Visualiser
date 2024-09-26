@@ -6,14 +6,12 @@ import customtkinter as ctk
 from os import path
 import tkinter as tk
 
-from VCF.dataFetcher import DataFetcher
 from VCF.dataWrapper import VcfDataWrapper
 from VCF.filterInfo import DataSetInfo
 from VCF.globalDatasetManger import GlobalDatasetManager
 
 from VCF.datasetEditFrames import DatasetFilterFrame, DatasetFileFrame, FileFetcher
 
-from UI.tooltip import ToolTip
 
 # This class is used to select and return files throughout the application
 

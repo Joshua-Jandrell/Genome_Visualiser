@@ -30,7 +30,7 @@ class FrequencyView(ViewInfo_base):
         axis = axs[0]
         
         
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
         pos = wrapped_data.get_pos()
 
         min = pos.min()

@@ -22,6 +22,8 @@ ALT = 'variants/ALT'
 POS = 'variants/POS'
 QUAL = 'variants/QUAL'
 
+#DF_PARAMS = 
+
 
 # Used to get nucleotide number
 NUCLEOTIDE_DICT = {
@@ -34,7 +36,10 @@ NUCLEOTIDE_DICT = {
 # Conatins vcf query data and returns it in various formats
 class VcfDataWrapper:
     def __init__(self, vcf_data:dict, df:DataFrame) -> None:
-        
+
+        # TPDOD Construct a pandas datafram form dict data 
+
+        self.data = vcf_data
         self.df = df    ####TODO TypeError: VcfDataWrapper.__init__() missing 1 required positional argument: 'df'
         # # Make data into a (pandas?) dataframe ^^^^^ ??????
         # df = al.vcf_to_dataframe(TEST_FILE)  <<<from vcfTest... idk if this helps
@@ -42,30 +47,7 @@ class VcfDataWrapper:
         
         self.filtered_df = None
        
-        # Tmp data size constriants
-        # TODO REMOVE THESE
-        max_vars = 5000
-        max_samples = 300
 
-        vcf_data[SAMPLES] = vcf_data[SAMPLES][:max_samples]   #samples is the number of people
-        vcf_data[DATA] = vcf_data[DATA][:max_vars,:max_samples,]
-        vcf_data[CHROM] = vcf_data[CHROM][:max_vars]
-        vcf_data[REF] = vcf_data[REF][:max_vars]
-        vcf_data[ALT] = vcf_data[ALT][:max_vars]
-        vcf_data[ID] = vcf_data[ID][:max_vars]
-        vcf_data[POS] = vcf_data[POS][:max_vars]
-        vcf_data[QUAL] = vcf_data[QUAL][:max_vars]
-        self.df = df.iloc[:max_vars]
-        # ------------------------
-        self.data = vcf_data
-        self.gt_data = GTArr(self.data[DATA])
-
-        # clear pre-constructed arrays
-        self._zygos = None
-        self._refs = None
-        self._alts = None
-        self._pos = None
-        
         self.first_pos, self.last_pos = self.get_file_pos_range()
         self._pop_tag = None
         
@@ -75,6 +57,7 @@ class VcfDataWrapper:
         self.last_qual=100        
         #Default setting: don't sort by quality
         self.sort_mode:SortMode = SortMode.BY_POSITION
+        
 
     # Returns a matrix of zygosities for each sample variant.
     # 0 = no mutation, 1 = heterozygous, 2 = homozygous mutation, -1 = no-data

@@ -82,4 +82,4 @@ class DatasetFileFrame(ctk.CTkFrame):
 
     def update_all(self):
         self.name_text.update_dataset(self.dataset)
-        self.file_picker.update_dataset(self.dataset)
+        self.dataset.configure(source_path=self.path_var.get())

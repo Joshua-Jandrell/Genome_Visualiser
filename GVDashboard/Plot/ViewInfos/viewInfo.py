@@ -101,7 +101,7 @@ class ViewInfo_base:
         pass
     def can_plot(self)->bool:
         """Returns true if the view can be plotted."""
-        return self.dataset_info is not None and self.dataset_info.get_data_wrapper() is not None
+        return self.dataset_info is not None and self.dataset_info.get_data() is not None
     def can_link(self, other):
         """Returns `True` if two view infos are compatible to be linked."""
         return self._view_type == other._view_type

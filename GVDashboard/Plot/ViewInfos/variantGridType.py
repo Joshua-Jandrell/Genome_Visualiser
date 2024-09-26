@@ -59,11 +59,11 @@ class VariantGridView(ViewInfo_base):
     
     
     def _get_samples_size(self)-> list[int]:
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
         return [wrapped_data.get_n_samples() * self.ideal_block_size]
     
     def _get_variants_size(self)-> list[int]:
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
         return [wrapped_data.get_n_variants() * self.ideal_block_size]
 
     def fit_to_size(self,size:tuple[int,int]):
@@ -76,7 +76,7 @@ class VariantGridView(ViewInfo_base):
         else:
             #self.active_axis.set_ylim(0,_lim)
             if self.is_compressible():
-                wrapped_data = self.dataset_info.get_data_wrapper()
+                wrapped_data = self.dataset_info.get_data()
                 _lim = min(wrapped_data.get_n_samples(), _lim)
                 self.active_axis.set_xlim(0,_lim)
 
@@ -97,7 +97,7 @@ class VariantGridView(ViewInfo_base):
         return self.pos_in_set == 0
     
     def get_x_scroll_params(self) -> tuple[float, float, float]:
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
         return 0, wrapped_data.get_n_variants(), self._get_scroll_window()
     
     def scroll_x(self, x_pos: float):

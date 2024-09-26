@@ -47,14 +47,14 @@ class RefView(VariantGridView):
     def _get_samples_size(self) -> list[int]:
         l = [self.ideal_block_size]
         if self.plot_alt:
-            wrapped_data = self.dataset_info.get_data_wrapper()
+            wrapped_data = self.dataset_info.get_data()
             l += [wrapped_data.get_alt_int().shape[0] * self.ideal_block_size]
         return l
 
     def get_height_weights(self) -> list[int]:
         weight = [1]
         if self.plot_alt:
-            wrapped_data = self.dataset_info.get_data_wrapper()
+            wrapped_data = self.dataset_info.get_data()
             weight += [wrapped_data.get_alt_int().shape[0]]
         return weight
     def get_plot_count(self) -> int:
@@ -62,7 +62,7 @@ class RefView(VariantGridView):
         else: return 1
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->Axes:
         self.active_axis = axs[0]
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
         data_matrix = np.matrix(wrapped_data.get_ref_ints())
         if self.stack_mode != Y_STACK:
             data_matrix = np.transpose(data_matrix)

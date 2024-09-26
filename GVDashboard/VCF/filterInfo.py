@@ -1,10 +1,14 @@
 # Contains classes and data that can be used to filter, query and manage datasets
+import random, os
 from os import path
+from typing import Literal
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
-from VCF.dataFetcher import DataFetcher
-from .dataPeek import peek_vcf_data
+from .dataLoad import peek_vcf_data, read_vcf_df, read_vcf_data
+from .bcftoolSys import make_dataset_file, convert
 
 DEFAULT_VARIANTS = 5000
+REGION_CMD = '-r'
+INCLUDE_CMD = '-i'
 # Class used to define how bcf filters should be applied
 # Acts as a base class for more advanced data filters
 class DataFilter_base():
@@ -41,7 +45,7 @@ class ParamRangeFilter(DataFilter_base):
     def get_range(self):
         return self.min, self.max
     def get_query_str(self, opt: str) -> str:
-        if opt == "-i":
+        if opt == INCLUDE_CMD:
             return f"{self.column_name}<={self.max} && {self.column_name}>={self.min}"
         return super().get_query_str(opt)
     
@@ -62,7 +66,7 @@ class RegionFiler(DataFilter_base):
             self.max = max
 
     def get_query_str(self, opt:str) -> str:
-        if opt in ["", " "]: return f"-r chr{self.chromosome}:{self.min}-{self.max}"
+        if opt == REGION_CMD: return f"{self.chromosome}:{self.min}-{self.max}"
         return super().get_query_str(opt)
     def apply_to_wrapper(self, dw: DataWrapper):
         dw.set_pos_range(min_pos=self.min, max_pos=self.max)
@@ -73,6 +77,19 @@ class QualityFilter(ParamRangeFilter):
     def apply_to_wrapper(self,dw: DataWrapper):
         dw.set_qual_range(min_qual=self.min, max_qual=self.max)
 
+def get_filter_query_str(filters:list[DataFilter_base],cmds:list[str], chr_prefix = "")->str:
+    """
+    Construct a bcftools style query string for the list of specified filters.
+    """
+    # Check for regional filtering
+    query_str = ""
+    if REGION_CMD in cmds:
+        query_str += (" -r " + ",".join([s for s in [chr_prefix+filt.get_query_str('-r') for filt in filters] if s != '']))
+    if INCLUDE_CMD in cmds:
+        query_str += (" -i \"" + " && ".join([chr_prefix+filt.get_query_str('-i') for filt in filters]) +"\" ")
+
+    return query_str
+
 
 
 # Class used to store and apply various vcf filters
@@ -80,17 +97,44 @@ class DataSetInfo:
     POS_RANGE = 20000
     APPEND = "_subset"
     names = [] # List of all dataset names to help avoid tow datasets having the same name
+    __files = []
     data_wrappers = {} # stores a list of pre-computed data wrappers 
+
+    @classmethod
+    def __make_valid_save_file_name(cls):
+        """
+        Crates a unique save file name for the given data set
+        """
+        save_file = '.' +  str(random.randint(0,999999999))
+        if save_file in cls.__files: return cls.__make_valid_save_file_name()
+        else:
+            cls.__files.append(save_file)
+            return save_file
+        
+    @classmethod 
+    def __clear_save_file_name(cls, name):
+        """
+        clears the given save file name.
+        """
+        cls.__files.remove(name)
 
     def add_name(name:str):
         DataSetInfo.names.append(name)
-    def clear_name(name:str):
+    def clear_name(name:str, ):
         DataSetInfo.names.remove(name)
+  
     def is_free_name(name:str)->bool:
         return name not in DataSetInfo.names
 
 
-    def __init__(self,source_path:str|None = None,save_path:str|None = None,name:str|None = None, case_path:str|None="", ctrl_path:str|None="") -> None:
+    def __init__(self,source_path:str|None = None,name:str|None = None, case_path:str|None="", ctrl_path:str|None="") -> None:
+        
+        # Flags used to see which fields must be updated 
+        self.__sample_flag = False
+        self.__qaul_flag = False
+        self.__region_flag = False
+        
+        
         self.filters:list[DataFilter_base] = []
         # Add make required filters
         # NOTE this must be done before configuration
@@ -99,7 +143,8 @@ class DataSetInfo:
 
 
         self.source_path = source_path
-        self.save_path = save_path
+        self._save_name = self.__make_valid_save_file_name()
+        self.__save_path__ = None
         self.__name = None # Must set name to None here so that set name can use this variable 
 
         # Initial region info
@@ -116,7 +161,7 @@ class DataSetInfo:
             else:
                 name = "New Dataset"
         self.__set__name(name)
-        self.configure(source_path, save_path, name=name, case_path = case_path, ctrl_path=ctrl_path)
+        self.configure(source_path, name=name, case_path = case_path, ctrl_path=ctrl_path)
         if self.source_path is not None:
             self.__peak_data()
         self.get_save_path()
@@ -131,10 +176,12 @@ class DataSetInfo:
     def __del__(self):
         #print(f"killed {self.__name}")
         DataSetInfo.clear_name(self.__name)
+        DataSetInfo.__clear_save_file_name(self._save_name)
+        if self.__save_path__ is not None and os.path.isfile(self.__save_path__+".vcf.gz"):
+            os.remove(self.__save_path__+".vcf.gz")
 
     def configure(self,
                   source_path:str|None = None,
-                  save_path:str|None = None,
                   filters:DataFilter_base|None = None,
                   name:str|None = None,
                   case_path:str|None = None,
@@ -143,7 +190,6 @@ class DataSetInfo:
         if source_path is not None and self.source_path != source_path:
             self.source_path = source_path
             self.__peak_data()
-        if save_path is not None: self.save_path = save_path
         if filters is not None: self.filters = filters
         if name is not None: self.__set__name(name)
         if case_path is not None: self.set_case(case_path)
@@ -159,10 +205,11 @@ class DataSetInfo:
 
     def get_source_path(self)->str|None:
         return self.source_path
+
     def get_save_path(self):
-        if self.save_path is None:
-            self.save_path = self.get_dataset_name()
-        return self.save_path
+        if self._save_name is None:
+            self._save_name = self.get_dataset_name()
+        return self._save_name
 
     def get_dataset_name(self)->str:
         return self.__name
@@ -201,13 +248,20 @@ class DataSetInfo:
 
         self.__range_filter.configure(chromosome=chr, min=min_pos, max=max_pos)
     
-    def get_data_wrapper(self)->DataWrapper:
+    def get_data(self)->DataWrapper:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
-        if self.dw is None:
-            self.dw = DataFetcher.load_data(self.get_source_path())
-            for filter in self.filters:
-                filter.apply_to_wrapper(self.dw)
-            #print("not using old wrapper?")
+        # Pr-load vcf data using bcftools if required 
+        if self.__region_flag or self.__save_path__ is None:
+            query_str = get_filter_query_str(self.filters,['-r'])
+            self.__save_path__ = make_dataset_file(self.source_path,
+                                                   os.path.join(os.path.dirname(self.source_path),self._save_name),
+                                                   query_str=query_str)
+            
+        # Load datawrapper
+        data = read_vcf_data(self.__save_path__)
+        df = read_vcf_df(self.__save_path__)
+
+        self.dw = DataWrapper(data, df)
         return self.dw
     
     # Range Filter parameters 

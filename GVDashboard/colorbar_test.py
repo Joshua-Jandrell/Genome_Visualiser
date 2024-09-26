@@ -12,9 +12,8 @@ from matplotlib.gridspec import GridSpec as GridSpec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.widgets import Slider
 import allel as al
-from VCF.dataFetcher import DataFetcher, DataWrapper
 
-from VCF.dataWrapper import VcfDataWrapper as Wrapper
+from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 #from VCF.vcfTest import *
 
 from VCF.vcfTest import getData
@@ -26,7 +25,7 @@ def update(val):
     ax.set_ylim(dw.get_n_variants()-val, dw.get_n_variants()-val-span)
     
 if __name__ == "__main__":
-    dw = DataFetcher.load_data("./Data/afr-small.vcf")
+    #dw = DataFetcher.load_data("./Data/afr-small.vcf")
     assert(isinstance(dw,DataWrapper))
     
     

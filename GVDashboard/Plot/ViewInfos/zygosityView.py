@@ -41,7 +41,7 @@ class ZygoteView(VariantGridView):
 
 
     def get_height_weights(self) -> list[int]:
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
         return [min(wrapped_data.get_n_samples(),self.max_weight)]
     
     def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->str:
@@ -49,7 +49,7 @@ class ZygoteView(VariantGridView):
         axis = axs[0]
         self.active_axis = axis
         # Get wrapped data and make the plot
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
 
         zygos_matrix = wrapped_data.get_zygosity()
         if self.stack_mode == Y_STACK:

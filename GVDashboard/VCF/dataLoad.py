@@ -2,7 +2,7 @@
 Contains a list of functions ued to 'peek' into vcf datasets to determine their scale and characteristics.
 """
 import os
-import allel as al
+import allel as al, pandas
 
 def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
     """
@@ -42,6 +42,18 @@ def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
         'POS/at_end':at_end,
         'samples/count':n_samples
     }
+
+def read_vcf_data(file_path:str, region_str:str|None = None)->dict:
+    if region_str is None:
+        return al.read_vcf(file_path)
+    else:
+        return al.read_vcf(file_path, region=region_str)
+    
+def read_vcf_df(file_path:str, region_str:str|None = None)->pandas.DataFrame:
+    if region_str is None:
+        return al.vcf_to_dataframe(file_path)
+    else:
+        return al.vcf_to_dataframe(file_path, region=region_str)
 
 
 

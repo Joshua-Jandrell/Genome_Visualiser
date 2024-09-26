@@ -1,9 +1,9 @@
 """
-Unit tests for data peek system
+Unit tests for data load sand peek systems
 """
-
 import unittest,os
-from dataPeek import peek_vcf_data
+from dataLoad import peek_vcf_data
+
 MED_PATH = os.path.realpath('Data/med.vcf.gz')
 AFR_SMALL_PATH = os.path.realpath('Data/afr-small.vcf.gz')
 

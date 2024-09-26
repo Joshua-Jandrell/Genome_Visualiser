@@ -14,7 +14,7 @@ class VarPosView(VariantGridView):
 
     def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:
         self.active_axis = ax = axs[0]
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
         pos_mat = np.matrix(wrapped_data.get_pos())
 
         ax.pcolorfast(pos_mat, cmap='plasma')
