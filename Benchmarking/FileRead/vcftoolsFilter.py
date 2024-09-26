@@ -93,10 +93,9 @@ def run_bcftools_speedtests(data_file:str, case_file:str, save_file:str|None = o
         _t = time.time()
         out_file = filter_file(data_file,chr,start,stop,min_qual,max_qual)
         pos_and_qual_filter_times.append(time.time()-_t)
-
         # Time case and control filtering
         _t = time.time()
-        case_data_path, ctrl_data_path = get_case_ctrl(data_path=data_file, case_path=case_file)
+        case_data_path, ctrl_data_path = get_case_ctrl(data_path=out_file, case_path=case_file)
         case_ctrl_times.append(time.time()-_t)
         clear_file(case_data_path)
         clear_file(ctrl_data_path)
