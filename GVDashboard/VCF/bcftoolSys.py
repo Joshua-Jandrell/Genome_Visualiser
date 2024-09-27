@@ -27,7 +27,7 @@ def get_base_pathname(file_path:str)->str:
 def get_idex_name(file_path)->str:
     return file_path+".csi"
 
-def get_conversion_char(output_type:Literal['bcf.gz', 'vcf', 'vcf.gz'])->str:
+def get_conversion_char(output_type:Literal['bcf.gz', 'vcf', 'vcf.gz', 'bcf.gz'])->str:
     """
     Returns the character required to specify output type in bcf tools
     """
@@ -42,6 +42,8 @@ def convert(file_path:str, output_type:Literal['bcf', 'bcf.gz', 'vcf', 'vcf.gz']
     """
     path_name = get_base_pathname(file_path)
     path_name = f"{path_name}.{output_type}"
+    if os.path.isfile(path_name): return path_name
+    
     convert_c = get_conversion_char(output_type)
     subprocess.call(f"{BCFTOOLS_CMD} convert -O {convert_c} {file_path} -o {path_name}")
     return path_name
@@ -61,9 +63,10 @@ def make_dataset_file(data_path:str, new_data_path:str, query_str:str="", output
     Returns the `new_data_path` if successful or the `data_path` if unsuccessful (due to bcftools exe not found).\n
     Second argument will be a tabix region string (to be used with scikit alle) if further regional filtering is needed.
     """
+    output_type = output_type.strip(".") # remove '.' from output type to avoid double dots
     data_path = prep_for_bcftools(data_path)
     new_data_path = get_base_pathname(new_data_path)+"."+output_type # Ensure that output has correct file extension 
-    subprocess.call(f"{BCFTOOLS_CMD} view {query_str} -O {get_conversion_char(output_type)} {data_path} -o {new_data_path}")
+    subprocess.call(f"{BCFTOOLS_CMD} view {query_str.strip(" ")} {data_path} -O {get_conversion_char(output_type)} -o {new_data_path}")
     return new_data_path
 
         

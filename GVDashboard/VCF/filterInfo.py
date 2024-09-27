@@ -84,7 +84,7 @@ def get_filter_query_str(filters:list[DataFilter_base],cmds:list[str], chr_prefi
     # Check for regional filtering
     query_str = ""
     if REGION_CMD in cmds:
-        query_str += (" -r " + ",".join([s for s in [chr_prefix+filt.get_query_str('-r') for filt in filters] if s != '']))
+        query_str += (" -r " + ",".join([s for s in [chr_prefix+filt.get_query_str('-r') for filt in filters] if s not in ["", chr_prefix]]))
     if INCLUDE_CMD in cmds:
         query_str += (" -i \"" + " && ".join([chr_prefix+filt.get_query_str('-i') for filt in filters]) +"\" ")
 
@@ -98,14 +98,15 @@ class DataSetInfo:
     APPEND = "_subset"
     names = [] # List of all dataset names to help avoid tow datasets having the same name
     __files = []
+    __FILE_EXTENSION = ".vcf.gz"
     data_wrappers = {} # stores a list of pre-computed data wrappers 
 
     @classmethod
-    def __make_valid_save_file_name(cls):
+    def __make_valid_save_file_name(cls, dir):
         """
         Crates a unique save file name for the given data set
         """
-        save_file = '.' +  str(random.randint(0,999999999))
+        save_file = os.path.join(dir,'.' +  str(random.randint(0,999999999)))+cls.__FILE_EXTENSION
         if save_file in cls.__files: return cls.__make_valid_save_file_name()
         else:
             cls.__files.append(save_file)
@@ -116,11 +117,12 @@ class DataSetInfo:
         """
         clears the given save file name.
         """
-        cls.__files.remove(name)
+        if name in cls.__files:
+            cls.__files.remove(name)
 
     def add_name(name:str):
         DataSetInfo.names.append(name)
-    def clear_name(name:str, ):
+    def clear_name(name:str):
         DataSetInfo.names.remove(name)
   
     def is_free_name(name:str)->bool:
@@ -133,6 +135,7 @@ class DataSetInfo:
         self.__sample_flag = False
         self.__qaul_flag = False
         self.__region_flag = False
+        self.__save_flag = False
         
         
         self.filters:list[DataFilter_base] = []
@@ -142,19 +145,25 @@ class DataSetInfo:
         self.__quality_filter = QualityFilter()
 
 
-        self.source_path = source_path
-        self._save_name = self.__make_valid_save_file_name()
-        self.__save_path__ = None
+
+        self.__save_path = None
         self.__name = None # Must set name to None here so that set name can use this variable 
 
-        # Initial region info
+        # Initial variables (MUST be set later using configure)
+        self.source_path = None
         self.chr = None
         self.chr_prefix=""
         self.abs_start = 1
         self.abs_end = None
+        self.abs_end = False
+
+        self.__destroyed = False
 
         # If a path was given, use this to name the dataset 
         self.dw = None
+
+        self.set_source_path(source_path)
+
         if name is None:
             if source_path is not None:
                 name = path.basename(source_path)
@@ -162,9 +171,6 @@ class DataSetInfo:
                 name = "New Dataset"
         self.__set__name(name)
         self.configure(source_path, name=name, case_path = case_path, ctrl_path=ctrl_path)
-        if self.source_path is not None:
-            self.__peak_data()
-        self.get_save_path()
         self.get_dataset_name()
         #print(f"Make {self.__name}")
 
@@ -175,10 +181,8 @@ class DataSetInfo:
 
     def __del__(self):
         #print(f"killed {self.__name}")
-        DataSetInfo.clear_name(self.__name)
-        DataSetInfo.__clear_save_file_name(self._save_name)
-        if self.__save_path__ is not None and os.path.isfile(self.__save_path__+".vcf.gz"):
-            os.remove(self.__save_path__+".vcf.gz")
+        self.destroy()
+
 
     def configure(self,
                   source_path:str|None = None,
@@ -188,12 +192,51 @@ class DataSetInfo:
                   ctrl_path:str|None = None
                   ):
         if source_path is not None and self.source_path != source_path:
-            self.source_path = source_path
-            self.__peak_data()
+            self.set_source_path(source_path)
         if filters is not None: self.filters = filters
         if name is not None: self.__set__name(name)
         if case_path is not None: self.set_case(case_path)
         if ctrl_path is not None: self.set_ctrl(ctrl_path=ctrl_path)
+
+    def destroy(self):
+        """
+        Called to delete all dataset files and remove all records of dataset.\n
+        If a reference to this dataset still exists the dataset will return None instead of a datawrapper.
+        """
+        if self.__destroyed: return
+        
+        DataSetInfo.clear_name(self.__name)
+        if self.__save_path is not None:
+            DataSetInfo.__clear_save_file_name(self.__save_path)
+        self.__clear_save()
+        self.__destroyed = True
+
+    def set_source_path(self,source_path:str|None):
+        if source_path == self.source_path: return
+
+        # Clear any old save files
+        self.__clear_save()
+
+        self.source_path = source_path
+        if self.source_path is None: return
+
+        # Peak into dataset to see if full file can be loader reasonably
+        self.__peek_data()
+
+        # Make a save path if it will be required
+        if not self.at_end:
+            # Peaking did not reveal the full file, that dataset is big and should thus be stored in memory
+            self.__save_path = self.__make_valid_save_file_name(os.path.dirname(source_path))
+
+    def __clear_save(self):
+        """
+        Remove the save file if it exists.
+        """
+        if self.__save_path is None: return
+        if os.path.isfile(self.__save_path):
+            os.remove(self.__save_path)
+            self.__save_flag = False
+        self.__save_path = None
 
     def add_filter(self,filter:DataFilter_base):
         self.filters.append(filter)
@@ -205,11 +248,6 @@ class DataSetInfo:
 
     def get_source_path(self)->str|None:
         return self.source_path
-
-    def get_save_path(self):
-        if self._save_name is None:
-            self._save_name = self.get_dataset_name()
-        return self._save_name
 
     def get_dataset_name(self)->str:
         return self.__name
@@ -234,32 +272,53 @@ class DataSetInfo:
         DataSetInfo.add_name(_name) # add new name to the list 
         self.__name = _name # set name
 
-    def __peak_data(self):
+    def __peek_data(self):
         """
         Called only when a new source file is set.\n
         This function loads in default range value by peaking at the dataset loaded and finding its chromosome and first value.
         """
         peek_info = peek_vcf_data(self.source_path, DEFAULT_VARIANTS)
+        self.chr_prefix = peek_info['CHROM/prefix']
+
         chr = peek_info['CHROM/number']
         self.abs_start = min_pos = peek_info['POS/first']
         max_pos = peek_info['POS/last']
         if peek_info['POS/at_end']:
             self.abs_end = max_pos
 
+        self.at_end = peek_info['POS/at_end']
+
         self.__range_filter.configure(chromosome=chr, min=min_pos, max=max_pos)
+
+    def __should_make_save_file(self)->bool:
+        """
+        Returns true if the dataset should use an external save file to store pre-filtered data, \n
+        or if the existing save file should be remade.
+        """
+        return not self.at_end and (not self.__save_flag or (self.__region_flag and self.__save_path is not None))
     
-    def get_data(self)->DataWrapper:
+    def get_data(self)->DataWrapper|None:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
+        if self.__destroyed: return None
+        if self.dw is not None:
+            return self.dw
+        
+        data_path = self.__save_path
+        if data_path is None: data_path = self.source_path
+        
         # Pr-load vcf data using bcftools if required 
-        if self.__region_flag or self.__save_path__ is None:
-            query_str = get_filter_query_str(self.filters,['-r'])
-            self.__save_path__ = make_dataset_file(self.source_path,
-                                                   os.path.join(os.path.dirname(self.source_path),self._save_name),
-                                                   query_str=query_str)
+        if self.__should_make_save_file():
+            query_str = get_filter_query_str(self.filters,['-r'], chr_prefix=self.chr_prefix)
+            data_path = make_dataset_file(self.source_path,
+                                                   os.path.join(os.path.dirname(self.source_path),self.__save_path),
+                                                   query_str=query_str,
+                                                   output_type=self.__FILE_EXTENSION)
+            assert(data_path == self.__save_path)
+            self.__save_flag = True
             
         # Load datawrapper
-        data = read_vcf_data(self.__save_path__)
-        df = read_vcf_df(self.__save_path__)
+        data = read_vcf_data(data_path)
+        df = read_vcf_df(data_path)
 
         self.dw = DataWrapper(data, df)
         return self.dw

@@ -13,8 +13,7 @@ from UI.viewPanel import ViewPanel
 from UI.sidePanel import SidePanel
 
 #from Plot.dummyPlotter import make_plot
-from VCF.dataWrapper import VcfDataWrapper
-from VCF.vcfTest import getData
+from VCF.globalDatasetManger import GlobalDatasetManager
 
 from UI.searchPanel import SearchPanel
 
@@ -84,6 +83,10 @@ class App(ctk.CTk):
 
         # Add event to define behavior when deleted
         self.protocol("WM_DELETE_WINDOW", self._on_app_delete)
+
+    def destroy(self):
+        GlobalDatasetManager.deregister_all()
+        return super().destroy()
 
     def _on_app_delete(self):
             # Clean up plots to ensure that app is deleted
