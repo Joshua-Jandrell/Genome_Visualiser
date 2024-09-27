@@ -6,9 +6,13 @@ from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 from .dataLoad import peek_vcf_data, read_vcf_df, read_vcf_data
 from .bcftoolSys import make_dataset_file, convert
 
+import pandas as pd
+
 DEFAULT_VARIANTS = 5000
 REGION_CMD = '-r'
 INCLUDE_CMD = '-i'
+
+
 # Class used to define how bcf filters should be applied
 # Acts as a base class for more advanced data filters
 class DataFilter_base():
@@ -297,10 +301,13 @@ class DataSetInfo:
         """
         return not self.at_end and (not self.__save_flag or (self.__region_flag and self.__save_path is not None))
     
+    def __requires_update(self):
+        return self.__region_flag
+    
     def get_data(self)->DataWrapper|None:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
         if self.__destroyed: return None
-        if self.dw is not None:
+        if self.dw is not None and not self.__requires_update():
             return self.dw
         
         data_path = self.__save_path
@@ -321,6 +328,10 @@ class DataSetInfo:
         df = read_vcf_df(data_path)
 
         self.dw = DataWrapper(data, df)
+
+        for filt in self.filters:
+            filt.apply_to_wrapper(self.dw)
+
         return self.dw
     
     # Range Filter parameters 

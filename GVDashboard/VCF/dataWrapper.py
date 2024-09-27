@@ -9,7 +9,7 @@ from enum import IntEnum
 class SortMode(IntEnum):
     BY_POSITION=0,
     BY_QUALITY=1,
-    BY_POPULATION = 2,
+    BY_POPULATION=2,
      
     
 # Constants used to index a VCF dictionary
@@ -22,7 +22,16 @@ ALT = 'variants/ALT'
 POS = 'variants/POS'
 QUAL = 'variants/QUAL'
 
-#DF_PARAMS = 
+CASES = 'samples/cases'
+CTRLS = 'samples/ctrls'
+
+
+S_KEYS = [SAMPLES, CASES, CTRLS]
+"""Data dict fields which run along the s direction."""
+
+V_KEYS = [CHROM, SAMPLES, DATA, ID, REF, ALT, POS, QUAL]
+"""Data dict views which align with variant."""
+ 
 
 
 # Used to get nucleotide number
@@ -61,6 +70,17 @@ class VcfDataWrapper:
 
     # Returns a matrix of zygosities for each sample variant.
     # 0 = no mutation, 1 = heterozygous, 2 = homozygous mutation, -1 = no-data
+
+    def slice_v(self, mask:list[bool]):
+        """Slice all data that aligns with variants according to the given bool mask."""
+        if len(mask) != len(self.data[POS]):
+            raise ValueError("Data mask does not match length of variants")
+        
+        for key in V_KEYS:
+            self.data[key] = self.data[key][mask]
+
+        # Special case for callset data 
+        self.data[DATA] = self.data[DATA][mask,i]
     def get_zygosity(self):
         """Returns an _`int`_ matrix of zygosities for each sample variant.\\
         0 = no mutation\\
