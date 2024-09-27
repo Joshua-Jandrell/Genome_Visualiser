@@ -17,4 +17,5 @@ pip install customtkinter
 pip install matplotlib
 pip install scikit-allel
 pip install pandas
+pip install -U pyinstaller
 # requires c++ version 14 or higher

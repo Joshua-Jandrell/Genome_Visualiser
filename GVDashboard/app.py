@@ -51,11 +51,6 @@ class App(ctk.CTk):
         # set size app window
         self.geometry(f"{DEFAULT_WIDTH}x{DEFAULT_HIGHT}")
         self.minsize(MIN_WIDTH,MIN_HIGHT)
-
-        # Add topbar menu
-        self.menubar = TopMenuBar(master=self)
-        self.config(menu=self.menubar)
-
         
         # Make collapsable side-panels and put them in the app window
         self.left = SidePanel(self,ctk.RIGHT)
