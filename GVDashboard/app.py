@@ -21,6 +21,9 @@ from Plot.plotInfo import ViewInfo_base
 from Plot.autoPlotter import AutoPlotter
 from Plot.keyCanvas import KeyCanvas
 
+import pandas as pd # For set to stop deprecation 
+pd.set_option('future.no_silent_downcasting', True)
+
 # Constants
 DEFAULT_WIDTH = 1200
 DEFAULT_HIGHT = 600

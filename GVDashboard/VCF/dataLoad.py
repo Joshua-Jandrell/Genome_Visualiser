@@ -4,7 +4,7 @@ Contains a list of functions ued to 'peek' into vcf datasets to determine their 
 import os
 import allel as al, pandas
 
-def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
+def peek_vcf_data(file_path:str, variant_count = 10000, target_pt:int|None = None)->dict:
     """
     'peek' into a vcf file to see the following:\n
     - The number of the first listed chromosome. `['CHROM/number']`
@@ -12,6 +12,7 @@ def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
     - The position of the first variant. `['POS/first']`
     - The position of the last variant if sampling by the given variant count. `['POS/last']`
     - If the data continues beyond the sample variant count (True if at end). `['POS/at_end']`
+    - The position at the `target_pt` (The same as last pos if not specified) `['POS/target']`
     - The number of samples expected. `['samples/count']`
     """
     peek_length = variant_count+1 # Peek one variant more than required to detect data end correctly.
@@ -23,7 +24,12 @@ def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
     chr_n = int(data['variants/CHROM'][0].strip(chr_format))
  
     first_pos = data['variants/POS'][0]
-    last_pos = data['variants/POS'][-2] # use second last value to account for extended peek length 
+    last_pos = data['variants/POS'][-2] # use second last value to account for extended peek length
+    if target_pt is not None:
+        target_pt = min(count-1, target_pt)
+        target_pos = data ['variants/POS'][target_pt]
+    else:
+        target_pos = last_pos
 
     at_end = pos == 0
     
@@ -40,6 +46,7 @@ def peek_vcf_data(file_path:str, variant_count = 10000)->dict:
         'POS/first':first_pos,
         'POS/last':last_pos,
         'POS/at_end':at_end,
+        'POS/target':target_pos,
         'samples/count':n_samples
     }
 

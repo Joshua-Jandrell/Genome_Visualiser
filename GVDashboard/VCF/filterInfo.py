@@ -138,7 +138,8 @@ class DataSetInfo:
         # Flags used to see which fields must be updated 
         self.__sample_flag = False
         self.__qaul_flag = False
-        self.__region_flag = False
+        self.__reload_flag = False
+        """Set to true if sample save file should be re-loaded"""
         self.__save_flag = False
         
         
@@ -299,21 +300,19 @@ class DataSetInfo:
         Returns true if the dataset should use an external save file to store pre-filtered data, \n
         or if the existing save file should be remade.
         """
-        return not self.at_end and (not self.__save_flag or (self.__region_flag and self.__save_path is not None))
-    
-    def __requires_update(self):
-        return self.__region_flag
+        return not self.at_end and (not self.__save_flag or self.__reload_flag)
+
     
     def get_data(self)->DataWrapper|None:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
-        if self.__destroyed: return None
-        if self.dw is not None and not self.__requires_update():
-            return self.dw
+        if self.__destroyed:
+            raise Exception("Trying to get data from destroyed da")
+
         
         data_path = self.__save_path
         if data_path is None: data_path = self.source_path
         
-        # Pr-load vcf data using bcftools if required 
+        # Pre-load vcf data using bcftools if required 
         if self.__should_make_save_file():
             query_str = get_filter_query_str(self.filters,['-r'], chr_prefix=self.chr_prefix)
             data_path = make_dataset_file(self.source_path,
@@ -336,7 +335,12 @@ class DataSetInfo:
     
     # Range Filter parameters 
     def set_range(self, chromosome:int|None = None, min:int|None = None, max:int|None = None):
+        # Set region reload flag if on a new chromosome
+        self.__save_flag = self.__range_filter.chromosome == chromosome
+        
+
         self.__range_filter.configure(chromosome=chromosome, min=min, max=max)
+
         # Set datawrapper to be None to force data reload
         self.dw = None
     def get_range(self)->tuple[int, int]:
@@ -351,7 +355,8 @@ class DataSetInfo:
     # Quality filter parameters 
     def set_quality(self, min:float|None=None, max:float|None=None):
         self.__quality_filter.set_range(min,max)
-        self.dw = None
+        if self.dw is not None:
+            self.__quality_filter.apply_to_wrapper(self.dw)
     def get_quality(self)->tuple[float, float]:
         """
         Get the quality range of the dataset

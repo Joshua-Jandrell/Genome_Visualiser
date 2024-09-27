@@ -55,5 +55,8 @@ class Test_peek_vcf_data(unittest.TestCase):
         med = peek_vcf_data(MED_PATH, 10)
         self.assertEqual(med['samples/count'], 4)
 
+    # def test_target_pt_is_found(self):
+
+
 if __name__ == "__main__":
     unittest.main()
