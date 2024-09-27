@@ -8,7 +8,8 @@ from .bcftoolSys import make_dataset_file, convert
 
 import pandas as pd
 
-DEFAULT_VARIANTS = 5000
+DEFAULT_VARIANTS = 10000
+DEFAULT_DISPLAY = 500
 REGION_CMD = '-r'
 INCLUDE_CMD = '-i'
 
@@ -282,12 +283,12 @@ class DataSetInfo:
         Called only when a new source file is set.\n
         This function loads in default range value by peaking at the dataset loaded and finding its chromosome and first value.
         """
-        peek_info = peek_vcf_data(self.source_path, DEFAULT_VARIANTS)
+        peek_info = peek_vcf_data(self.source_path, DEFAULT_VARIANTS, target_pt=DEFAULT_DISPLAY)
         self.chr_prefix = peek_info['CHROM/prefix']
 
         chr = peek_info['CHROM/number']
         self.abs_start = min_pos = peek_info['POS/first']
-        max_pos = peek_info['POS/last']
+        max_pos = peek_info['POS/target']
         if peek_info['POS/at_end']:
             self.abs_end = max_pos
 
