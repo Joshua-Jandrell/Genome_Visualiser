@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from Plot.OptionCards import PlotOptionCard, PlotOptionCtrl, OptionCard
+from Plot.OptionCards import PlotOptionCard, OptionCard
 from Plot.ViewInfos import RefView
 from typing import Tuple
 

@@ -20,8 +20,9 @@ class DatasetMenu(ctk.CTkOptionMenu):
         super().__init__(master, width, height, corner_radius, bg_color, fg_color, button_color, button_hover_color, text_color, text_color_disabled, dropdown_fg_color, dropdown_hover_color, dropdown_text_color, font, dropdown_font, values, variable, state, hover, command, dynamic_resizing, anchor, **kwargs)
 
         # Intercept own command 
-        self.__true_command = self._command
-        self.configure(command = self.__on_command)
+        # NOTE this must be done first.
+        super().configure(command = self.__on_command)
+        self.__true_command =None
 
         # Ensure that self is set to a valid option
         self.set(self.UNSELECTED_VALUE)
@@ -31,8 +32,16 @@ class DatasetMenu(ctk.CTkOptionMenu):
         self.__update_options(dataset_names)
         self.__previous_opt = self.get()
 
+        self.__true_command = command
+
         # Register new dropdown with global dataset manager 
         GlobalDatasetManager.add_listener(self.__update_options)
+
+    def configure(self, require_redraw=False, command = None, **kwargs):
+        if command is not None:
+            self.__true_command = command
+        return super().configure(require_redraw, **kwargs)
+
 
     def __on_command(self,event):
         # Check if command is "new"
