@@ -48,7 +48,7 @@ class DatasetMenu(ctk.CTkOptionMenu):
         self.set(dataset_info.get_dataset_name())
         self._command(dataset_info.get_dataset_name())
 
-    def get_selected_dataset(self)->str|None:
+    def get_selected_dataset(self)->DataSetInfo|None:
         """
         Returns the dataset selected by the option menu.\n
         WARNING: Do not keep a reference to the dataset returned by this method as it will prevent the dataset from being deleted.

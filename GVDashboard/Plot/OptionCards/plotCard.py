@@ -20,7 +20,7 @@ class PlotOptionCard(OptionCard):
         self.MENU_W = 125
         
         # Create dataset menu
-        self.dataset_menu_frame =self.make_dataset_menu()
+        self.dataset_menu_frame = None
  
     def make_dataset_menu(self)->ctk.CTkFrame:
         """
@@ -57,7 +57,7 @@ class PlotOptionCard(OptionCard):
         super().set_value(value)
         # update data to register on new plot info
         assert(isinstance(value,ViewInfo_base))
-        self.__on_dataset_update(value)
+        #self.__on_dataset_update(value)
 
 class PlotOptionCtrl(OptionCtrl):
     def make_option_card(self) -> OptionCard:

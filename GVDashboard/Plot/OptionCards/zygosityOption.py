@@ -14,11 +14,6 @@ class ZygoOptionCard(PlotOptionCard):
         # Stupidly long list of constructor arguments (may be shortened in future)
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
-        # Get the dataset menu frame so that it can be put onto the card
-        data_select_menu = self.get_dataset_menu_frame()
-        # Put dataset menu onto the card using grid manager
-        data_select_menu.grid(row = 0, column=0,padx=5,pady=5)
-
         # # Add a segmented to help pick between plotting counts or density 
         # counts_toggle = ctk.CTkSegmentedButton(master=self.content, #NB add all new elements to the content of the panel (not the panel itself)
         #                                        values=[self.COUNTS_VALUE,self.DENSITY_VALUE], # Values that can be selected on segmented button

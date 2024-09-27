@@ -85,7 +85,11 @@ class OptionCard(ctk.CTkFrame):
 
 # Class used to spawn in new option panels
 class OptionCtrl():
-    def __init__(self,option_list,key):
+    def __init__(self,option_list,key, option_value:Callable|Any|None = None, option_class:type = OptionCard):
+        """
+        Create and option control that will add options to the specified option list.\n
+        The option card will be assigned the value of `option_value` or the return value of `option_value` if it is a callable.
+        """
         # Constants 
         self.H = 90
         assert(isinstance(option_list,OptionList))
@@ -93,6 +97,9 @@ class OptionCtrl():
         self.option_list = option_list
         self.key = key
         self.count = 0 # Number of times this option has been selected
+
+        self.__opt_class = option_class
+        self.__opt_value = option_value
 
         # Register option control
         option_list.register_option(self)
@@ -121,7 +128,11 @@ class OptionCtrl():
         Designed to be overridden by descendants to customize option available.\n
         Acts as a factory method for the option panel UI element 
         """
-        return OptionCard(self.option_list,self,self.key,self.key, height=self.H)
+        _value = self.__opt_value
+        if _value is None: _value = self.key
+        if isinstance(_value, Callable):
+            _value = _value()
+        return self.__opt_class(self.option_list,self,self.key,_value, height=self.H)
     
     def move_card_up(self,opt:OptionCard):
         if opt.index != 0:

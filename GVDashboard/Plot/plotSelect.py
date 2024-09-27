@@ -4,11 +4,11 @@ from typing import Tuple
 import customtkinter as ctk
 from UI.optionPanel import OptionCtrl, OptionCard, OptionPanel
 from Plot.plotInfo import DataSetInfo, ViewInfo_base
-from Plot.ViewInfos import ZygoteView, RefView
+from Plot.ViewInfos import ZygoteView, RefView, VarPosView, FrequencyView, MutFreqView
 
 from VCF.datasetDropDown import DatasetMenu
 
-from Plot.OptionCards import FreqOptionCtrl, ZygoteOptionCtrl, RefOptionCtrl, PosOptionCtrl, MutFreqOptionCtrl, PlotOptionCard
+from Plot.OptionCards import FreqOptionCtrl, ZygoteOptionCtrl, PosOptionCtrl, MutFreqOptionCtrl, PlotOptionCard, PlotOptionCtrl, RefOptionCard
 
 ZYGOSITY_OPT = "Zygosity"
 REF_OPT = "Ref. Genome"
@@ -25,7 +25,7 @@ class PlotOptionPanel(OptionPanel):
         Returns an empty list is no instance of `PlotOptionPanel` exists.
         """
         if isinstance(PlotOptionPanel.__instance, PlotOptionPanel):
-            return PlotOptionPanel.__instance.get_opt_values()
+            return PlotOptionPanel.__instance.__get_views()
         else: return[]
 
     def select_instance_option(opt_key:str)->OptionCard:
@@ -64,9 +64,28 @@ class PlotOptionPanel(OptionPanel):
         PlotOptionPanel.__instance = self
 
         # Add plot options
-        self.content.register_option(ZygoteOptionCtrl(self.content,ZYGOSITY_OPT))
-        self.content.register_option(RefOptionCtrl(self.content,REF_OPT))
-        self.content.register_option(MutFreqOptionCtrl(self.content,MUTATION_FREQUENCY_OPT))
-        self.content.register_option(FreqOptionCtrl(self.content,FREQUENCY_OPT))
-        self.content.register_option(PosOptionCtrl(self.content,POS_OPT))
+        self.content.register_option(OptionCtrl(self.content,ZYGOSITY_OPT, ZygoteView))
+        self.content.register_option(OptionCtrl(self.content,REF_OPT, option_class=RefOptionCard,option_value=RefView))
+        self.content.register_option(OptionCtrl(self.content,MUTATION_FREQUENCY_OPT, option_value=MutFreqView))
+        self.content.register_option(OptionCtrl(self.content,FREQUENCY_OPT, option_value=FrequencyView))
+        self.content.register_option(OptionCtrl(self.content,POS_OPT, option_value=VarPosView))
+
+    def __get_views(self)->list[ViewInfo_base]:
+        """
+        Returns a list of all views and sets there datasets if required.
+        """
+        # Check if dataset has been set
+        views = self.get_opt_values()
+        dataset = self._dataset_menu.get_selected_dataset()
+        self.__set_dataset_for_all(dataset, views)
+        return views
+
+    def __set_dataset_for_all(self,dataset:DataSetInfo|None, views:list[ViewInfo_base]):
+        """
+        Set all plot options to use the given dataset.\n
+        """
+        for view in views:
+            assert(isinstance(view,ViewInfo_base))
+            view.set_data(dataset)
+
     
