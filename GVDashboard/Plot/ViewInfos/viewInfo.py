@@ -122,7 +122,7 @@ class ViewInfo_base:
 
     
     
-    def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box)->str:
+    def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         """
         Method used to plot the data on a figure\n
         Returns the axis used for plotting and a log-string containing any errors or notes\n
@@ -301,7 +301,6 @@ class viewSetManager:
         divider = make_axes_locatable(ax)
 
         plot_i = 0
-        n_plots = len(self.left_views)
         _axs:list[Axes] = []
         for view in reversed(self.left_views):
             _axes:list[Axes] = []
@@ -313,22 +312,23 @@ class viewSetManager:
                 _ax = divider.append_axes('left',size=f"{prop_size*100}%",pad=0, sharey = ax)
                 _axes.append(_ax) 
                 _axs.append(_ax)
-                _x_size += left_widths[-plot_i]
+                _x_size += left_widths[-(1+plot_i)]
                 plot_i += 1
                 _axes.reverse()
             view.make_plots(_axes, size=(_x_size, main_h))
-        # for _ax in _axs:
-        #     _ax.label_outer(remove_inner_ticks=True)
 
-        # ax.label_outer(remove_inner_ticks=True)
         
-        plot_i = 1
-        for view in self.views:
+        plot_i = 0
+        for view in reversed(self.views):
             _axes:list[Axes] = []
+            _y_size = 0
             for _ in range(view.get_plot_count()):
-                _axes.append(divider.append_axes('top',size=h_ratios[plot_i],pad=0))
+                prop_size =  top_hights[-(1+plot_i)]/main_h
+                _axes.append(divider.append_axes('top',size=f"{prop_size*100}%",pad=0, sharex=ax))
+                _y_size += top_hights[-(1+plot_i)]
                 plot_i += 1
-            view.make_plots(_axes)
+                _axes.reverse()
+            view.make_plots(_axes, size=(main_w, _y_size))
 
 
         # Scale figure padding

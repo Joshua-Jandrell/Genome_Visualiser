@@ -222,6 +222,12 @@ class VcfDataWrapper:
         
         return self._zygos
     
+    def get_cases(self):
+        return self.__get_filtered_data()[CASES]
+    
+    def get_ctrls(self):
+        return self.__get_filtered_data()[CTRLS]
+    
     def set_case_ctrl(self, cases:list[str], ctrls:list[str]=[]):
         """
         Set the case and control samples for the dataset
@@ -245,10 +251,7 @@ class VcfDataWrapper:
             self.data[CASES] = np.array([True for s in self.data[SAMPLES]])
             self.data[CTRLS] = np.array([False for s in self.data[SAMPLES]])
 
-        
 
-        self.cases = cases
-        self.ctrls = ctrls
 
 
     def __get_filtered_df(self)->DataFrame:
@@ -320,7 +323,6 @@ class VcfDataWrapper:
         _cases = np.array(data[CASES])
         for key in S_KEYS:
             new_data[key] = np.concat((data[key][_cases[:]], data[key][data[CTRLS]]),axis=0)
-            print(new_data[key])
 
         new_data[DATA] = np.concat((data[DATA][:,data[CASES]], data[DATA][:,data[CTRLS]]),axis=1)
         return new_data

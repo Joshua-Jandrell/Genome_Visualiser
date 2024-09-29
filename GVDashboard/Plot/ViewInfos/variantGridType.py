@@ -137,9 +137,9 @@ class VariantGridScrollView(ViewInfo_base):
     def get_desired_hight(self) -> list[int]:
         return [self.scroll_size]
     
-    def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:
+    def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
         ScrollManager.make_scroll(view=self.target_view, scroll_box=plot_box)
         self.target_view = None
         axs[0].set_visible(False)
-        return super().make_plots(axs, size, plot_box)
+        return super().make_plots(axs, size)
         
