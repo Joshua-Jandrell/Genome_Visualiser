@@ -47,9 +47,21 @@ class VariantGridView(ViewInfo_base):
         """
         Simple method to re-used common configuration settings.
         """
-        if self.is_fist_in_set():
+        for _ax in axs:
+            _ax.yaxis.set_tick_params(labelleft=False)
+
+        if self.is_fist_in_set() and self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
             # Set axis title
-            axs[0].set_title("Genotype Variant-Position Grid")
+            axs[0].set_ylabel("Variant Position", ha='left')
+            self.make_y_labels(axs[0],)
+
+
+    def make_y_labels(self, ax:Axes):
+        ax.yaxis.set_tick_params(labelleft=True)
+        dw = self.dataset_info.get_data()
+        assert(dw is not None)
+        y_labels = dw.get_pos()
+        ax.set_yticks(ticks=range(len(y_labels)), labels=y_labels)
 
     def get_desired_hight(self) -> list[int]:
         if self.stack_mode == Y_STACK: return self._get_samples_size()
@@ -68,7 +80,8 @@ class VariantGridView(ViewInfo_base):
         wrapped_data = self.dataset_info.get_data()
         return [wrapped_data.get_n_variants() * self.ideal_block_size]
 
-    def fit_to_size(self,ax:Axes, size:tuple[int,int]):
+    def fit_to_size(self, size:tuple[int,int]):
+        ax = self.active_axis
         if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:
         if self._pos in [ViewPos.TOP, ViewPos.MAIN]:

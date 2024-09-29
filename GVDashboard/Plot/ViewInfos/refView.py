@@ -35,7 +35,7 @@ class RefView(VariantGridView):
 
     def __init__(self,plot_alt:bool = True, annotated:bool = True) -> None:
         super().__init__()
-        self.plot_alt = False
+        self.plot_alt = plot_alt
         self.annotated = annotated
         self.allele_colors = colors.ListedColormap(self.ALLELE_COLORS)
 
@@ -68,12 +68,13 @@ class RefView(VariantGridView):
         if self.stack_mode != Y_STACK:
             data_matrix = np.transpose(data_matrix)
         self.make_allele_plot(axs[0], data_matrix,self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
+        
         if self.plot_alt:
             data_matrix = np.matrix(wrapped_data.get_alt_int())
             if self.stack_mode == Y_STACK:
                 data_matrix = np.transpose(data_matrix)
             self.make_allele_plot(axs[1], data_matrix,self.ALT_LABEL,wrapped_data.data[dw.ALT], wrapped_data)
-            self.fit_to_size(ax=axs[1], size=(self.get_desired_width()[1], size[1]))
+            axs[1].set_xlim([self._lim_offset,data_matrix.shape[1]+self._lim_offset])
 
         self._do_base_config(axs)
 
@@ -81,16 +82,14 @@ class RefView(VariantGridView):
     def make_allele_plot(self, axis:Axes, data:np.matrix, label:str, data_labels, wrapped_data: DataWrapper):
         # linewidth=1,edgecolors="k"
         axis.imshow(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
-        # Remove tick labels
-        axis.set_xticks([])
-        axis.set_yticks([])
 
-        # Adjust limits
-        #axis.set_xlim(data.shape[0])
+        # Remove tick labels
+        # axis.set_xticks([])
+        # axis.set_yticks([])
 
 
         # Label y-axis
-        axis.set_ylabel(label, rotation=0, va="center", ha="right")
+        # axis.set_ylabel(label, rotation=0, va="center", ha="right")
 
         # Add annotations
         if self.should_annotate(wrapped_data):

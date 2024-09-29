@@ -45,7 +45,6 @@ class ZygoteView(VariantGridView):
         return [min(wrapped_data.get_n_samples(),self.max_weight)]
     
     def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
-        print(f"size here {size}")
         axis = axs[0]
         self.active_axis = axis
         # Get wrapped data and make the plot
@@ -58,8 +57,7 @@ class ZygoteView(VariantGridView):
         #axis.pcolorfast(zygos_matrix, cmap=self.colors, vmax=2, vmin=-1)
         axis.imshow(zygos_matrix, cmap=self.colors, vmax=2, vmin=-1)
 
-        self.fit_to_size(ax=axis, size=size)
-        self._do_base_config(axs)       
+ 
 
         # Clear ticks from x axis
         # axis.set_xticks(np.arange(0.5,wrapped_data.n_variants,1))
@@ -68,10 +66,14 @@ class ZygoteView(VariantGridView):
         # Add tick to y-axis only if scaling permits TODO: Implement this 
         axis.set_yticks([])
         axis.set_xticks([])
-        
+    
         #axis.set_yticks(np.arange(0.5,wrapped_data.get_n_samples(),1))
         #axis.set_yticklabels(fontsize=8)
         axis.set_ylabel("Sample Number")
+
+        self._do_base_config(axs)      
+        self.fit_to_size(size=size) # Not fitting to size must be done AFTER base config
+
 
         return ""
 

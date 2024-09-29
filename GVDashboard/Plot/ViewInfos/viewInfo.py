@@ -28,7 +28,10 @@ class ViewPos(Enum):
     TOP=3,
     """Plotted above the main plot"""
     LEFT_STAND_IN=4,
-    """Plotted on left, but promoted to main view if no main view is present"""  
+    """Plotted on left, but promoted to main view if no main view is present""" 
+    TOP_STAND_IN=5
+    """Plotted on top, but promoted to main view if no main view is present""" 
+
 
 
 BASE_TYPE_KEY = "BASE"
@@ -245,10 +248,8 @@ class viewSetManager:
         if STACK_MODE == Y_STACK: return sum([sum(view.get_desired_hight()) for view in self.views+self.additional_views])
         else: return sum(self.views[0].get_desired_hight())
 
-    def plot(self, fig:Figure, ax:Axes, size:tuple[int,int], plot_box:Box, pad_l = 20, pad_r = 20, pad_t = 20, pad_b = 20)->tuple[int, int]:
+    def plot(self, fig:Figure, ax:Axes, size:tuple[int,int], plot_box:Box, pad_l = LEFT_PADDING, pad_r = 20, pad_t = 20, pad_b = 20)->tuple[int, int]:
         """Plot all views in the view set on the given axes"""
-
-
 
         # Find main view 
         if not self._has_main():
@@ -262,11 +263,6 @@ class viewSetManager:
         if self._has_main():
             if self.main_view in self.views: self.views.remove(self.main_view)
             elif self.main_view in self.left_views: self.left_views.remove(self.main_view)
-
-
-        print(f"min view is {self.main_view}")
-        print(f"The size if {size}")
-        print(f"the plot bo is {plot_box.get_width()} by {plot_box.get_height()}")
 
         # Find width of left views
         left_widths = []
@@ -290,33 +286,41 @@ class viewSetManager:
         if available_main_width > desired_main_width:
             pad_r += (available_main_width - desired_main_width)
 
-        print(f"the dims are {main_w} by {main_h}")
-        print(f"the widths arequired {left_widths}")
-
         # Get ratios and total length/hight
         w, w_ratios = length_and_ratios([pad_l]+left_widths+[main_w, pad_r])
         h, h_ratios = length_and_ratios([pad_t]+top_hights+[main_h, pad_b])
-        print(f"w={w} and wr = {w_ratios}")
 
         
         # Make the main plot
         self.main_view.make_plots([ax],(main_w, main_h))
+
+        # Check if main view needs scroll bars
+
 
         # Make a divider to locate and points for main axes
         divider = make_axes_locatable(ax)
 
         plot_i = 0
         n_plots = len(self.left_views)
+        _axs:list[Axes] = []
         for view in reversed(self.left_views):
             _axes:list[Axes] = []
             _x_size = 0
             for _ in range(view.get_plot_count()):
-                prop_size = left_widths[-plot_i]/main_w # Add 1 because first ratio will be padding
-                _axes.append(divider.append_axes('left',size=f"{prop_size*100}%",pad=0, sharey = ax)) 
+
+                prop_size = left_widths[-(1+plot_i)]/main_w # Add 1 to index form the back
+
+                _ax = divider.append_axes('left',size=f"{prop_size*100}%",pad=0, sharey = ax)
+                _axes.append(_ax) 
+                _axs.append(_ax)
                 _x_size += left_widths[-plot_i]
                 plot_i += 1
                 _axes.reverse()
             view.make_plots(_axes, size=(_x_size, main_h))
+        # for _ax in _axs:
+        #     _ax.label_outer(remove_inner_ticks=True)
+
+        # ax.label_outer(remove_inner_ticks=True)
         
         plot_i = 1
         for view in self.views:
@@ -328,7 +332,10 @@ class viewSetManager:
 
 
         # Scale figure padding
+        self.main_view.fit_to_size(size=(main_w, main_h))
         fig.subplots_adjust(left=w_ratios[0], right=1-w_ratios[-1], top=1-h_ratios[0], bottom=h_ratios[-1])
+
+
         
 
         return (w,h)
