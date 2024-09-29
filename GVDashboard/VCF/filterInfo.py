@@ -5,6 +5,7 @@ from typing import Literal
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 from .dataLoad import peek_vcf_data, read_vcf_df, read_vcf_data
 from .bcftoolSys import make_dataset_file, convert
+from .caseCtrl import read_case_ctrl
 
 import pandas as pd
 
@@ -162,6 +163,9 @@ class DataSetInfo:
         self.abs_start = 1
         self.abs_end = None
         self.abs_end = False
+
+        self._case_path = None
+        self._ctrl_path = None
 
         self.__destroyed = False
 
@@ -327,7 +331,10 @@ class DataSetInfo:
         data = read_vcf_data(data_path)
         df = read_vcf_df(data_path)
 
-        self.dw = DataWrapper(data, df)
+        # Get cases and controls 
+        cases, ctrls = read_case_ctrl(self._case_path, self._ctrl_path)
+
+        self.dw = DataWrapper(data, df, cases=cases, ctrls=ctrls)
 
         for filt in self.filters:
             filt.apply_to_wrapper(self.dw)
@@ -365,9 +372,9 @@ class DataSetInfo:
         return self.__quality_filter.get_range()
     
     def set_case(self,case_path:str):
-        self._case = case_path
+        self._case_path = case_path
     def set_ctrl(self, ctrl_path:str):
-        self._ctrl = ctrl_path
+        self._ctrl_path = ctrl_path
 
     
         

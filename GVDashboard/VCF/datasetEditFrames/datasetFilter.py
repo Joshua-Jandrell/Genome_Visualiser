@@ -152,6 +152,6 @@ class DatasetFilterFrame(ctk.CTkFrame):
             self.dataset.set_quality(min=self.qual_min.get(), max=self.qual_max.get())
     def __on_case_ctrl_change(self, *args):
         if self.dataset is not None:
-            self.dataset.configure(case_path=self.case_path.get, ctrl_path=self.ctrl_path.get())
+            self.dataset.configure(case_path=self.case_path.get(), ctrl_path=self.ctrl_path.get())
 
 
