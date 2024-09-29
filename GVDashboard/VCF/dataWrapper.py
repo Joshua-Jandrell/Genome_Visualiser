@@ -144,7 +144,7 @@ class VcfDataWrapper:
     def get_alt_int(self):
         _alts = np.array([alleles_to_numbs(alts) for alts in self.data[ALT][self.__get_filtered_df().index]])
         filter_mask = np.array([np.max(_alts,axis=0) >= 0][0]) # filter out empty columns
-        _alts = _alts[:,filter_mask].transpose()[::-1,:] # Put samples on the rows in descending order
+        _alts = _alts[:,filter_mask] # Put samples on the rows in descending order
         return _alts
 
     def get_pos(self):

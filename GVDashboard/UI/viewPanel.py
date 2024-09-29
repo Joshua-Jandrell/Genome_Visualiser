@@ -108,7 +108,6 @@ class ViewPanel(ctk.CTkFrame):
         elif plot_hight == 0 and not self.hidden:
             self.__hide_plots()
             return    
-        
 
         #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)
         return self.canvas

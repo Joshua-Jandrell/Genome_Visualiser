@@ -22,7 +22,7 @@ class VarPosView(VariantGridView):
         #ax.stem(wrapped_data.get_pos())
         #ax.bar(wrapped_data.get_pos())
         
-        if self.pos_in_set == 0:
+        if self.order_in_set == 0:
             self.fit_to_size(size=size)
         
         self._do_base_config(axs)

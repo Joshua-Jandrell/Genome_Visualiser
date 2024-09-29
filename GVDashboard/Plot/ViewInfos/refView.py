@@ -17,7 +17,7 @@ from matplotlib.gridspec import GridSpec as GridSpec
 from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from .viewInfo import ViewInfo_base
+from .viewInfo import ViewInfo_base, ViewPos
 from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK
 
 from Util.box import Box
@@ -35,12 +35,13 @@ class RefView(VariantGridView):
 
     def __init__(self,plot_alt:bool = True, annotated:bool = True) -> None:
         super().__init__()
-        self.plot_alt = plot_alt
+        self.plot_alt = False
         self.annotated = annotated
         self.allele_colors = colors.ListedColormap(self.ALLELE_COLORS)
 
         self._has_key = True
         self._view_type = GRID_TYPE_KEY
+        self._pos = ViewPos.LEFT
 
         self.h_slider = None
 
@@ -48,7 +49,7 @@ class RefView(VariantGridView):
         l = [self.ideal_block_size]
         if self.plot_alt:
             wrapped_data = self.dataset_info.get_data()
-            l += [wrapped_data.get_alt_int().shape[0] * self.ideal_block_size]
+            l += [wrapped_data.get_alt_int().shape[1] * self.ideal_block_size]
         return l
 
     def get_height_weights(self) -> list[int]:
@@ -60,30 +61,34 @@ class RefView(VariantGridView):
     def get_plot_count(self) -> int:
         if self.plot_alt: return 2
         else: return 1
-    def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->Axes:
+    def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         self.active_axis = axs[0]
         wrapped_data = self.dataset_info.get_data()
         data_matrix = np.matrix(wrapped_data.get_ref_ints())
         if self.stack_mode != Y_STACK:
             data_matrix = np.transpose(data_matrix)
-        self.make_allele_plot(axs[0], np.matrix(data_matrix),self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
+        self.make_allele_plot(axs[0], data_matrix,self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
         if self.plot_alt:
             data_matrix = np.matrix(wrapped_data.get_alt_int())
-            if self.stack_mode != Y_STACK:
+            if self.stack_mode == Y_STACK:
                 data_matrix = np.transpose(data_matrix)
             self.make_allele_plot(axs[1], data_matrix,self.ALT_LABEL,wrapped_data.data[dw.ALT], wrapped_data)
-
-        if self.pos_in_set == 0:
-            self.fit_to_size(size=size)
+            self.fit_to_size(ax=axs[1], size=(self.get_desired_width()[1], size[1]))
 
         self._do_base_config(axs)
 
+
     def make_allele_plot(self, axis:Axes, data:np.matrix, label:str, data_labels, wrapped_data: DataWrapper):
         # linewidth=1,edgecolors="k"
-        axis.pcolorfast(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
+        axis.imshow(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
         # Remove tick labels
         axis.set_xticks([])
         axis.set_yticks([])
+
+        # Adjust limits
+        #axis.set_xlim(data.shape[0])
+
+
         # Label y-axis
         axis.set_ylabel(label, rotation=0, va="center", ha="right")
 

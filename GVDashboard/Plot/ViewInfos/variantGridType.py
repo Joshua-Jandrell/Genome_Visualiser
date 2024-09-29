@@ -16,7 +16,7 @@ from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
-from .viewInfo import ViewInfo_base, X_STACK, Y_STACK, STACK_MODE
+from .viewInfo import ViewInfo_base, ViewPos, X_STACK, Y_STACK, STACK_MODE
 from Util.box import Box
 
 # For scroll view 
@@ -29,7 +29,7 @@ class VariantGridView(ViewInfo_base):
 
         self.stack_mode = STACK_MODE
 
-        self.ideal_block_size = 10
+        self.ideal_block_size = 20
         self.active_axis:Axes|None = None
         self._view_type = GRID_TYPE_KEY
 
@@ -40,6 +40,8 @@ class VariantGridView(ViewInfo_base):
         # Key formats
         self.key_row_hight = 0.07
         self.key_column_width = 0.6
+
+        self._lim_offset=-0.5
 
     def _do_base_config(self,axs:list[Axes]):
         """
@@ -66,19 +68,19 @@ class VariantGridView(ViewInfo_base):
         wrapped_data = self.dataset_info.get_data()
         return [wrapped_data.get_n_variants() * self.ideal_block_size]
 
-    def fit_to_size(self,size:tuple[int,int]):
+    def fit_to_size(self,ax:Axes, size:tuple[int,int]):
         if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:
-        _lim = np.round(size[0]/self.ideal_block_size)
-        self._blocks_per_window_x = _lim
-        if self.stack_mode == Y_STACK:
-            self.active_axis.set_xlim(0,_lim)
-        else:
-            #self.active_axis.set_ylim(0,_lim)
-            if self.is_compressible():
-                wrapped_data = self.dataset_info.get_data()
-                _lim = min(wrapped_data.get_n_samples(), _lim)
-                self.active_axis.set_xlim(0,_lim)
+        if self._pos in [ViewPos.TOP, ViewPos.MAIN]:
+            x_lim = size[0]/self.ideal_block_size
+            self._blocks_per_window_x = x_lim
+            ax.set_xlim(self._lim_offset,x_lim+self._lim_offset)
+        if self._pos in [ViewPos.LEFT, ViewPos.MAIN]:
+            y_lim = float(size[1])/float(self.ideal_block_size)
+            self._blocks_per_window_y = y_lim 
+            ax.set_ylim(self._lim_offset,y_lim+self._lim_offset)
+
+
 
 
         self.update_event.invoke(self)
@@ -94,7 +96,7 @@ class VariantGridView(ViewInfo_base):
     # Scroll configuration 
     def should_add_x_scroll(self) -> bool:
         # Should scroll if this is the first view in the set
-        return self.pos_in_set == 0
+        return self.order_in_set == 0
     
     def get_x_scroll_params(self) -> tuple[float, float, float]:
         wrapped_data = self.dataset_info.get_data()

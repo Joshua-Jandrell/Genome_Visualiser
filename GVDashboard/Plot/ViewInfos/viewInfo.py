@@ -1,6 +1,7 @@
 """
 The viewInfo call is used to define how each view should be plotted on the canvas.
 """
+from enum import Enum
 import numpy as np
 from numpy.typing import NDArray
 from matplotlib.figure import Figure as Figure
@@ -19,10 +20,21 @@ def inch_to_cm(inches:float)->float:
     """Converts inches to centimeters"""
     return inches * 2.54
 
+class ViewPos(Enum):
+    MAIN=1,
+    """The main central plot of the view group."""
+    LEFT=2,
+    """Plotted to the left of the main plot."""
+    TOP=3,
+    """Plotted above the main plot"""
+    LEFT_STAND_IN=4,
+    """Plotted on left, but promoted to main view if no main view is present"""  
+
+
 BASE_TYPE_KEY = "BASE"
 X_STACK = 0
 Y_STACK =1
-STACK_MODE = Y_STACK
+STACK_MODE = X_STACK
 
 class ViewInfo_base:
     """
@@ -37,6 +49,11 @@ class ViewInfo_base:
         self._view_type = BASE_TYPE_KEY
         """Defines what type of views this view can be combined with."""
 
+        self._pos:ViewPos = ViewPos.MAIN
+        """
+        Defines where the view should be positioned in the group
+        """
+
         self._can_compress = False
         
         self.update_event = Event()
@@ -48,12 +65,26 @@ class ViewInfo_base:
         self.key_row_size = 12
         """The type key is used to link like views."""
 
-        self.pos_in_set = -1 
-        """The position of te plot in the set."""
+        self.order_in_set = -1 
+        """The order of the plot in the set."""
 
         self.last_in_set = False
         # Set a default dataset for the view
+
+        self._priority = 0
+        """How important is this view. Higher number indicate that it should be a main view if conflicts occur."""
+
+        self._is_main = False
+        """Set to true if this view is the main view."""
+
+    def get_priority(self)->int:
+        return self._priority
+
+    def set_main(self, is_main:bool):
+        self._is_main = is_main
         
+    def get_view_pos(self)->ViewPos:
+        return self._pos
     def set_data(self, dataset_info:DataSetInfo):
         self.dataset_info = dataset_info
 
@@ -72,6 +103,9 @@ class ViewInfo_base:
     
     def get_key_size(self)->int:
         return 4 * self.key_row_size
+    
+    def get_desired_size(self)->list[int]:
+        return [500]
     
     def get_desired_hight(self)->list[int]:
         """
@@ -114,7 +148,7 @@ class ViewInfo_base:
         return self._can_compress
 
     def is_fist_in_set(self):
-        return self.pos_in_set == 0
+        return self.order_in_set == 0
     
     def get_view_type(self):
         return self._view_type
@@ -157,38 +191,51 @@ class viewSetManager:
         If stack is true views will be added and linked vertically.
         """
         self.is_linked = False
+        self.view_type = None
         self.views:list[ViewInfo_base] = []
         self.additional_views:list[ViewInfo_base] = []
+        self.main_view:ViewInfo_base = None
+        self.left_views:list[ViewInfo_base] = []
 
         if view_info is not None:
             self.link(view_info)
 
         "Link new plot vertically if stack set to true. " 
+
+    def _has_main(self):
+        """Returns true is the given viewset has a main view."""
+        return self.main_view is not None
+    
     def link(self,view_info:ViewInfo_base)->bool:
         """
         Link a new set of axes to the view set manger if type keys are compatible.\n
         Returns true if linking was successful.
         """
+
+        # The base type view is not compatible, event with itself, by default.
+        if self.is_linked and (self.view_type == BASE_TYPE_KEY or not view_info.can_link(self.base_info)): return False
+
         # check to see if a link has occurred
         if not self.is_linked:
-            #Link first view into view set.
-            #self.ax =ax
             self.view_type = view_info.get_view_type
             self.base_info = view_info
             self.is_linked = True
-            view_info.pos_in_set = 0
-            self.views.append(view_info)
-            self.additional_views += view_info.get_set_views()
-            return True
 
-        # The base type view is not compatible, event with itself, by default.
-        if self.view_type == BASE_TYPE_KEY or not view_info.can_link(self.base_info): return False
+        # Add view to correct list depending on intended position
+        _pos = view_info.get_view_pos()
+        _view_list = self.views
+        if _pos == ViewPos.LEFT:
+            _view_list = self.left_views
 
-        # Updated last view 
-        view_info.pos_in_set = len(self.views)
-        self.views[-1].last_in_set = False
-        view_info.last_in_set = True
-        self.views.append(view_info)
+        if _pos == ViewPos.MAIN:
+            self.main_view = view_info
+
+
+        view_info.order_in_set = len(_view_list)
+
+        if view_info.order_in_set > 1:
+            _view_list[-1].last_in_set = False
+        _view_list.append(view_info)
         self.additional_views += view_info.get_set_views()
 
         return True
@@ -197,42 +244,94 @@ class viewSetManager:
         """Returns the desired hight of the full view set"""
         if STACK_MODE == Y_STACK: return sum([sum(view.get_desired_hight()) for view in self.views+self.additional_views])
         else: return sum(self.views[0].get_desired_hight())
-    
-    def plot(self, ax:Axes, size:tuple[int,int], plot_box:Box):
+
+    def plot(self, fig:Figure, ax:Axes, size:tuple[int,int], plot_box:Box, pad_l = 20, pad_r = 20, pad_t = 20, pad_b = 20)->tuple[int, int]:
         """Plot all views in the view set on the given axes"""
-        ax.set_axis_off()
-        if STACK_MODE == X_STACK:
-            self.__plot_vertical_stack(ax,size,plot_box)
-            return
+
+
+
+        # Find main view 
+        if not self._has_main():
+            for view in self.left_views:
+                if view.get_view_pos() == ViewPos.LEFT_STAND_IN:
+                    if self.main_view is None or self.main_view.get_priority() < view.get_priority():
+                        # If there are multiple candidates main views, select the one with the highest priority
+                        self.main_view = view
+
+        # Remove main for view lists 
+        if self._has_main():
+            if self.main_view in self.views: self.views.remove(self.main_view)
+            elif self.main_view in self.left_views: self.left_views.remove(self.main_view)
+
+
+        print(f"min view is {self.main_view}")
+        print(f"The size if {size}")
+        print(f"the plot bo is {plot_box.get_width()} by {plot_box.get_height()}")
+
+        # Find width of left views
+        left_widths = []
+        for v in self.left_views:
+            left_widths += v.get_desired_width()
+        left_width = sum(left_widths)
+
+        # Find hight of top views
+        top_hights = []
+        for v in self.views:
+            top_hights += v.get_desired_hight()
+        top_hight = sum(top_hights)
+
+        # Find dimensions of main view 
+        desired_main_width = sum(self.main_view.get_desired_width())
+        available_main_width = size[0] - (left_width + pad_l + pad_r)
+        main_w = min(available_main_width, desired_main_width)
+        main_h = min(size[1] - (top_hight + pad_t + pad_b), sum(self.main_view.get_desired_hight()))
+
+        # adjust right padding if needed
+        if available_main_width > desired_main_width:
+            pad_r += (available_main_width - desired_main_width)
+
+        print(f"the dims are {main_w} by {main_h}")
+        print(f"the widths arequired {left_widths}")
+
+        # Get ratios and total length/hight
+        w, w_ratios = length_and_ratios([pad_l]+left_widths+[main_w, pad_r])
+        h, h_ratios = length_and_ratios([pad_t]+top_hights+[main_h, pad_b])
+        print(f"w={w} and wr = {w_ratios}")
+
         
-        # Get addtional views from the group:
-        additional_views = []
-        for view in self.views:
-            additional_views += view.get_set_views()
+        # Make the main plot
+        self.main_view.make_plots([ax],(main_w, main_h))
 
-        _views:list[ViewInfo_base] = additional_views + self.views
-        hights=[]
-        for view in _views:
-            hights += view.get_desired_hight()
-        h, ratios = length_and_ratios(hights)
-        bounds = np.concatenate((np.array([0]), np.cumsum(ratios)),axis=0)
+        # Make a divider to locate and points for main axes
+        divider = make_axes_locatable(ax)
 
-        bound_index = 0
-        # Get relative box bounds
-        left_edge, top_edge = plot_box.get_top_left() # Get the top of the bounding plot box (which hold the size relative to the the full figure)
-        right_edge = plot_box.get_right()
-        for view in _views:
-            axs =[] 
-            # Move top edge down as more axes are packed 
-            start_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
+        plot_i = 0
+        n_plots = len(self.left_views)
+        for view in reversed(self.left_views):
+            _axes:list[Axes] = []
+            _x_size = 0
             for _ in range(view.get_plot_count()):
-                bottom = 1-bounds[bound_index+1]
-                top = 1-bounds[bound_index]
-                axs.append(ax.inset_axes([0,bottom,1,top-bottom],sharex=ax))
-                bound_index += 1  
-            end_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
-            
-            view.make_plots(axs=axs, size=size, plot_box=Box.from_points(top_left=(left_edge,start_bound), bottom_right=(right_edge, end_bound)))
+                prop_size = left_widths[-plot_i]/main_w # Add 1 because first ratio will be padding
+                _axes.append(divider.append_axes('left',size=f"{prop_size*100}%",pad=0, sharey = ax)) 
+                _x_size += left_widths[-plot_i]
+                plot_i += 1
+                _axes.reverse()
+            view.make_plots(_axes, size=(_x_size, main_h))
+        
+        plot_i = 1
+        for view in self.views:
+            _axes:list[Axes] = []
+            for _ in range(view.get_plot_count()):
+                _axes.append(divider.append_axes('top',size=h_ratios[plot_i],pad=0))
+                plot_i += 1
+            view.make_plots(_axes)
+
+
+        # Scale figure padding
+        fig.subplots_adjust(left=w_ratios[0], right=1-w_ratios[-1], top=1-h_ratios[0], bottom=h_ratios[-1])
+        
+
+        return (w,h)
 
     def __plot_vertical_stack(self, ax:Axes, size:tuple[int,int], plot_box:Box):
         """Method used to pack like views horizontally instead of vertically."""
@@ -325,6 +424,7 @@ def get_view_sets(view_infos:ViewInfo_base)->list[viewSetManager]:
 def length_and_ratios(requested_lengths:list[int])->tuple[int,NDArray]:
     """Task a list of lengths and return the total length an ratios between lengths."""
     full_length = sum(requested_lengths)
+    if full_length <= 0: return 0, np.array([])
     weights = np.array(requested_lengths)/full_length
     return full_length, weights
 
@@ -332,40 +432,49 @@ def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tu
     """Plots the list of view sets on the given figure and returns its desired hight in pixels"""
 
     # Determine which axes can expand
-    can_expand = tuple([can_expand[0] or size[0] == 0,can_expand[1] or size[1] == 0])
+    # can_expand = tuple([can_expand[0] or size[0] == 0,can_expand[1] or size[1] == 0])
 
-    fig_hights = []
-    for view_set in view_sets:
-        fig_hights.append(view_set.get_desired_hight())
+    # fig_hights = []
+    # for view_set in view_sets:
+    #     fig_hights.append(view_set.get_desired_hight())
 
-    fig_widths = [size[0]]
+    # fig_widths = [size[0]]
 
-    # Get length and ratios of view sets
-    fig_hight, h_ratios = length_and_ratios([viewSetManager.TOP_PADDING]+fig_hights+[viewSetManager.BOTTOM_PADDING])
-    fig_width, w_ratios = length_and_ratios([viewSetManager.LEFT_PADDING]+fig_widths+[viewSetManager.RIGHT_PADDING])
+    # # Get length and ratios of view sets
+    # fig_hight, h_ratios = length_and_ratios([viewSetManager.TOP_PADDING]+fig_hights+[viewSetManager.BOTTOM_PADDING])
+    # fig_width, w_ratios = length_and_ratios([viewSetManager.LEFT_PADDING]+fig_widths+[viewSetManager.RIGHT_PADDING])
 
-    # Scale figure side padding
-    fig.subplots_adjust(left=w_ratios[0], right=1-w_ratios[-1], top=1-h_ratios[0], bottom=h_ratios[-1])
+    # print(h_ratios, " addddddddd")
+    # print(w_ratios, " wwwww")
+    # # Scale figure side padding
+    # fig.subplots_adjust(left=w_ratios[0], right=1-w_ratios[-1], top=1-h_ratios[0], bottom=h_ratios[-1])
 
-    # Create a gridspec to manage all figure set subplots
-    nrows = len(view_sets)
-    ncols = 1
-    gs = GridSpec(nrows=nrows, ncols=ncols,height_ratios=fig_hights,figure=fig)
+    # # Create a gridspec to manage all figure set subplots
+    # nrows = len(view_sets)
+    # ncols = 1
+    # gs = GridSpec(nrows=nrows, ncols=ncols,height_ratios=fig_hights,figure=fig)
 
-    # iterate through figures sets, assign each of them a subplot
-    top_edge = 1-h_ratios[0]
-    for i, view_set in enumerate(view_sets):
-        x = w_ratios[0]
-        y = top_edge
-        w = w_ratios[1]
-        h = h_ratios[i+1]
-        # Shift top edge down to account for the next view
-        top_edge -= h
-        # Construct bounding box
-        box = Box(x,y,w,h)
-        # Make axis for view set 
-        ax = fig.add_subplot(gs[i])
-        view_set.plot(ax=ax, size=size, plot_box=box)
+    # # iterate through figures sets, assign each of them a subplot
+    # top_edge = 1-h_ratios[0]
+    # for i, view_set in enumerate(view_sets):
+    #     x = w_ratios[0]
+    #     y = top_edge
+    #     w = w_ratios[1]
+    #     h = h_ratios[i+1]
+    #     # Shift top edge down to account for the next view
+    #     top_edge -= h
+    #     # Construct bounding box
+    #     box = Box(x,y,w,h)
+    #     # Make axis for view set 
+    #     ax = fig.add_subplot(gs[i])
+
+    #     true_h = fig_hight*h
+    #     true_w = fig_width*w
+
+    print(f"TODO: fix size")
+    ax = fig.add_subplot(111)
+    fig_width, fig_hight = view_sets[0].plot(fig=fig, ax=ax, size=(size[0],500), plot_box=Box(0,0,1,1))
+
 
     return fig_width, fig_hight
 

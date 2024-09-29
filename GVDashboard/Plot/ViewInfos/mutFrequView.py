@@ -28,7 +28,7 @@ class MutFreqView(VariantGridView):
 
         ax.pcolorfast(all_prob_mat, cmap=colors.ListedColormap(MUTATION_FREQ_SPECTRUM), vmin=0, vmax=100)
         
-        if self.pos_in_set == 0:
+        if self.order_in_set == 0:
             self.fit_to_size(size=size)
         
         self._do_base_config(axs)
