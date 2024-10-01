@@ -12,7 +12,7 @@ from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 from matplotlib.widgets import Slider, Button, RadioButtons
 
-from Plot.ViewInfos import ViewInfo_base, viewSetManager, get_view_sets
+from Plot.ViewInfos import ViewInfo_base, ViewSetManager, get_view_sets
 
 from .scrollWidget import ScrollWidget, ScrollManager
 from Util.box import Box
@@ -26,32 +26,4 @@ class ViewPlotter:
         self.fig = figure
         self.plots = []
         self.default_data_wrapper = None
-
-    def plot_figure(self, views:list[ViewInfo_base], size:tuple[int, int]=tuple([0,0]), can_expand:tuple[bool, bool]=tuple([False, False]))->tuple[int, int]:
-        """
-        Plot a figure on the canvas.\n
-        Size is the ideal size of the canvas [width, hight]. If set to 0 it is assumed that the plot can expand.\n
-        Can expand determines if the plot can expand or if the given sie is an absolute limit.\n
-        Returns the desired figure width and hight, or [0, 0] if figure should not be shown.
-        """
-        # clear any existing plots on the figure
-        self.fig.clear()
-
-        # group views into a collection of view sets
-        view_sets = get_view_sets(views)
-
-
-        ax = self.fig.add_subplot(111)
-        fig_width, fig_hight, x_scroll_box, y_scroll_box = view_sets[0].plot(fig=self.fig, ax=ax, size=size, plot_box=Box(0,0,1,1))
-
-
-        if x_scroll_box is not None:
-            ScrollManager.make_scroll(view_sets[0].main_view,x_scroll_box, orientation='horizontal')
-
-        if y_scroll_box is not None:
-            ScrollManager.make_scroll(view_sets[0].main_view,y_scroll_box, orientation='vertical')
-
-
-
-        return fig_width, fig_hight
         

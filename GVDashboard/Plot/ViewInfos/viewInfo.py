@@ -202,7 +202,7 @@ BOTTOM_PADDING = 60
 LEFT_PADDING = 100
 RIGHT_PADDING = 40
 
-class viewSetManager:
+class ViewSetManager:
     """Class used to store information about a group of linked (or similar) views."""
     SCROLLBAR_BREADTH = 20
   
@@ -266,7 +266,7 @@ class viewSetManager:
         if STACK_MODE == Y_STACK: return sum([sum(view.get_desired_hight()) for view in self.views+self.additional_views])
         else: return sum(self.views[0].get_desired_hight())
 
-    def plot(self, fig:Figure, ax:Axes, size:tuple[int,int], plot_box:Box, pad_l = LEFT_PADDING, pad_r = RIGHT_PADDING, pad_t = TOP_PADDING, pad_b = BOTTOM_PADDING)->tuple[int, int, Box|None, Box|None]:
+    def plot(self, fig:Figure, ax:Axes, size:tuple[int,int], pad_l = LEFT_PADDING, pad_r = RIGHT_PADDING, pad_t = TOP_PADDING, pad_b = BOTTOM_PADDING)->tuple[int, int, Box|None, Box|None]:
         """Plot all views in the view set on the given axes"""
 
         # Find main view 
@@ -307,11 +307,7 @@ class viewSetManager:
         # Get ratios and total length/hight
         w, w_ratios = length_and_ratios([pad_l]+left_widths+[main_w, pad_r])
         h, h_ratios = length_and_ratios([pad_t]+top_hights+[main_h, pad_b])
-
-        print(f"{w} = {size[0]} and {h} = {size[1]}")
-
-        print(main_w ," and " ,main_h)
-        
+       
         # Make the main plot
         self.main_view.make_plots([ax],(main_w, main_h))    
 
@@ -370,7 +366,7 @@ class viewSetManager:
             # Construct the bounding box for y scroll view to be 
             scroll_w = self.SCROLLBAR_BREADTH/w
             scroll_h = h_ratios[-2]
-            top = 1-h_ratios[0]
+            top = sum(h_ratios[-2:])
             left = 1-w_ratios[-1]
             y_scroll_box = Box(left, top, scroll_w, scroll_h)
 
@@ -381,16 +377,16 @@ class viewSetManager:
         
 
 
-def get_view_sets(view_infos:ViewInfo_base)->list[viewSetManager]:
+def get_view_sets(view_infos:ViewInfo_base)->list[ViewSetManager]:
     """Iterate through a list of view infos and return a list of view set managers for those views"""
     view_sets = []
-    live_set = viewSetManager()
+    live_set = ViewSetManager()
     for info in view_infos:
         # Try to link a view to the live set
         if not live_set.link(info):
             # Link failed, append the live set an make a new one for this info
             view_sets.append(live_set)
-            live_set = viewSetManager(info)
+            live_set = ViewSetManager(info)
     # Link the final set 
     view_sets.append(live_set)
 

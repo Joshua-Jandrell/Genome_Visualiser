@@ -7,18 +7,24 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from .ViewInfos import ViewInfo_base
 from Plot.plotUpdate import PlotUpdate
 from Util.box import Box
+from Util.event import Event
 
 class ScrollWidget(ctk.CTkFrame):
     """Scroll bar widget used to scroll a matplotlib figure."""
 
     # Take plot info, location, and canvas 
-    def __init__(self, master:Canvas, width:int, height:int, orientation:Literal['horizontal', 'vertical']) -> None:
+    def __init__(self, master:Canvas, orientation:Literal['horizontal', 'vertical'], width:int=20, height:int=20) -> None:
 
-        super().__init__(master=master, fg_color="lightgrey", height=height, width=width)
+        super().__init__(master=master, fg_color="lightgrey", border_color='black', border_width=1, height=height, width=width, corner_radius=0)
         self.scroll_slider = ctk.CTkScrollbar(master=self, orientation=orientation, command=self._do_scroll)
-        self.scroll_slider.pack(side=ctk.TOP, fill=ctk.BOTH, expand=True, pady=0, padx=0)
+        self.scroll_slider.pack(side=ctk.TOP, fill=ctk.BOTH, expand=True, pady=1, padx=1)
         self._dir = orientation
         self.view:ViewInfo_base|None = None
+
+        self.scroll_event = Event()
+        """
+        Event called whenever the bar is scrolling.
+        """
 
     def set_view(self, view:ViewInfo_base):
         "Set the scroll view"
@@ -30,6 +36,7 @@ class ScrollWidget(ctk.CTkFrame):
             self.clear_view()
 
         self.view =view
+
         # subscribe to view update event 
         view.update_event.add_listener(self.__on_view_update)
 
@@ -46,7 +53,8 @@ class ScrollWidget(ctk.CTkFrame):
             self.view.scroll_y(value)
         elif self._dir == 'horizontal':
             self.view.scroll_x(value)
-        PlotUpdate.update()
+        
+        self.scroll_event.invoke()
 
     def clear_view(self):
         """Hide the scroll view"""
@@ -114,10 +122,6 @@ class ScrollManager():
                    relwidth = scroll_box.get_width(),
                    relheight = scroll_box.get_height(),
                    anchor='nw')
-        # scroll.place(relx=scroll_box.get_left(),
-        #            rely=1-scroll_box.get_top(),
-        #            width = 80,
-        #            anchor='nw')
         scroll.set_view(view=view)
 
     @classmethod
