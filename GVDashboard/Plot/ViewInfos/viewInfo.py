@@ -165,32 +165,32 @@ class ViewInfo_base:
     # Scrolling information 
     def should_add_x_scroll(self)->bool:
         """Returns true if the graph requires a scroll bar in the x direction."""
-        return False
+        return self.get_x_scroll_params()[1] < 1
         
     
-    def get_x_scroll_params(self)->tuple[float, float, float]:
-        """Returns a tuple of min value, max value and widow size."""
-        return 0,0,0
+    def get_x_scroll_params(self)->tuple[float, float]:
+        """Returns a tuple of current proportional scroll value and proportional scroll window size."""
+        return 0,1
         
     
     def scroll_x(self, x_pos:float):
         """
-        Scrolls the view's left most point to the given x position.\n
+        Scrolls the view's left most point to the given (proportional) x position.\n
         MUST be overridden for functionality 
         """
         raise Exception(f"x scroll not supported by view type {type(self)}")
 
     def should_add_y_scroll(self)->bool:
         """Returns true if the graph requires a scroll bar in the y direction."""
-        return False
+        return self.get_y_scroll_params()[1] < 1
     
-    def get_y_scroll_params(self)->tuple[float, float, float]:
-        """Returns a tuple of min value, max value and widow size."""
-        return 0,0,0
+    def get_y_scroll_params(self)->tuple[float, float]:
+        """Returns a tuple of current proportional scroll value and proportional scroll window size."""
+        return 0,1
     
     def scroll_y(self, y_pos:float):
         """
-        Scrolls the view's top most point to the given y position.\n
+        Scrolls the view's top most point to the given (proportional) y position.\n
         MUST be overridden for functionality 
         """
         raise Exception(f"y scroll not supported by view type {type(self)}")
@@ -200,11 +200,11 @@ class ViewInfo_base:
 TOP_PADDING = 60
 BOTTOM_PADDING = 60
 LEFT_PADDING = 100
-RIGHT_PADDING = 20
+RIGHT_PADDING = 40
 
 class viewSetManager:
     """Class used to store information about a group of linked (or similar) views."""
-    SCROLLBAR_BREADTH = 10
+    SCROLLBAR_BREADTH = 20
   
     def __init__(self,view_info:ViewInfo_base|None = None) -> None:
         """

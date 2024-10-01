@@ -7,35 +7,45 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from .ViewInfos import ViewInfo_base
 from Plot.plotUpdate import PlotUpdate
 from Util.box import Box
+
 class ScrollWidget(ctk.CTkFrame):
     """Scroll bar widget used to scroll a matplotlib figure."""
 
     # Take plot info, location, and canvas 
-    def __init__(self, master:Canvas, width:int, hight:int, orientation:Literal['horizontal', 'vertical']) -> None:
+    def __init__(self, master:Canvas, width:int, height:int, orientation:Literal['horizontal', 'vertical']) -> None:
 
-        super().__init__(master=master, fg_color="red", height=5)
-        self.scroll_slider = ctk.CTkScrollbar(master=self, width=width, height=hight, orientation=orientation)
-        #self.scroll_slider.pack(side=ctk.TOP, fill=ctk.X)
+        super().__init__(master=master, fg_color="lightgrey", height=height, width=width)
+        self.scroll_slider = ctk.CTkScrollbar(master=self, orientation=orientation, command=self._do_scroll)
+        self.scroll_slider.pack(side=ctk.TOP, fill=ctk.BOTH, expand=True, pady=0, padx=0)
+        self._dir = orientation
         self.view:ViewInfo_base|None = None
 
     def set_view(self, view:ViewInfo_base):
         "Set the scroll view"
 
+        if view == self.view:
+            return
+
+        if self.view is not None:
+            self.clear_view()
+
         self.view =view
         # subscribe to view update event 
         view.update_event.add_listener(self.__on_view_update)
 
-        min, max, window = view.get_x_scroll_params()
-        #self.scroll_slider.configure(command = self.do_scroll, from_ = min, to = max-window)
-        self.scroll_slider.set(min, max)
+        self.__aupdate_scroll()
 
-                
-        #scroll_bar.configure(command=A.test_scroll)
-        self.scroll_slider._button_length = self.get_button_scale(range=max-min, window=window)
+    def _do_scroll(self, *args):
 
-    def do_scroll(self, value):
+        if args[0] != 'moveto': return
+
+        value = args[1]
+
         if self.view is None: return
-        self.view.scroll_x(value)
+        elif self._dir == 'vertical':
+            self.view.scroll_y(value)
+        elif self._dir == 'horizontal':
+            self.view.scroll_x(value)
         PlotUpdate.update()
 
     def clear_view(self):
@@ -45,10 +55,19 @@ class ScrollWidget(ctk.CTkFrame):
             self.view = None
         self.place_forget()
 
-    def __on_view_update(self, view):
+    def __on_view_update(self, view:ViewInfo_base):
         """Event to bae called (automatically) when the view info is updated."""
-        min, max, window = self.view.get_x_scroll_params()
-        #self.scroll_slider.configure(from_ = min, to = max-window)
+        self.__aupdate_scroll()
+        
+    def __aupdate_scroll(self):
+        view = self.view
+        if self._dir == 'horizontal':
+            pt, size = view.get_x_scroll_params()
+        else:
+            pt, size = view.get_y_scroll_params()
+        
+        self.scroll_slider.set(pt, size)
+
 
     def get_button_scale(self, range:float, window:float):
         return window/range * self.winfo_width()
@@ -109,16 +128,18 @@ class ScrollManager():
                 cls.__used_x_scrolls.append(scroll)
                 return scroll
             else:
-                scroll = ScrollWidget(master = ScrollManager.__canvas, width=width, hight=hight, orientation=orientation)
+                scroll = ScrollWidget(master = ScrollManager.__canvas, width=width, height=hight, orientation=orientation)
                 cls.__used_x_scrolls.append(scroll)
                 return scroll
-        else:
+        elif orientation == 'vertical':
             if len(cls.__spare_y_scrolls) > 0:
                 scroll = cls.__spare_y_scrolls.pop()
                 cls.__used_y_scrolls.append(scroll)
                 return scroll
             else:
-                scroll = ScrollWidget(master = ScrollManager.__canvas, width=width, hight=hight, orientation=orientation)
+                scroll = ScrollWidget(master = ScrollManager.__canvas, width=width, height=hight, orientation=orientation)
                 cls.__used_y_scrolls.append(scroll)
                 return scroll
+        else:
+            raise ValueError(f"Unknown orientation \"{orientation}\"")
 

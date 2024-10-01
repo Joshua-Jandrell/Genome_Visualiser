@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+from VCF.filterInfo import DataSetInfo
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 import VCF.dataWrapper as dw
 
@@ -33,9 +34,20 @@ class VariantGridView(ViewInfo_base):
         self.active_axis:Axes|None = None
         self._view_type = GRID_TYPE_KEY
 
+        # Data dimensions
+        self._n_samps = 0
+        self._n_vars = 0
+
         # Scroll properties
-        self._blocks_per_window_x = 30
+        self._blocks_per_window_x = 0
         """The number of blocks shown on the x axis."""
+        self._curr_x_pos = 0
+        """The position of the leftmost view corner."""
+
+        self._blocks_per_window_y  = 0
+        """The number of blocks shown on the y axis."""
+        self._curr_y_pos = 0
+        """The position of the topmost view corner."""
 
         # Key formats
         self.key_row_hight = 0.07
@@ -73,12 +85,10 @@ class VariantGridView(ViewInfo_base):
     
     
     def _get_samples_size(self)-> list[int]:
-        wrapped_data = self.dataset_info.get_data()
-        return [wrapped_data.get_n_samples() * self.ideal_block_size]
+        return [self._n_samps * self.ideal_block_size]
     
     def _get_variants_size(self)-> list[int]:
-        wrapped_data = self.dataset_info.get_data()
-        return [wrapped_data.get_n_variants() * self.ideal_block_size]
+        return [self._n_vars * self.ideal_block_size]
 
     def fit_to_size(self, size:tuple[int,int]):
         ax = self.active_axis
@@ -89,31 +99,73 @@ class VariantGridView(ViewInfo_base):
             self._blocks_per_window_x = x_lim
             ax.set_xlim(self._lim_offset,x_lim+self._lim_offset)
         if self._pos in [ViewPos.LEFT, ViewPos.MAIN]:
-            y_lim = float(size[1])/float(self.ideal_block_size)
-            self._blocks_per_window_y = y_lim 
-            print(f"y_lim {y_lim} with hight {size[1]}")
-            ax.set_ylim(self._lim_offset,y_lim+self._lim_offset)
-
+            self._blocks_per_window_y = float(size[1])/float(self.ideal_block_size)
+            self._move_y(0)
 
         self.update_event.invoke(self)
 
+    def _move_y(self,value:float):
+        """Move the view vertically to the given y value."""
+        ax = self.active_axis
+        self._curr_y_pos = value
+        ax.set_ylim(value+self._blocks_per_window_y+self._lim_offset,
+                    value+self._lim_offset)
+        
+    def _move_x(self,value:float):
+        """Move the view vertically to the given y value."""
+        ax = self.active_axis
+        self._curr_x_pos = value
+        ax.set_xlim(value+self._lim_offset,
+                    value+self._blocks_per_window_x+self._lim_offset)
+        
+    def set_data(self, dataset_info: DataSetInfo|None):
+        print("add update event to dw")
+        if dataset_info is not None:
+            dw = dataset_info.get_data()
+            self._n_vars = dw.get_n_variants()
+            self._n_samps = dw.get_n_samples()
+        else:
+            self._n_vars = 0
+            self._n_samps = 0
+        return super().set_data(dataset_info)
+
     # Scroll configuration 
-    def should_add_x_scroll(self) -> bool:
-        # Should scroll if this is the first view in the set
-        return self.order_in_set == 0
-    
-    def get_x_scroll_params(self) -> tuple[float, float, float]:
-        wrapped_data = self.dataset_info.get_data()
-        return 0, wrapped_data.get_n_variants(), self._get_scroll_window()
+
+    def get_data_dims(self) -> tuple[int, int]:
+        """Returns the size of data (ie number of variants and number of samples)"""
+        if STACK_MODE == Y_STACK:
+            return self._n_vars, self._n_samps
+        else:
+            return self._n_samps, self._n_vars
+    def _get_data_x(self) -> int:
+        """Returns the number of columns of the dataset used."""
+        x, _ = self.get_data_dims()
+        return x
+
+    def _get_data_y(self) -> int:
+        """Returns the number of rows of the data used."""
+        _, y = self.get_data_dims()
+        return y
+           
+    def get_x_scroll_params(self) -> tuple[float, float]:
+        _x = self._get_data_x()
+        return self._curr_x_pos/_x, self._blocks_per_window_x/_x
+
     
     def scroll_x(self, x_pos: float):
-        if not self.should_add_x_scroll() or not isinstance(self.active_axis, Axes): return
-        self.active_axis.set_xlim(xmin=x_pos, xmax=x_pos+self._get_scroll_window())
+        _x = self._get_data_x()
+        x_pt = x_pos * _x
+        self._move_x(x_pt)
+   
+    def get_y_scroll_params(self) -> tuple[float, float]:
+        _y = self._get_data_y()
 
-    def should_add_y_scroll(self) -> bool:
-        return True
-    def _get_scroll_window(self)->float:
-        return self._blocks_per_window_x
+        return self._curr_y_pos/_y, self._blocks_per_window_y/_y
+
+    def scroll_y(self, y_pos: float):
+        _y = self._get_data_y()
+        y_pt = y_pos * _y
+        self._move_y(y_pt)
     
 # ============== Special views ===================================================
 
