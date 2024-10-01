@@ -3,7 +3,7 @@ from VCF.filterInfo import DataSetInfo
 
 class GlobalDatasetManager():
     """Holds a static record of all datasets created. Used to avoid unesesary searching and copying of datasets"""
-    _datasets = [] # Holds a list of all existing datasets: should not be shared
+    _datasets:list[DataSetInfo] = [] # Holds a list of all existing datasets: should not be shared
     _listeners = []
 
     def register(dataset:DataSetInfo):
@@ -19,6 +19,16 @@ class GlobalDatasetManager():
         if not GlobalDatasetManager.is_registered(dataset): return
         GlobalDatasetManager._datasets.remove(dataset)
         GlobalDatasetManager.__call_listeners()
+        dataset.destroy()
+
+    @classmethod
+    def deregister_all(cls):
+        """
+        Deregister and delete all datasets.\n
+        Warning: this may result in phantom datasets if called before app is destroyed.
+        """
+        for dataset in cls._datasets:
+            cls.deregister(dataset)
 
     def reconfigure(datasets:list[DataSetInfo]):
         """Remove all datasets that do not appear in the given list"""

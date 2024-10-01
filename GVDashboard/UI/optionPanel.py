@@ -85,7 +85,11 @@ class OptionCard(ctk.CTkFrame):
 
 # Class used to spawn in new option panels
 class OptionCtrl():
-    def __init__(self,option_list,key):
+    def __init__(self,option_list,key, option_value:Callable|Any|None = None, option_class:type = OptionCard):
+        """
+        Create and option control that will add options to the specified option list.\n
+        The option card will be assigned the value of `option_value` or the return value of `option_value` if it is a callable.
+        """
         # Constants 
         self.H = 90
         assert(isinstance(option_list,OptionList))
@@ -93,6 +97,9 @@ class OptionCtrl():
         self.option_list = option_list
         self.key = key
         self.count = 0 # Number of times this option has been selected
+
+        self.__opt_class = option_class
+        self.__opt_value = option_value
 
         # Register option control
         option_list.register_option(self)
@@ -121,7 +128,11 @@ class OptionCtrl():
         Designed to be overridden by descendants to customize option available.\n
         Acts as a factory method for the option panel UI element 
         """
-        return OptionCard(self.option_list,self,self.key,self.key, height=self.H)
+        _value = self.__opt_value
+        if _value is None: _value = self.key
+        if isinstance(_value, Callable):
+            _value = _value()
+        return self.__opt_class(self.option_list,self,self.key,_value, height=self.H)
     
     def move_card_up(self,opt:OptionCard):
         if opt.index != 0:
@@ -130,18 +141,20 @@ class OptionCtrl():
 
 # Generic class that holds a list of options which can be added, removed and re-organized
 class OptionPanel(ctk.CTkFrame):
-    def __init__(self, master, has_swaps:bool|None = True, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    BUTTON_H = 20
+    BUTTON_W = 30
+    def __init__(self, master, has_swaps:bool|None = True, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, text="Options", add_text="+", **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
         # Class-level constants 
-        self.ADD_TXT = "Add plot"
-        self.PLOT_TXT = "Options"
+        self._add_text = add_text
+        self._text = text
 
         # Create top label
         self.make_title()
         self.title_txt.grid(row=0,column=0,sticky="ew",padx=20)
-        self.make_add_button()
-        self.opt_button.grid(row=0,column=1,sticky="")
+        self.__make_add_button()
+        self._opt_add_button.grid(row=0,column=1,sticky="")
         # Create content 
         self.content = OptionList(self, has_swaps, opts_update_command=self._on_list_opt_register)
         #self.content.option_count.trace_add("write", self._on_list_opt_register)
@@ -161,13 +174,12 @@ class OptionPanel(ctk.CTkFrame):
 
     def make_title(self):
         self.title_txt = ctk.CTkLabel(master=self,
-                                      text=self.PLOT_TXT)
+                                      text=self._text)
         
     # Creates the basic dropdown button to add new plot types
-    def make_add_button(self):
+    def __make_add_button(self):
         self.selected_opt = ctk.StringVar()
-        self.opt_button = DropDown(self,values=[],variable=self.selected_opt,text=self.ADD_TXT,command=self.on_add_option_click)
-
+        self._opt_add_button = DropDown(self,width=self.BUTTON_W, height=self.BUTTON_H,values=[],variable=self.selected_opt,text=self._add_text,command=self.on_add_option_click)
     # Updates the options available on the dropdown
     def update_dropdown_opts(self):
         opt_txt = []
@@ -176,7 +188,7 @@ class OptionPanel(ctk.CTkFrame):
             opt_txt.append(key)
         
         # Update dropdown
-        self.opt_button.configure(values=opt_txt)
+        self._opt_add_button.configure(values=opt_txt)
 
 
     def on_add_option_click(self, event):

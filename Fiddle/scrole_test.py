@@ -3,6 +3,10 @@ import numpy as np
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+def dummy(act, pt):
+    print(act)
+    print(pt)
+
 # Create a Tkinter window
 root = tk.Tk()
 root.title("Matplotlib with Scrollbars")
@@ -17,12 +21,16 @@ canvas = tk.Canvas(frame)
 canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 
 # Add a scrollbar to the canvas
-scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=canvas.yview)
+scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=dummy)
 scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+scrollbar.configure()
 
 # Configure the canvas with the scrollbar
 canvas.configure(yscrollcommand=scrollbar.set)
 canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+print(canvas.yview())
+
+
 
 # Create another frame inside the canvas
 scrollable_frame = tk.Frame(canvas)
@@ -46,6 +54,7 @@ figure_canvas.get_tk_widget().pack()
 # Function for updating scroll region
 def configure_scroll_region(event):
     canvas.configure(scrollregion=canvas.bbox("all"))
+
 
 # Bind the configure event to update scroll region
 scrollable_frame.bind("<Configure>", configure_scroll_region)

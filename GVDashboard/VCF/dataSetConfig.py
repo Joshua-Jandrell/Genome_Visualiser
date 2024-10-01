@@ -6,14 +6,12 @@ import customtkinter as ctk
 from os import path
 import tkinter as tk
 
-from VCF.dataFetcher import DataFetcher
 from VCF.dataWrapper import VcfDataWrapper
 from VCF.filterInfo import DataSetInfo
 from VCF.globalDatasetManger import GlobalDatasetManager
 
 from VCF.datasetEditFrames import DatasetFilterFrame, DatasetFileFrame, FileFetcher
 
-from UI.tooltip import ToolTip
 
 # This class is used to select and return files throughout the application
 
@@ -43,7 +41,6 @@ class DataSetConfig(ctk.CTkToplevel):
 
     WINDOW_WIDTH = 400
     WINDOW_HIGHT = 300
-    test = None
 
     def __init__(self, app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, treat_as_new:bool = False, fg_color: str | Tuple[str] | None = None, **kwargs):
         """
@@ -61,6 +58,8 @@ class DataSetConfig(ctk.CTkToplevel):
 
         self.file_frame = DatasetFileFrame(self)
         self.file_frame.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5)
+        # Track file path change event
+        
         self.filter_frame = DatasetFilterFrame(self, dataset=dataset)
         self.filter_frame.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5)
 

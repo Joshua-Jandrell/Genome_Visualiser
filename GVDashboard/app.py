@@ -13,8 +13,7 @@ from UI.viewPanel import ViewPanel
 from UI.sidePanel import SidePanel
 
 #from Plot.dummyPlotter import make_plot
-from VCF.dataWrapper import VcfDataWrapper
-from VCF.vcfTest import getData
+from VCF.globalDatasetManger import GlobalDatasetManager
 
 from UI.searchPanel import SearchPanel
 
@@ -22,12 +21,16 @@ from Plot.plotInfo import ViewInfo_base
 from Plot.autoPlotter import AutoPlotter
 from Plot.keyCanvas import KeyCanvas
 
+import pandas as pd # For set to stop deprecation 
+pd.set_option('future.no_silent_downcasting', True)
+
 # Constants
 DEFAULT_WIDTH = 1200
 DEFAULT_HIGHT = 600
 MIN_WIDTH = 400
 MIN_HIGHT = 150
-PANEL_WIDTH = 200
+LEFT_PANEL_WIDTH = 500
+RIGHT_PANEL_WIDTH = 250
 HIDE_BAR_WIDTH = 10
 MIN_VIEW_WIDTH = 400
 
@@ -53,10 +56,10 @@ class App(ctk.CTk):
         self.minsize(MIN_WIDTH,MIN_HIGHT)
         
         # Make collapsable side-panels and put them in the app window
-        self.left = SidePanel(self,ctk.RIGHT)
+        self.left = SidePanel(self,ctk.RIGHT, width=LEFT_PANEL_WIDTH)
         self.left.pack(side = ctk.LEFT, fill=ctk.Y)
 
-        self.right = SidePanel(self,ctk.LEFT)
+        self.right = SidePanel(self,ctk.LEFT, width=RIGHT_PANEL_WIDTH)
         self.right.pack(side = ctk.RIGHT, fill=ctk.Y)
 
         # Plack search option in left panel
@@ -64,7 +67,7 @@ class App(ctk.CTk):
         self.search_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Put key key canvas on the right panel 
-        self.key_canvas = KeyCanvas(self.right.content)
+        self.key_canvas = KeyCanvas(self.right.content, width=RIGHT_PANEL_WIDTH)
         self.key_canvas.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Makes plot button -- might get depricated
@@ -79,6 +82,10 @@ class App(ctk.CTk):
 
         # Add event to define behavior when deleted
         self.protocol("WM_DELETE_WINDOW", self._on_app_delete)
+
+    def destroy(self):
+        GlobalDatasetManager.deregister_all()
+        return super().destroy()
 
     def _on_app_delete(self):
             # Clean up plots to ensure that app is deleted

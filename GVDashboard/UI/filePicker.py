@@ -53,20 +53,33 @@ class FilePicker(ctk.CTkFrame):
         self._file_text = default_text
         self.path_tooltip = ToolTip(self, text=None)
 
+        self.__path_var_callback__ = None
+        if self._path_variable is not None:
+            self.__path_var_callback__ = self._path_variable.trace_add('write', self.__on_path_change_var)
+
+    def destroy(self):
+        if self.__path_var_callback__ is not None:
+            self._path_variable.trace_remove('write', self.__path_var_callback__)
+        return super().destroy()
+
     def __open_path_select(self):
         _filepath = ctk.filedialog.askopenfilename(title=self._file_text, filetypes=self._filetypes)
         if _filepath == "": return
         self.set_path(_filepath)
+
+    def __on_path_change_var(self,*args):
+        self.set_path(self._path_variable.get())
+
         
 
-    def set_path(self, file_path:str):
+    def set_path(self, file_path:str, __ignore_path_var__ = False):
         
         if file_path == "": 
             self.clear_path()
             return
         
         # Update name variable
-        if self._path_variable is not None:
+        if not __ignore_path_var__ and self._path_variable is not None:
             self._path_variable.set(file_path)
 
         # Update label text 

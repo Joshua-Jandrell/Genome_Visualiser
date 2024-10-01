@@ -134,7 +134,7 @@ class DataOptionCard(OptionCard):
         
     def get_datawrap(self) -> VcfDataWrapper:
         assert(isinstance(self.value, DataSetInfo))
-        dw = self.value.get_data_wrapper()
+        dw = self.value.get_data()
 
         return dw
     
