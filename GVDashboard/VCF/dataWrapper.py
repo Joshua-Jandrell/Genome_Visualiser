@@ -78,8 +78,8 @@ class VcfDataWrapper:
         if data is None:
             data = self.data
 
-        if len(mask) != len(data[POS]):
-            raise ValueError("Data mask does not match length of variants")
+        # if len(mask) != len(data[POS]):
+        #     raise ValueError("Data mask does not match length of variants")
         
         if in_place:
             new_data = data
@@ -95,8 +95,8 @@ class VcfDataWrapper:
         """Slice all data that aligns with samples according to the given bool mask."""
         if data is None:
             data = self.data
-        if len(mask) != len(data[SAMPLES]):
-            raise ValueError("Data mask does not match length of samples")
+        # if len(mask) != len(data[SAMPLES]):
+        #     raise ValueError("Data mask does not match length of samples")
         if in_place:
             data = new_data
         else:
@@ -284,6 +284,7 @@ class VcfDataWrapper:
     
     def __get_filtered_data(self)->dict:
         df = self.__get_filtered_df()
+        
         data = self.slice_v(df.index, self.data, in_place=False)
         data = self.sort_by_case_ctrl(data=data, in_place=True)
         return data

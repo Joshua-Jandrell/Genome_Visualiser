@@ -12,7 +12,11 @@ from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 from matplotlib.widgets import Slider, Button, RadioButtons
 
-from Plot.ViewInfos import ViewInfo_base, viewSetManager, get_view_sets, plot_sets
+from Plot.ViewInfos import ViewInfo_base, viewSetManager, get_view_sets
+
+from .scrollWidget import ScrollWidget, ScrollManager
+from Util.box import Box
+
 # Class used to store all plot infos and construct the final figure
 class ViewPlotter:
     """ 
@@ -37,5 +41,17 @@ class ViewPlotter:
         view_sets = get_view_sets(views)
 
 
-        width, hight = plot_sets(view_sets, self.fig, size=size, can_expand=can_expand)
-        return width, hight
+        ax = self.fig.add_subplot(111)
+        fig_width, fig_hight, x_scroll_box, y_scroll_box = view_sets[0].plot(fig=self.fig, ax=ax, size=size, plot_box=Box(0,0,1,1))
+
+
+        if x_scroll_box is not None:
+            ScrollManager.make_scroll(view_sets[0].main_view,x_scroll_box, orientation='horizontal')
+
+        if y_scroll_box is not None:
+            ScrollManager.make_scroll(view_sets[0].main_view,y_scroll_box, orientation='vertical')
+
+
+
+        return fig_width, fig_hight
+        

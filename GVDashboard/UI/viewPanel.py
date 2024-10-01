@@ -17,6 +17,9 @@ from Plot.plotUpdate import PlotUpdate
 
 from Util.event import Event
 
+X_VIEW_PAD = 40
+Y_VIEW_PAD = 100
+
 class ViewPanel(ctk.CTkFrame):
     __instance = None
     __active = True
@@ -39,12 +42,15 @@ class ViewPanel(ctk.CTkFrame):
 
         self.fig = Figure(figsize = (5, 5), dpi = 100)
         self.canvas_frame = ctk.CTkScrollableFrame(self)
-        self.canvas =  FigCanvas(self.fig, master=self.canvas_frame)
+        self.plot_mount = ctk.CTkFrame(self.canvas_frame, fg_color='transparent')
+        self.canvas =  FigCanvas(self.fig, master=self.plot_mount)
         
         # Create a view plotter for the canvas
         self.view_plotter = ViewPlotter(self.fig)
         self.toolbar = NavToolbar(window=self,canvas=self.canvas)
         self.plot = self.canvas.get_tk_widget()
+
+        self.plot_mount.pack(side=ctk.TOP, expand=True)
 
         # Set canvas to be used by scroll widgets 
         ScrollManager.set_scroll_canvas(self.plot)
@@ -57,7 +63,6 @@ class ViewPanel(ctk.CTkFrame):
         self.data_select_button = ctk.CTkButton(self, text="Select Dataset File",
                                                 command=lambda: DataSetConfig.open()
         )
-
         self.__hide_plots()
         ViewPanel.__instance = self
 
@@ -78,35 +83,42 @@ class ViewPanel(ctk.CTkFrame):
         self.toolbar.pack(side="top",fill="x")
         self.toolbar.update()
         self.canvas_frame.pack(side="top", fill="both", expand=True)
-        self.plot.pack(side="top", fill='x', expand='true')
+        self.plot.pack(side="top", expand=True, fill='both')
         self.hidden = False
 
     def make_plot(self, views:list[ViewInfo_base])->None:
 
         ScrollManager.clear_scrolls()
-
         # Filter for only valid views
         views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
         if len(views) == 0: 
             self.__hide_plots()
             KeyCanvas.hide_canvas()
             return
+        
+
 
         # Scale figure based on window size
-        plot_width, plot_hight = self.view_plotter.plot_figure(views,
-                                                   size=tuple([self.winfo_width(), 0]),
+        _w = self.winfo_width()-X_VIEW_PAD
+        _h = self.winfo_height()-Y_VIEW_PAD
+        plot_width, plot_height = self.view_plotter.plot_figure(views,
+                                                   size=(_w,_h),
                                                    can_expand = [False, True])
+        if plot_height != 0:
 
-        if plot_hight != 0:
-            self.plot.configure(height=plot_hight)
-            self.canvas.draw()
             if self.hidden: self.__show_plots()
+            self.fig.set_size_inches(h=plot_height/100, w=plot_width/100)
+            self.plot.configure(height=plot_height, width=plot_width)
+            self.plot_mount.configure(height=plot_height, width=plot_width)
+            self.canvas.draw()
 
+            
             # Plot keys if possible
             make_keys(views=views)
                 
-        elif plot_hight == 0 and not self.hidden:
+        elif plot_height == 0 and not self.hidden:
             self.__hide_plots()
+
             return    
 
         #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)

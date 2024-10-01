@@ -80,7 +80,6 @@ class RefView(VariantGridView):
 
 
     def make_allele_plot(self, axis:Axes, data:np.matrix, label:str, data_labels, wrapped_data: DataWrapper):
-        # linewidth=1,edgecolors="k"
         axis.imshow(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
 
         # Remove tick labels

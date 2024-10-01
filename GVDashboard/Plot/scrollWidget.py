@@ -1,4 +1,5 @@
 # Scrollbar widget 
+from typing import Literal
 import customtkinter as ctk
 from tkinter import Canvas
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
@@ -10,10 +11,11 @@ class ScrollWidget(ctk.CTkFrame):
     """Scroll bar widget used to scroll a matplotlib figure."""
 
     # Take plot info, location, and canvas 
-    def __init__(self, master:Canvas) -> None:
-        super().__init__(master=master, fg_color="transparent", height=20)
-        self.scroll_slider = ctk.CTkSlider(self, orientation="horizontal")
-        self.scroll_slider.pack(side=ctk.TOP, fill=ctk.X)
+    def __init__(self, master:Canvas, width:int, hight:int, orientation:Literal['horizontal', 'vertical']) -> None:
+
+        super().__init__(master=master, fg_color="red", height=5)
+        self.scroll_slider = ctk.CTkScrollbar(master=self, width=width, height=hight, orientation=orientation)
+        #self.scroll_slider.pack(side=ctk.TOP, fill=ctk.X)
         self.view:ViewInfo_base|None = None
 
     def set_view(self, view:ViewInfo_base):
@@ -24,8 +26,8 @@ class ScrollWidget(ctk.CTkFrame):
         view.update_event.add_listener(self.__on_view_update)
 
         min, max, window = view.get_x_scroll_params()
-        self.scroll_slider.configure(command = self.do_scroll, from_ = min, to = max-window)
-        self.scroll_slider.set(min)
+        #self.scroll_slider.configure(command = self.do_scroll, from_ = min, to = max-window)
+        self.scroll_slider.set(min, max)
 
                 
         #scroll_bar.configure(command=A.test_scroll)
@@ -46,7 +48,7 @@ class ScrollWidget(ctk.CTkFrame):
     def __on_view_update(self, view):
         """Event to bae called (automatically) when the view info is updated."""
         min, max, window = self.view.get_x_scroll_params()
-        self.scroll_slider.configure(from_ = min, to = max-window)
+        #self.scroll_slider.configure(from_ = min, to = max-window)
 
     def get_button_scale(self, range:float, window:float):
         return window/range * self.winfo_width()
@@ -61,8 +63,10 @@ class ScrollManager():
     """
 
     __canvas:Canvas|None = None
-    __used_scrolls:list[ScrollWidget] = []
-    __spare_scrolls:list[ScrollWidget] = []
+    __used_x_scrolls:list[ScrollWidget] = []
+    __spare_x_scrolls:list[ScrollWidget] = []
+    __used_y_scrolls:list[ScrollWidget] = []
+    __spare_y_scrolls:list[ScrollWidget] = []
 
     def set_scroll_canvas(canvas:Canvas):
         ScrollManager.__canvas = canvas
@@ -70,30 +74,51 @@ class ScrollManager():
     @classmethod
     def clear_scrolls(cls):
         """Clear all the scrolls bars."""
-        for scroll in cls.__used_scrolls:
+        for scroll in cls.__used_x_scrolls:
             scroll.clear_view()
-        cls.__spare_scrolls += cls.__used_scrolls
-        cls.__used_scrolls.clear()
+        cls.__spare_x_scrolls += cls.__used_x_scrolls
+        cls.__used_x_scrolls.clear()
+        for scroll in cls.__used_y_scrolls:
+            scroll.clear_view()
+        cls.__spare_y_scrolls += cls.__used_y_scrolls
+        cls.__used_y_scrolls.clear()
+
 
     @classmethod
-    def make_scroll(cls, view:ViewInfo_base, scroll_box:Box):
+    def make_scroll(cls, view:ViewInfo_base, scroll_box:Box, orientation:Literal['horizontal', 'vertical']):
         """Static method used to make scroll view widgets."""
         if ScrollManager.__canvas is None: return
 
-        scroll = cls.get_scroll()
+        scroll = cls.get_scroll(0,0,orientation)
         scroll.place(relx=scroll_box.get_left(),
                    rely=1-scroll_box.get_top(),
                    relwidth = scroll_box.get_width(),
+                   relheight = scroll_box.get_height(),
                    anchor='nw')
+        # scroll.place(relx=scroll_box.get_left(),
+        #            rely=1-scroll_box.get_top(),
+        #            width = 80,
+        #            anchor='nw')
         scroll.set_view(view=view)
 
     @classmethod
-    def get_scroll(cls)->ScrollWidget:
-        if len(cls.__spare_scrolls) > 0:
-            scroll = cls.__spare_scrolls.pop()
-            cls.__used_scrolls.append(scroll)
-            return scroll
+    def get_scroll(cls, width:int, hight:int, orientation:Literal['horizontal', 'vertical'])->ScrollWidget:
+        if orientation == 'horizontal':
+            if len(cls.__spare_x_scrolls) > 0:
+                scroll = cls.__spare_x_scrolls.pop()
+                cls.__used_x_scrolls.append(scroll)
+                return scroll
+            else:
+                scroll = ScrollWidget(master = ScrollManager.__canvas, width=width, hight=hight, orientation=orientation)
+                cls.__used_x_scrolls.append(scroll)
+                return scroll
         else:
-            scroll = ScrollWidget(master = ScrollManager.__canvas)
-            cls.__used_scrolls.append(scroll)
-            return scroll
+            if len(cls.__spare_y_scrolls) > 0:
+                scroll = cls.__spare_y_scrolls.pop()
+                cls.__used_y_scrolls.append(scroll)
+                return scroll
+            else:
+                scroll = ScrollWidget(master = ScrollManager.__canvas, width=width, hight=hight, orientation=orientation)
+                cls.__used_y_scrolls.append(scroll)
+                return scroll
+

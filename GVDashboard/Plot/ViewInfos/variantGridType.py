@@ -48,7 +48,7 @@ class VariantGridView(ViewInfo_base):
         Simple method to re-used common configuration settings.
         """
         for _ax in axs:
-            _ax.yaxis.set_tick_params(labelleft=False)
+            _ax.yaxis.set_tick_params(labelleft=False, left=False)
 
         if self.is_fist_in_set() and self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
             # Set axis title
@@ -85,26 +85,17 @@ class VariantGridView(ViewInfo_base):
         if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:
         if self._pos in [ViewPos.TOP, ViewPos.MAIN]:
-            x_lim = size[0]/self.ideal_block_size
+            x_lim = float(size[0])/float(self.ideal_block_size)
             self._blocks_per_window_x = x_lim
             ax.set_xlim(self._lim_offset,x_lim+self._lim_offset)
         if self._pos in [ViewPos.LEFT, ViewPos.MAIN]:
             y_lim = float(size[1])/float(self.ideal_block_size)
             self._blocks_per_window_y = y_lim 
+            print(f"y_lim {y_lim} with hight {size[1]}")
             ax.set_ylim(self._lim_offset,y_lim+self._lim_offset)
 
 
-
-
         self.update_event.invoke(self)
-
-    def get_set_views(self) -> list:
-        views = super().get_set_views()
-        if self.is_fist_in_set() and self.stack_mode == Y_STACK:
-            scroll_view = VariantGridScrollView()
-            scroll_view.set_target_view(self)
-            views += [scroll_view]
-        return views
 
     # Scroll configuration 
     def should_add_x_scroll(self) -> bool:
@@ -119,6 +110,8 @@ class VariantGridView(ViewInfo_base):
         if not self.should_add_x_scroll() or not isinstance(self.active_axis, Axes): return
         self.active_axis.set_xlim(xmin=x_pos, xmax=x_pos+self._get_scroll_window())
 
+    def should_add_y_scroll(self) -> bool:
+        return True
     def _get_scroll_window(self)->float:
         return self._blocks_per_window_x
     
@@ -138,7 +131,7 @@ class VariantGridScrollView(ViewInfo_base):
         return [self.scroll_size]
     
     def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
-        ScrollManager.make_scroll(view=self.target_view, scroll_box=plot_box)
+        #ScrollManager.make_scroll(view=self.target_view, scroll_box=plot_box)
         self.target_view = None
         axs[0].set_visible(False)
         return super().make_plots(axs, size)

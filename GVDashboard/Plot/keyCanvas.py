@@ -29,7 +29,7 @@ class KeyCanvas(ctk.CTkFrame):
     def hide_canvas():
         if isinstance(KeyCanvas.instance, KeyCanvas): KeyCanvas.instance.hide()
 
-    def __init__(self, master, width: int = Dimenations.PANEL_WIDTH, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master, width: int = 100, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
         # There can be only one
@@ -39,7 +39,9 @@ class KeyCanvas(ctk.CTkFrame):
         self.fig = Figure(dpi=100)
         self.canvas = FigCanvas(self.fig, master=self)
         self.widget = self.canvas.get_tk_widget()
-        self.widget.configure(width=Dimenations.PANEL_WIDTH)
+        self.widget.configure(width=width)
+
+        self.pack_propagate(0)
 
 
 

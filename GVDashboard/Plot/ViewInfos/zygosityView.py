@@ -54,7 +54,6 @@ class ZygoteView(VariantGridView):
         if self.stack_mode == Y_STACK:
             zygos_matrix = np.transpose(zygos_matrix)
 
-        #axis.pcolorfast(zygos_matrix, cmap=self.colors, vmax=2, vmin=-1)
         axis.imshow(zygos_matrix, cmap=self.colors, vmax=2, vmin=-1)
 
  

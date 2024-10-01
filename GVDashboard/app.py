@@ -29,7 +29,8 @@ DEFAULT_WIDTH = 1200
 DEFAULT_HIGHT = 600
 MIN_WIDTH = 400
 MIN_HIGHT = 150
-PANEL_WIDTH = 200
+LEFT_PANEL_WIDTH = 500
+RIGHT_PANEL_WIDTH = 250
 HIDE_BAR_WIDTH = 10
 MIN_VIEW_WIDTH = 400
 
@@ -60,10 +61,10 @@ class App(ctk.CTk):
 
         
         # Make collapsable side-panels and put them in the app window
-        self.left = SidePanel(self,ctk.RIGHT)
+        self.left = SidePanel(self,ctk.RIGHT, width=LEFT_PANEL_WIDTH)
         self.left.pack(side = ctk.LEFT, fill=ctk.Y)
 
-        self.right = SidePanel(self,ctk.LEFT)
+        self.right = SidePanel(self,ctk.LEFT, width=RIGHT_PANEL_WIDTH)
         self.right.pack(side = ctk.RIGHT, fill=ctk.Y)
 
         # Plack search option in left panel
@@ -71,7 +72,7 @@ class App(ctk.CTk):
         self.search_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Put key key canvas on the right panel 
-        self.key_canvas = KeyCanvas(self.right.content)
+        self.key_canvas = KeyCanvas(self.right.content, width=RIGHT_PANEL_WIDTH)
         self.key_canvas.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Makes plot button -- might get depricated

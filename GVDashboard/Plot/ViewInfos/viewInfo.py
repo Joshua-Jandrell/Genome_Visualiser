@@ -125,7 +125,7 @@ class ViewInfo_base:
     def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         """
         Method used to plot the data on a figure\n
-        Returns the axis used for plotting and a log-string containing any errors or notes\n
+        Returns the axis used for plotting and a log-string containing any errors or notes.\n
         NOTE: This function must be overridden, only then can the `ViewInfo_base` class is implemented.
         """
         pass
@@ -166,27 +166,45 @@ class ViewInfo_base:
     def should_add_x_scroll(self)->bool:
         """Returns true if the graph requires a scroll bar in the x direction."""
         return False
+        
     
     def get_x_scroll_params(self)->tuple[float, float, float]:
         """Returns a tuple of min value, max value and widow size."""
         return 0,0,0
+        
     
     def scroll_x(self, x_pos:float):
         """
-        Scrolls the views left most point to the given x position.\n
+        Scrolls the view's left most point to the given x position.\n
         MUST be overridden for functionality 
         """
-        print("Warning scroll not possible")
-        pass
+        raise Exception(f"x scroll not supported by view type {type(self)}")
+
+    def should_add_y_scroll(self)->bool:
+        """Returns true if the graph requires a scroll bar in the y direction."""
+        return False
+    
+    def get_y_scroll_params(self)->tuple[float, float, float]:
+        """Returns a tuple of min value, max value and widow size."""
+        return 0,0,0
+    
+    def scroll_y(self, y_pos:float):
+        """
+        Scrolls the view's top most point to the given y position.\n
+        MUST be overridden for functionality 
+        """
+        raise Exception(f"y scroll not supported by view type {type(self)}")
     
 ############################################################################################################
 
+TOP_PADDING = 60
+BOTTOM_PADDING = 60
+LEFT_PADDING = 100
+RIGHT_PADDING = 20
+
 class viewSetManager:
     """Class used to store information about a group of linked (or similar) views."""
-    TOP_PADDING = 60
-    BOTTOM_PADDING = 60
-    LEFT_PADDING = 60
-    RIGHT_PADDING = 20
+    SCROLLBAR_BREADTH = 10
   
     def __init__(self,view_info:ViewInfo_base|None = None) -> None:
         """
@@ -248,7 +266,7 @@ class viewSetManager:
         if STACK_MODE == Y_STACK: return sum([sum(view.get_desired_hight()) for view in self.views+self.additional_views])
         else: return sum(self.views[0].get_desired_hight())
 
-    def plot(self, fig:Figure, ax:Axes, size:tuple[int,int], plot_box:Box, pad_l = LEFT_PADDING, pad_r = 20, pad_t = 20, pad_b = 20)->tuple[int, int]:
+    def plot(self, fig:Figure, ax:Axes, size:tuple[int,int], plot_box:Box, pad_l = LEFT_PADDING, pad_r = RIGHT_PADDING, pad_t = TOP_PADDING, pad_b = BOTTOM_PADDING)->tuple[int, int, Box|None, Box|None]:
         """Plot all views in the view set on the given axes"""
 
         # Find main view 
@@ -290,12 +308,12 @@ class viewSetManager:
         w, w_ratios = length_and_ratios([pad_l]+left_widths+[main_w, pad_r])
         h, h_ratios = length_and_ratios([pad_t]+top_hights+[main_h, pad_b])
 
+        print(f"{w} = {size[0]} and {h} = {size[1]}")
+
+        print(main_w ," and " ,main_h)
         
         # Make the main plot
-        self.main_view.make_plots([ax],(main_w, main_h))
-
-        # Check if main view needs scroll bars
-
+        self.main_view.make_plots([ax],(main_w, main_h))    
 
         # Make a divider to locate and points for main axes
         divider = make_axes_locatable(ax)
@@ -333,80 +351,30 @@ class viewSetManager:
 
         # Scale figure padding
         self.main_view.fit_to_size(size=(main_w, main_h))
-        fig.subplots_adjust(left=w_ratios[0], right=1-w_ratios[-1], top=1-h_ratios[0], bottom=h_ratios[-1])
+        fig.subplots_adjust(left=pad_l/w, right=1-pad_r/w, top=1-pad_t/h, bottom=pad_b/h)
 
 
-        
+        # Check if main view needs scroll bars
+        x_scroll_box = None
+        y_scroll_box = None
+        x_scroll = self.main_view.should_add_x_scroll()
+        if x_scroll:
+            scroll_h =self.SCROLLBAR_BREADTH/h
+            scroll_w = w_ratios[-2]
+            top = h_ratios[-1]
+            left = 1-sum(w_ratios[-2:])
+            x_scroll_box = Box(left, top, scroll_w, scroll_h)
 
-        return (w,h)
+        y_scroll = self.main_view.should_add_y_scroll()
+        if y_scroll:
+            # Construct the bounding box for y scroll view to be 
+            scroll_w = self.SCROLLBAR_BREADTH/w
+            scroll_h = h_ratios[-2]
+            top = 1-h_ratios[0]
+            left = 1-w_ratios[-1]
+            y_scroll_box = Box(left, top, scroll_w, scroll_h)
 
-    def __plot_vertical_stack(self, ax:Axes, size:tuple[int,int], plot_box:Box):
-        """Method used to pack like views horizontally instead of vertically."""
-
-        widths = []
-        fixed_width = 0
-        n_compressible = 0
-        for view in self.views:
-            widths += view.get_desired_width()
-            if not view.is_compressible():
-                fixed_width += sum(view.get_desired_width())
-            else:
-                n_compressible +=1 
-        w = sum(widths)
-        if w > size[0]:
-
-            # Find the width available for compressible views 
-            rem_width = size[0]-fixed_width
-            compressible_width = rem_width/n_compressible
-
-            # Get array of all widths
-            widths = []
-            for view in self.views:
-                if view.is_compressible(): widths.append(compressible_width)
-                else: widths += view.get_desired_width()
-        else:
-            widths += [size[0]-w]
-        # find hights 'normally'
-        heights=[]
-        for view in self.additional_views + [self.views[0]]: # only the first view is needed here... all have same hight
-            heights += view.get_desired_hight()
-
-        h, ratios = length_and_ratios(heights)
-        bounds = np.concatenate((np.array([0]), np.cumsum(ratios)),axis=0)
-        bound_index = 0
-        # Get relative box bounds
-        left_edge, top_edge = plot_box.get_top_left() # Get the top of the bounding plot box (which hold the size relative to the the full figure)
-        right_edge = plot_box.get_right()
-        # Plot addtional views (on top) only
-        for view in self.additional_views:
-            axs =[] 
-            # Move top edge down as more axes are packed 
-            start_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
-            for _ in range(view.get_plot_count()):
-                bottom = 1-bounds[bound_index+1]
-                top = 1-bounds[bound_index]
-                axs.append(ax.inset_axes([0,bottom,1,top-bottom],sharex=ax))
-                bound_index += 1  
-            end_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
-            
-            view.make_plots(axs=axs, size=size, plot_box=Box.from_points(top_left=(left_edge,start_bound), bottom_right=(right_edge, end_bound)))
-
-        # Now plot vertical views 
-        w, ratios = length_and_ratios(widths)
-        bounds = np.concatenate((np.array([0]), np.cumsum(ratios)),axis=0)
-        bound_index = 0
-        for view in self.views:
-            axs =[] 
-            # Move top edge down as more axes are packed 
-            start_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
-            for _ in range(view.get_plot_count()):
-                left = bounds[bound_index]
-                right = bounds[bound_index+1]
-                axs.append(ax.inset_axes([left,0,right-left,1],sharey=ax))
-                bound_index += 1  
-            end_bound = top_edge - bounds[bound_index] * plot_box.get_height() # scale by proportional hight
-            
-            view.make_plots(axs=axs, size=size, plot_box=Box.from_points(top_left=(left_edge,start_bound), bottom_right=(right_edge, end_bound)))
+        return w,h, x_scroll_box, y_scroll_box
 
 
 
@@ -434,57 +402,6 @@ def length_and_ratios(requested_lengths:list[int])->tuple[int,NDArray]:
     if full_length <= 0: return 0, np.array([])
     weights = np.array(requested_lengths)/full_length
     return full_length, weights
-
-def plot_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tuple([0,0]), can_expand=tuple([False, False]))->int:
-    """Plots the list of view sets on the given figure and returns its desired hight in pixels"""
-
-    # Determine which axes can expand
-    # can_expand = tuple([can_expand[0] or size[0] == 0,can_expand[1] or size[1] == 0])
-
-    # fig_hights = []
-    # for view_set in view_sets:
-    #     fig_hights.append(view_set.get_desired_hight())
-
-    # fig_widths = [size[0]]
-
-    # # Get length and ratios of view sets
-    # fig_hight, h_ratios = length_and_ratios([viewSetManager.TOP_PADDING]+fig_hights+[viewSetManager.BOTTOM_PADDING])
-    # fig_width, w_ratios = length_and_ratios([viewSetManager.LEFT_PADDING]+fig_widths+[viewSetManager.RIGHT_PADDING])
-
-    # print(h_ratios, " addddddddd")
-    # print(w_ratios, " wwwww")
-    # # Scale figure side padding
-    # fig.subplots_adjust(left=w_ratios[0], right=1-w_ratios[-1], top=1-h_ratios[0], bottom=h_ratios[-1])
-
-    # # Create a gridspec to manage all figure set subplots
-    # nrows = len(view_sets)
-    # ncols = 1
-    # gs = GridSpec(nrows=nrows, ncols=ncols,height_ratios=fig_hights,figure=fig)
-
-    # # iterate through figures sets, assign each of them a subplot
-    # top_edge = 1-h_ratios[0]
-    # for i, view_set in enumerate(view_sets):
-    #     x = w_ratios[0]
-    #     y = top_edge
-    #     w = w_ratios[1]
-    #     h = h_ratios[i+1]
-    #     # Shift top edge down to account for the next view
-    #     top_edge -= h
-    #     # Construct bounding box
-    #     box = Box(x,y,w,h)
-    #     # Make axis for view set 
-    #     ax = fig.add_subplot(gs[i])
-
-    #     true_h = fig_hight*h
-    #     true_w = fig_width*w
-
-    print(f"TODO: fix size")
-    ax = fig.add_subplot(111)
-    fig_width, fig_hight = view_sets[0].plot(fig=fig, ax=ax, size=(size[0],500), plot_box=Box(0,0,1,1))
-
-
-    return fig_width, fig_hight
-
 
 
 #def scale_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tuple([0,0]), can_expand=tuple([False, False])):
