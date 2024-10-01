@@ -167,24 +167,7 @@ class VariantGridView(ViewInfo_base):
         y_pt = y_pos * _y
         self._move_y(y_pt)
     
-# ============== Special views ===================================================
-
-class VariantGridScrollView(ViewInfo_base):
-    """Special view type used to allow the user to scroll on the variant grid system."""
-    def __init__(self) -> None:
-        super().__init__()
-
-        self.scroll_size = 60
-
-    def set_target_view(self,view:VariantGridView):
-        self.target_view = view
-
-    def get_desired_hight(self) -> list[int]:
-        return [self.scroll_size]
-    
     def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
-        #ScrollManager.make_scroll(view=self.target_view, scroll_box=plot_box)
-        self.target_view = None
-        axs[0].set_visible(False)
+        self.active_axis = axs[0]
         return super().make_plots(axs, size)
         

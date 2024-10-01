@@ -245,7 +245,7 @@ class ViewSetManager:
         # Add view to correct list depending on intended position
         _pos = view_info.get_view_pos()
         _view_list = self.views
-        if _pos == ViewPos.LEFT:
+        if _pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
             _view_list = self.left_views
 
         if _pos == ViewPos.MAIN:

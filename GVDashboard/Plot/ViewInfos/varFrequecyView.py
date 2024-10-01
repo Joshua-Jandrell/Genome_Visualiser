@@ -26,7 +26,7 @@ class FrequencyView(ViewInfo_base):
     def get_desired_hight(self) -> list[int]:
         return [self.min_window]
     
-    def make_plots(self,axs:list[Axes],size:tuple[int,int], plot_box:Box, label:Literal["top", "bottom", "left", "right"]="none")->str:
+    def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         axis = axs[0]
         
         
@@ -60,8 +60,9 @@ class FrequencyView(ViewInfo_base):
             axis.set_xlabel('Chromosome position (bp)')
             axis.set_ylabel('Variant density (count per bp $^{-1}$)')
             axis.set_title('Mutation Frequency Density')
+
+        return super().make_plots(axs, size)
             
-        return axis
     
     def set_should_plot_density(self,plot_density):
         self.plot_density = plot_density

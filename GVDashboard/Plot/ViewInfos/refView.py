@@ -43,8 +43,6 @@ class RefView(VariantGridView):
         self._view_type = GRID_TYPE_KEY
         self._pos = ViewPos.LEFT
 
-        self.h_slider = None
-
     def _get_samples_size(self) -> list[int]:
         l = [self.ideal_block_size]
         if self.plot_alt:
@@ -78,19 +76,12 @@ class RefView(VariantGridView):
 
         self._do_base_config(axs)
 
+        return super().make_plots(axs, size)
+
 
     def make_allele_plot(self, axis:Axes, data:np.matrix, label:str, data_labels, wrapped_data: DataWrapper):
         axis.imshow(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
 
-        # Remove tick labels
-        # axis.set_xticks([])
-        # axis.set_yticks([])
-
-
-        # Label y-axis
-        # axis.set_ylabel(label, rotation=0, va="center", ha="right")
-
-        # Add annotations
         if self.should_annotate(wrapped_data):
             for y in range(data.shape[0]):
                 for x in range(data.shape[1]):

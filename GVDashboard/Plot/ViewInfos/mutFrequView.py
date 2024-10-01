@@ -5,34 +5,34 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from Util.box import Box
-from .variantGridType import VariantGridView, ViewInfo_base
+from .variantGridType import VariantGridView, ViewInfo_base, ViewPos, Y_STACK
     
-MUTATION_FREQ_SPECTRUM = ['#81C4E7','#CEFFFF','#C6F7D6', '#A2F49B', '#BBE453', '#D5CE04', '#E7B503', '#F6790B', '#F94902', '#E40515']
+MUTATION_FREQ_SPECTRUM = ['#81C4E7','#CEFFFF','#C6F7D6', '#A2F49B', '#BBE453', '#D5CE04', '#E7B503'] #, '#F6790B', '#F94902', '#E40515']
 
 class MutFreqView(VariantGridView):
     """
     A Heatmap-style view to show the probability of a mutation occuring at each position.
     """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._pos = ViewPos.LEFT
     
     def _get_samples_size(self) -> list[int]:
         return [self.ideal_block_size]
 
-    def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:
+    def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
         self.active_axis = ax = axs[0]
         wrapped_data = self.dataset_info.get_data()
         all_prob_mat = np.matrix(wrapped_data.get_mutation_probability())
-        
-        # Label y-axis
-        ax.set_ylabel(ylabel="Mut.\nprob", rotation=0, va="center", ha="right")
-        
 
-        ax.pcolorfast(all_prob_mat, cmap=colors.ListedColormap(MUTATION_FREQ_SPECTRUM), vmin=0, vmax=100)
-        
-        if self.order_in_set == 0:
-            self.fit_to_size(size=size)
+        if self.stack_mode != Y_STACK:
+            all_prob_mat = np.transpose(all_prob_mat)       
+
+        ax.imshow(all_prob_mat, cmap=colors.ListedColormap(MUTATION_FREQ_SPECTRUM), vmin=0, vmax=100)
         
         self._do_base_config(axs)
-        return super().make_plots(axs, size, plot_box) 
+        return super().make_plots(axs, size) 
     
 ############################### KEY FUNCTS  (literally) ###########
     # # def has_key(self)->bool:
