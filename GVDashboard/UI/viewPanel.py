@@ -1,5 +1,6 @@
 # This script contains the code for the main visualiser view panel
 
+from typing import Tuple, Any
 import customtkinter as ctk
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
@@ -8,14 +9,88 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavToolbar
 from matplotlib.figure import Figure 
 from matplotlib.gridspec import GridSpec as GridSpec
 
+from Plot.ViewInfos.viewInfo import get_view_sets, ViewSetManager
 from Plot.plotInfo import ViewPlotter, ViewInfo_base
 from VCF.dataSetConfig import DataSetConfig
 
 from Plot.keyCanvas import KeyCanvas
-from Plot.scrollWidget import ScrollManager
+from Plot.scrollWidget import ScrollManager, ScrollWidget
 from Plot.plotUpdate import PlotUpdate
 
 from Util.event import Event
+from Util.box import Box
+
+X_VIEW_PAD = 40
+Y_VIEW_PAD = 100
+DEFAULT_DPI = 100
+
+def px_to_inches(px:int, dpi:float=DEFAULT_DPI):
+    """
+    Converts pixes to inches
+    """
+class FigureMount(ctk.CTkFrame):
+    DPI = DEFAULT_DPI
+    """
+    Class used to store and pack a figure.
+    """
+    def __init__(self, master: Any, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+        super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
+        self.fig = Figure(dpi = self.DPI)
+        self.plot_mount = ctk.CTkFrame(self, fg_color='transparent')
+        self.canvas =  FigCanvas(self.fig, master=self.plot_mount)
+
+        self.toolbar = NavToolbar(window=self,canvas=self.canvas)
+        self.plot = self.canvas.get_tk_widget()
+
+        self.toolbar.pack(side="top", fill="x", expand=True)
+        self.plot_mount.pack(side=ctk.TOP, fill=ctk.BOTH, expand=True)
+        self.plot.pack(side=ctk.TOP, expand=True)
+
+
+        # Create scroll bars
+        self.vsb = ScrollWidget(self.plot, orientation='vertical')
+        self.hsb = ScrollWidget(self.plot, orientation='horizontal')
+
+        # Subscribe to scroll events
+        self.vsb.scroll_event.add_listener(self.__on_scroll)
+        self.hsb.scroll_event.add_listener(self.__on_scroll)
+
+    @classmethod
+    def _place_scroll(cls, scroll:ScrollWidget, scroll_box:Box):
+        scroll.place(relx=scroll_box.get_left(),
+                        rely=1-scroll_box.get_top(),
+                        relwidth = scroll_box.get_width(),
+                        relheight = scroll_box.get_height(),
+                        anchor='nw')
+
+
+    def __on_scroll(self):
+        self.canvas.draw_idle()
+        
+    def clear(self):
+        self.fig.clear()
+        self.hsb.place_forget()
+        self.vsb.place_forget()
+
+    def plot_set(self,view_set:ViewSetManager, size:tuple[float,float]):
+        ax = self.fig.add_subplot(111)
+        fig_width, fig_hight, x_scroll_box, y_scroll_box = view_set.plot(fig=self.fig, ax=ax, size=size)
+        self.plot.configure(width=fig_width, height=fig_hight)
+
+        self.canvas.draw_idle()
+        self.toolbar.update()
+        # Make scroll bars if required
+        if x_scroll_box is not None:
+            ScrollManager.make_scroll(view_set.main_view,x_scroll_box, orientation='horizontal')
+            self._place_scroll(self.hsb, x_scroll_box)
+            self.hsb.set_view(view=view_set.main_view)
+
+        if y_scroll_box is not None:
+            ScrollManager.make_scroll(view_set.main_view,y_scroll_box, orientation='vertical')
+            self._place_scroll(self.vsb, y_scroll_box)
+            self.vsb.set_view(view=view_set.main_view)
+
+
 
 class ViewPanel(ctk.CTkFrame):
     __instance = None
@@ -34,82 +109,80 @@ class ViewPanel(ctk.CTkFrame):
         # There can only be one instance 
         assert(not isinstance(ViewPanel.__instance, ViewPanel))
 
-        self.plot = None
-        self.toolbar = None
+        self.scroll_frame = ctk.CTkScrollableFrame(self)
 
-        self.fig = Figure(figsize = (5, 5), dpi = 100)
-        self.canvas_frame = ctk.CTkScrollableFrame(self)
-        self.canvas =  FigCanvas(self.fig, master=self.canvas_frame)
-        
-        # Create a view plotter for the canvas
-        self.view_plotter = ViewPlotter(self.fig)
-        self.toolbar = NavToolbar(window=self,canvas=self.canvas)
-        self.plot = self.canvas.get_tk_widget()
-
-        # Set canvas to be used by scroll widgets 
-        ScrollManager.set_scroll_canvas(self.plot)
-
-        # Set plot update to update the plot
-        PlotUpdate.set_canvas(self.canvas)
-
+        self.__mounts:list[FigureMount] = []
+        self.__mounts_in_use:list[FigureMount] = [] 
 
         # Create button to let users quickly select datasets
         self.data_select_button = ctk.CTkButton(self, text="Select Dataset File",
                                                 command=lambda: DataSetConfig.open()
         )
-
         self.__hide_plots()
         ViewPanel.__instance = self
+
+    def __get_mount(self)->FigureMount:
+        """Returns a new plot mount."""
+        if len(self.__mounts) > 0:
+            new_mount = self.__mounts.pop()
+        else:
+            new_mount = FigureMount(self.scroll_frame, fg_color="white")
+
+        self.__mounts_in_use.append(new_mount)
+        new_mount.pack(side=ctk.TOP, fill=ctk.X, expand=True)
+        
+        return new_mount
 
     def __hide_plots(self):
         """Hides the plot canvas. Should be called when no figures are plotted."""
         # hide canvas and toolbar
-        self.canvas_frame.pack_forget()
-        self.toolbar.pack_forget()
-        self.hidden = True
+        for mount in self.__mounts_in_use:
+            mount.clear()
+            self.__mounts.append(mount)
+        self.__mounts_in_use.clear()  
+
+        self.scroll_frame.pack_forget()
 
         # show dataset selection button 
         self.data_select_button.place(relx=.5, rely=.5, anchor="center")
+
+        self.hidden = True
          
 
     def __show_plots(self):
         self.data_select_button.place_forget()
-
-        self.toolbar.pack(side="top",fill="x")
-        self.toolbar.update()
-        self.canvas_frame.pack(side="top", fill="both", expand=True)
-        self.plot.pack(side="top", fill='x', expand='true')
+        self.scroll_frame.pack(side="top", fill="both", expand=True)
         self.hidden = False
 
     def make_plot(self, views:list[ViewInfo_base])->None:
 
-        ScrollManager.clear_scrolls()
+        self.__hide_plots()
 
         # Filter for only valid views
         views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
         if len(views) == 0: 
             self.__hide_plots()
+            KeyCanvas.hide_canvas()
             return
-
+        
+        # Pack plot frame
+        self.__show_plots()
+        
+        # group views into a collection of view sets
+        view_sets = get_view_sets(views)
+        
         # Scale figure based on window size
-        plot_width, plot_hight = self.view_plotter.plot_figure(views,
-                                                   size=tuple([self.winfo_width(), 0]),
-                                                   can_expand = [False, True])
+        _w = self.winfo_width()-X_VIEW_PAD
+        _h = self.winfo_height()-Y_VIEW_PAD
 
-        if plot_hight != 0:
-            self.plot.configure(height=plot_hight)
-            self.canvas.draw()
-            if self.hidden: self.__show_plots()
+        for view_set in view_sets:
+            mount = self.__get_mount()
+            mount.plot_set(view_set,size=(_w,_h))
 
-            # Plot keys if possible
-            make_keys(views=views)
-                
-        elif plot_hight == 0 and not self.hidden:
-            self.__hide_plots()
-            return    
+        # Plot keys if possible
+        make_keys(views=views)
+           
 
-        #self.canvas.mpl_connect('motion_notify_event',self.on_mouse_move)
-        return self.canvas
 
 def make_keys(views:list[ViewInfo_base]):
     key_fig = KeyCanvas.get_figure()
@@ -122,7 +195,7 @@ def make_keys(views:list[ViewInfo_base]):
     if key_count == 0:
         KeyCanvas.hide_canvas()
         return
-    
+
     # Make a gridspec for all keys
     gs = GridSpec(nrows=key_count, ncols=1)
     for i, view in enumerate(key_views):

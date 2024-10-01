@@ -3,28 +3,30 @@ import numpy as np
 from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from Util.box import Box
-from .variantGridType import VariantGridView, ViewInfo_base
+from .variantGridType import VariantGridView, ViewPos, Y_STACK
 
 class VarPosView(VariantGridView):
     """
     A Heatmap-style view to show the position of each variant.
     """
+    def __init__(self) -> None:
+        super().__init__()
+        self._pos = ViewPos.LEFT
     def get_desired_hight(self) -> list[int]:
         return [self.ideal_block_size]
 
-    def make_plots(self, axs: list[Axes], size: tuple[int, int], plot_box: Box) -> str:
+    def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
         self.active_axis = ax = axs[0]
-        wrapped_data = self.dataset_info.get_data_wrapper()
+        wrapped_data = self.dataset_info.get_data()
         pos_mat = np.matrix(wrapped_data.get_pos())
+        if self.stack_mode != Y_STACK:
+            pos_mat = np.transpose(pos_mat)    
 
-        ax.pcolorfast(pos_mat, cmap='plasma')
-        #ax.plot(wrapped_data.get_pos())
-        #ax.stem(wrapped_data.get_pos())
-        #ax.bar(wrapped_data.get_pos())
+        ax.imshow(pos_mat, cmap='plasma')
         
-        if self.pos_in_set == 0:
+        if self.order_in_set == 0:
             self.fit_to_size(size=size)
         
         self._do_base_config(axs)
 
-        return super().make_plots(axs, size, plot_box)
+        return super().make_plots(axs, size)

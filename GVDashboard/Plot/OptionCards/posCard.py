@@ -1,4 +1,4 @@
-from Plot.OptionCards import PlotOptionCard, PlotOptionCtrl, OptionCard
+from Plot.OptionCards import PlotOptionCard, OptionCard
 from Plot.ViewInfos import VarPosView
 from typing import Tuple
 
@@ -17,15 +17,4 @@ class PosOptionCard(PlotOptionCard):
         data_select_menu.grid(row = 0, column=0,padx=5,pady=5)
 
     #### TODO: Maybe we can toggle homo or hetero on??? We shall ask in usability tests tho
-
-# Option control specifcally for position "heatmap" info
-class PosOptionCtrl(PlotOptionCtrl):
-    def make_option_card(self) -> OptionCard:
-        # op = PosOptionCard(master=self.option_list, # The UI container the option card goes into (should be an option list)
-        #                    option_ctrl=self, # The option control that created this option card (should be this option control)
-        #                    option_key="Position" # The `option_key` is essentially just the text displayed on the option card label
-        #                    )
-        op = super().make_option_card()
-        op.set_value(VarPosView())
-        return op
-        
+      

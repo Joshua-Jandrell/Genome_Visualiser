@@ -5,8 +5,8 @@ Module containing UI option cards and controls plot views and setting which can 
 # Not instead of needing to refer to individual files you can just type:
 # ```from OptionCards import *```
 from Plot.OptionCards.plotCard import *
-from Plot.OptionCards.zygosityOption import ZygoteOptionCtrl
-from Plot.OptionCards.frequencyOption import FreqOptionCtrl
-from Plot.OptionCards.refOption import RefOptionCtrl
-from .posCard import PosOptionCtrl
-from Plot.OptionCards.mutfreqCard import MutFreqOptionCtrl
+from Plot.OptionCards.zygosityOption import ZygoOptionCard
+from Plot.OptionCards.frequencyOption import FreqOptionCard
+from .refOption import RefOptionCard
+from .posCard import PosOptionCard
+from Plot.OptionCards.mutfreqCard import MutFreqOptionCard

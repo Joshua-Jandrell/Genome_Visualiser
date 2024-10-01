@@ -1,56 +1,252 @@
 # Contains classes and data that can be used to filter, query and manage datasets
+import random, os
 from os import path
+from typing import Literal
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
-from VCF.dataFetcher import DataFetcher
+from .dataLoad import peek_vcf_data, read_vcf_df, read_vcf_data
+from .bcftoolSys import make_dataset_file, convert
+from .caseCtrl import read_case_ctrl
+
+import pandas as pd
+
+DEFAULT_VARIANTS = 10000
+DEFAULT_DISPLAY = 500
+REGION_CMD = '-r'
+INCLUDE_CMD = '-i'
+
+
 # Class used to define how bcf filters should be applied
 # Acts as a base class for more advanced data filters
 class DataFilter_base():
     def __init__(self) -> None:
         pass
-    def get_filter_str(self):
+
+    def get_query_str(self, opt:str)->str:
+        """
+        Get string used to construct a bcftools query statement.\n.
+        The `opt` string is the bcftools query option that this filter will be appended to.
+        NOTE This function should be overridden by descendants
+        """
         return ""
+    def apply_to_wrapper(self,dw:DataWrapper):
+        """
+        Used to configure the values of a datawrapper.\n
+        NOTE This function should be overridden by descendants
+        """
+        return dw
+    
+class ParamRangeFilter(DataFilter_base):
+    """
+    Filter used to set the range of a given column parameter.
+    """
+    def __init__(self, column:str, min:float|int, max:float|int) -> None:
+        super().__init__()
+        assert(min <= max)
+        self.column_name = column
+        self.min = min
+        self.max = max
+    def set_range(self, min:float|int|None=None, max:float|int|None=None):
+        if min is not None: self.min = min
+        if max is not None: self.max = max
+    def get_range(self):
+        return self.min, self.max
+    def get_query_str(self, opt: str) -> str:
+        if opt == INCLUDE_CMD:
+            return f"{self.column_name}<={self.max} && {self.column_name}>={self.min}"
+        return super().get_query_str(opt)
+    
+    
+class RegionFiler(DataFilter_base):
+    def __init__(self, chromosome:int=1, min:int=0, max:int=10000) -> None:
+        super().__init__()
+        self.chromosome=chromosome
+        self.min = min
+        self.max = max
+
+    def configure(self, chromosome:int|None = None, min:int|None = None, max:int|None = None):
+        if chromosome is not None:
+            self.chromosome = chromosome
+        if min is not None:
+            self.min = min
+        if max is not None:
+            self.max = max
+
+    def get_query_str(self, opt:str) -> str:
+        if opt == REGION_CMD: return f"{self.chromosome}:{self.min}-{self.max}"
+        return super().get_query_str(opt)
+    def apply_to_wrapper(self, dw: DataWrapper):
+        dw.set_pos_range(min_pos=self.min, max_pos=self.max)
+    
+class QualityFilter(ParamRangeFilter):
+    def __init__(self, min:float=0, max:float=100):
+        super().__init__(column='QUAL', min=min, max=max)
+    def apply_to_wrapper(self,dw: DataWrapper):
+        dw.set_qual_range(min_qual=self.min, max_qual=self.max)
+
+def get_filter_query_str(filters:list[DataFilter_base],cmds:list[str], chr_prefix = "")->str:
+    """
+    Construct a bcftools style query string for the list of specified filters.
+    """
+    # Check for regional filtering
+    query_str = ""
+    if REGION_CMD in cmds:
+        query_str += (" -r " + ",".join([s for s in [chr_prefix+filt.get_query_str('-r') for filt in filters] if s not in ["", chr_prefix]]))
+    if INCLUDE_CMD in cmds:
+        query_str += (" -i \"" + " && ".join([chr_prefix+filt.get_query_str('-i') for filt in filters]) +"\" ")
+
+    return query_str
+
+
 
 # Class used to store and apply various vcf filters
 class DataSetInfo:
+    POS_RANGE = 20000
     APPEND = "_subset"
     names = [] # List of all dataset names to help avoid tow datasets having the same name
+    __files = []
+    __FILE_EXTENSION = ".vcf.gz"
     data_wrappers = {} # stores a list of pre-computed data wrappers 
+
+    @classmethod
+    def __make_valid_save_file_name(cls, dir):
+        """
+        Crates a unique save file name for the given data set
+        """
+        save_file = os.path.join(dir,'.' +  str(random.randint(0,999999999)))+cls.__FILE_EXTENSION
+        if save_file in cls.__files: return cls.__make_valid_save_file_name()
+        else:
+            cls.__files.append(save_file)
+            return save_file
+        
+    @classmethod 
+    def __clear_save_file_name(cls, name):
+        """
+        clears the given save file name.
+        """
+        if name in cls.__files:
+            cls.__files.remove(name)
 
     def add_name(name:str):
         DataSetInfo.names.append(name)
     def clear_name(name:str):
         DataSetInfo.names.remove(name)
+  
     def is_free_name(name:str)->bool:
         return name not in DataSetInfo.names
 
 
-    def __init__(self,source_path:str|None = None,save_path:str|None = None,name:str|None = None) -> None:
-        self.filters = []
-        self.source_path = source_path
-        self.save_path = save_path
+    def __init__(self,source_path:str|None = None,name:str|None = None, case_path:str|None="", ctrl_path:str|None="") -> None:
+        
+        # Flags used to see which fields must be updated 
+        self.__sample_flag = False
+        self.__qaul_flag = False
+        self.__reload_flag = False
+        """Set to true if sample save file should be re-loaded"""
+        self.__save_flag = False
+        
+        
+        self.filters:list[DataFilter_base] = []
+        # Add make required filters
+        # NOTE this must be done before configuration
+        self.__range_filter = RegionFiler()
+        self.__quality_filter = QualityFilter()
+
+
+
+        self.__save_path = None
         self.__name = None # Must set name to None here so that set name can use this variable 
+
+        # Initial variables (MUST be set later using configure)
+        self.source_path = None
+        self.chr = None
+        self.chr_prefix=""
+        self.abs_start = 1
+        self.abs_end = None
+        self.abs_end = False
+
+        self._case_path = None
+        self._ctrl_path = None
+
+        self.__destroyed = False
+
         # If a path was given, use this to name the dataset 
         self.dw = None
+
+        self.set_source_path(source_path)
+
         if name is None:
             if source_path is not None:
                 name = path.basename(source_path)
             else:
                 name = "New Dataset"
         self.__set__name(name)
-        self.configure(source_path, save_path, name=name)
-        self.get_save_path()
+        self.configure(source_path, name=name, case_path = case_path, ctrl_path=ctrl_path)
         self.get_dataset_name()
         #print(f"Make {self.__name}")
 
+        # Add required filters to filter stack
+        self.add_filter(self.__range_filter)
+        self.add_filter(self.__quality_filter)
+
+
     def __del__(self):
         #print(f"killed {self.__name}")
-        DataSetInfo.clear_name(self.__name)
+        self.destroy()
 
-    def configure(self,source_path:str|None = None, save_path:str|None = None, filters:DataFilter_base|None = None, name:str|None = None):
-        if source_path is not None: self.source_path = source_path
-        if save_path is not None: self.save_path = save_path
+
+    def configure(self,
+                  source_path:str|None = None,
+                  filters:DataFilter_base|None = None,
+                  name:str|None = None,
+                  case_path:str|None = None,
+                  ctrl_path:str|None = None
+                  ):
+        if source_path is not None and self.source_path != source_path:
+            self.set_source_path(source_path)
         if filters is not None: self.filters = filters
         if name is not None: self.__set__name(name)
+        if case_path is not None: self.set_case(case_path)
+        if ctrl_path is not None: self.set_ctrl(ctrl_path=ctrl_path)
+
+    def destroy(self):
+        """
+        Called to delete all dataset files and remove all records of dataset.\n
+        If a reference to this dataset still exists the dataset will return None instead of a datawrapper.
+        """
+        if self.__destroyed: return
+        
+        DataSetInfo.clear_name(self.__name)
+        if self.__save_path is not None:
+            DataSetInfo.__clear_save_file_name(self.__save_path)
+        self.__clear_save()
+        self.__destroyed = True
+
+    def set_source_path(self,source_path:str|None):
+        if source_path == self.source_path: return
+
+        # Clear any old save files
+        self.__clear_save()
+
+        self.source_path = source_path
+        if self.source_path is None: return
+
+        # Peak into dataset to see if full file can be loader reasonably
+        self.__peek_data()
+
+        # Make a save path if it will be required
+        if not self.at_end:
+            # Peaking did not reveal the full file, that dataset is big and should thus be stored in memory
+            self.__save_path = self.__make_valid_save_file_name(os.path.dirname(source_path))
+
+    def __clear_save(self):
+        """
+        Remove the save file if it exists.
+        """
+        if self.__save_path is None: return
+        if os.path.isfile(self.__save_path):
+            os.remove(self.__save_path)
+            self.__save_flag = False
+        self.__save_path = None
 
     def add_filter(self,filter:DataFilter_base):
         self.filters.append(filter)
@@ -62,10 +258,6 @@ class DataSetInfo:
 
     def get_source_path(self)->str|None:
         return self.source_path
-    def get_save_path(self):
-        if self.save_path is None:
-            self.save_path = self.get_dataset_name()
-        return self.save_path
 
     def get_dataset_name(self)->str:
         return self.__name
@@ -89,13 +281,101 @@ class DataSetInfo:
 
         DataSetInfo.add_name(_name) # add new name to the list 
         self.__name = _name # set name
+
+    def __peek_data(self):
+        """
+        Called only when a new source file is set.\n
+        This function loads in default range value by peaking at the dataset loaded and finding its chromosome and first value.
+        """
+        peek_info = peek_vcf_data(self.source_path, DEFAULT_VARIANTS, target_pt=DEFAULT_DISPLAY)
+        self.chr_prefix = peek_info['CHROM/prefix']
+
+        chr = peek_info['CHROM/number']
+        self.abs_start = min_pos = peek_info['POS/first']
+        max_pos = peek_info['POS/target']
+        if peek_info['POS/at_end']:
+            self.abs_end = max_pos
+
+        self.at_end = peek_info['POS/at_end']
+
+        self.__range_filter.configure(chromosome=chr, min=min_pos, max=max_pos)
+
+    def __should_make_save_file(self)->bool:
+        """
+        Returns true if the dataset should use an external save file to store pre-filtered data, \n
+        or if the existing save file should be remade.
+        """
+        return not self.at_end and (not self.__save_flag or self.__reload_flag)
+
     
-    def get_data_wrapper(self)->DataWrapper:
+    def get_data(self)->DataWrapper|None:
         """Returns a `VcfDataWrapper` containing the data managed by this dataset (with all filtering applied)"""
-        if self.dw is None:
-            self.dw = DataFetcher.load_data(self.get_source_path())
-            #print("not using old wrapper?")
+        if self.__destroyed:
+            raise Exception("Trying to get data from destroyed da")
+
+        
+        data_path = self.__save_path
+        if data_path is None: data_path = self.source_path
+        
+        # Pre-load vcf data using bcftools if required 
+        if self.__should_make_save_file():
+            query_str = get_filter_query_str(self.filters,['-r'], chr_prefix=self.chr_prefix)
+            data_path = make_dataset_file(self.source_path,
+                                                   os.path.join(os.path.dirname(self.source_path),self.__save_path),
+                                                   query_str=query_str,
+                                                   output_type=self.__FILE_EXTENSION)
+            assert(data_path == self.__save_path)
+            self.__save_flag = True
+            
+        # Load datawrapper
+        data = read_vcf_data(data_path)
+        df = read_vcf_df(data_path)
+
+        # Get cases and controls 
+        cases, ctrls = read_case_ctrl(self._case_path, self._ctrl_path)
+
+        self.dw = DataWrapper(data, df, cases=cases, ctrls=ctrls)
+
+        for filt in self.filters:
+            filt.apply_to_wrapper(self.dw)
+
         return self.dw
+    
+    # Range Filter parameters 
+    def set_range(self, chromosome:int|None = None, min:int|None = None, max:int|None = None):
+        # Set region reload flag if on a new chromosome
+        self.__save_flag = self.__range_filter.chromosome == chromosome
+        
+
+        self.__range_filter.configure(chromosome=chromosome, min=min, max=max)
+
+        # Set datawrapper to be None to force data reload
+        self.dw = None
+    def get_range(self)->tuple[int, int]:
+        """
+        Get the position range of the dataset in the form (min, max)
+        """
+        return self.__range_filter.min, self.__range_filter.max
+        
+    def get_chromosome(self)->int:
+        return self.__range_filter.chromosome
+    
+    # Quality filter parameters 
+    def set_quality(self, min:float|None=None, max:float|None=None):
+        self.__quality_filter.set_range(min,max)
+        if self.dw is not None:
+            self.__quality_filter.apply_to_wrapper(self.dw)
+    def get_quality(self)->tuple[float, float]:
+        """
+        Get the quality range of the dataset
+        """
+        return self.__quality_filter.get_range()
+    
+    def set_case(self,case_path:str):
+        self._case_path = case_path
+    def set_ctrl(self, ctrl_path:str):
+        self._ctrl_path = ctrl_path
+
     
         
 

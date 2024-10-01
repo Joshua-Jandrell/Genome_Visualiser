@@ -1,4 +1,5 @@
 # This script contains classes for managing and updating vcf data plots 
+from itertools import compress
 import numpy as np
 import allel as allel
 from allel import GenotypeArray as GTArr
@@ -9,7 +10,7 @@ from enum import IntEnum
 class SortMode(IntEnum):
     BY_POSITION=0,
     BY_QUALITY=1,
-    BY_POPULATION = 2,
+    BY_POPULATION=2,
      
     
 # Constants used to index a VCF dictionary
@@ -22,6 +23,17 @@ ALT = 'variants/ALT'
 POS = 'variants/POS'
 QUAL = 'variants/QUAL'
 
+CASES = 'samples/cases'
+CTRLS = 'samples/ctrls'
+
+
+S_KEYS = [SAMPLES, CASES, CTRLS]
+"""Data dict fields which run along the s direction."""
+
+V_KEYS = [CHROM, ID, REF, ALT, POS, QUAL]
+"""Data dict views which align with variant."""
+ 
+
 
 # Used to get nucleotide number
 NUCLEOTIDE_DICT = {
@@ -33,38 +45,20 @@ NUCLEOTIDE_DICT = {
 
 # Conatins vcf query data and returns it in various formats
 class VcfDataWrapper:
-    def __init__(self, vcf_data:dict, df:DataFrame) -> None:
-        
+    def __init__(self, vcf_data:dict, df:DataFrame, cases:list[str]=[], ctrls:list[str]=[]) -> None:
+
+        # TPDOD Construct a pandas datafram form dict data 
+
+        self.data = vcf_data
         self.df = df    ####TODO TypeError: VcfDataWrapper.__init__() missing 1 required positional argument: 'df'
         # # Make data into a (pandas?) dataframe ^^^^^ ??????
         # df = al.vcf_to_dataframe(TEST_FILE)  <<<from vcfTest... idk if this helps
-        
+
+        self.set_case_ctrl(cases=cases, ctrls=ctrls)
         
         self.filtered_df = None
        
-        # Tmp data size constriants
-        # TODO REMOVE THESE
-        max_vars = 5000
-        max_samples = 300
 
-        vcf_data[SAMPLES] = vcf_data[SAMPLES][:max_samples]   #samples is the number of people
-        vcf_data[DATA] = vcf_data[DATA][:max_vars,:max_samples,]
-        vcf_data[REF] = vcf_data[REF][:max_vars]
-        vcf_data[ALT] = vcf_data[ALT][:max_vars]
-        vcf_data[ID] = vcf_data[ID][:max_vars]
-        vcf_data[POS] = vcf_data[POS][:max_vars]
-        vcf_data[QUAL] = vcf_data[QUAL][:max_vars]
-        self.df = df.iloc[:max_vars]
-        # ------------------------
-        self.data = vcf_data
-        self.gt_data = GTArr(self.data[DATA])
-
-        # clear pre-constructed arrays
-        self._zygos = None
-        self._refs = None
-        self._alts = None
-        self._pos = None
-        
         self.first_pos, self.last_pos = self.get_file_pos_range()
         self._pop_tag = None
         
@@ -74,9 +68,46 @@ class VcfDataWrapper:
         self.last_qual=100        
         #Default setting: don't sort by quality
         self.sort_mode:SortMode = SortMode.BY_POSITION
+        
 
     # Returns a matrix of zygosities for each sample variant.
     # 0 = no mutation, 1 = heterozygous, 2 = homozygous mutation, -1 = no-data
+
+    def slice_v(self, mask:list[bool], data:dict|None = None, in_place:bool = True)->dict:
+        """Slice all data that aligns with variants according to the given bool mask."""
+        if data is None:
+            data = self.data
+
+        # if len(mask) != len(data[POS]):
+        #     raise ValueError("Data mask does not match length of variants")
+        
+        if in_place:
+            new_data = data
+        else:
+            new_data={}
+        for key in V_KEYS:
+            new_data[key] = data[key][mask]
+
+        # Special case for callset data 
+        new_data[DATA] = data[DATA][mask,:]
+
+    def slice_s(self, mask:list[bool], data:dict|None = None, in_place:bool = True)->dict:
+        """Slice all data that aligns with samples according to the given bool mask."""
+        if data is None:
+            data = self.data
+        # if len(mask) != len(data[SAMPLES]):
+        #     raise ValueError("Data mask does not match length of samples")
+        if in_place:
+            data = new_data
+        else:
+            new_data = {}
+        for key in S_KEYS:
+            new_data[key] = data[key][mask]
+        # Special case for callset data 
+        new_data[DATA] = self.data[DATA][mask,:]
+
+        return new_data
+        
     def get_zygosity(self):
         """Returns an _`int`_ matrix of zygosities for each sample variant.\\
         0 = no mutation\\
@@ -122,6 +153,9 @@ class VcfDataWrapper:
     def get_samples(self):
         return self.__get_filtered_samples()
     
+    def get_chromosome(self):
+        return self.__get_filtered_df()["CHROM"].to_numpy()
+    
     def get_ref_ints(self):
         """Returns a `list` indicating the nucleotide type of the reference (`REF`) sequence.\\
         0 = multiple-nucleotides\\
@@ -137,7 +171,7 @@ class VcfDataWrapper:
     def get_alt_int(self):
         _alts = np.array([alleles_to_numbs(alts) for alts in self.data[ALT][self.__get_filtered_df().index]])
         filter_mask = np.array([np.max(_alts,axis=0) >= 0][0]) # filter out empty columns
-        _alts = _alts[:,filter_mask].transpose()[::-1,:] # Put samples on the rows in descending order
+        _alts = _alts[:,filter_mask] # Put samples on the rows in descending order
         return _alts
 
     def get_pos(self):
@@ -187,6 +221,38 @@ class VcfDataWrapper:
         population_samples = self.data[SAMPLES][population_tag_samples]         ###this should be given to... is this used???
         
         return self._zygos
+    
+    def get_cases(self):
+        return self.__get_filtered_data()[CASES]
+    
+    def get_ctrls(self):
+        return self.__get_filtered_data()[CTRLS]
+    
+    def set_case_ctrl(self, cases:list[str], ctrls:list[str]=[]):
+        """
+        Set the case and control samples for the dataset
+        """
+
+        # ensure that there is not data in both cases and controls
+        cases = [c for c in cases if c not in ctrls]
+
+        # Make case and control arrays
+        if len(cases) > 0:
+            self.data[CASES] = np.array([s in cases for s in self.data[SAMPLES]])
+            if len(ctrls) == 0:
+                self.data[CTRLS] = np.array([not c for c in self.data[CASES]])
+        
+        if len(ctrls) > 0:
+            self.data[CASES] = np.array([s in ctrls for s in self.data[SAMPLES]])
+            if len(cases) == 0:
+                self.data[CASES] = np.array([not c for c in self.data[CTRLS]])
+
+        if len(cases) == 0 and len(ctrls) == 0:
+            self.data[CASES] = np.array([True for s in self.data[SAMPLES]])
+            self.data[CTRLS] = np.array([False for s in self.data[SAMPLES]])
+
+
+
 
     def __get_filtered_df(self)->DataFrame:
         """Applies all filters and returns a dataframe containing only the desired values."""
@@ -215,11 +281,18 @@ class VcfDataWrapper:
         self.filtered_df = new_df
     
         return new_df
+    
+    def __get_filtered_data(self)->dict:
+        df = self.__get_filtered_df()
+        
+        data = self.slice_v(df.index, self.data, in_place=False)
+        data = self.sort_by_case_ctrl(data=data, in_place=True)
+        return data
 
     def __get_filtered_genotype_array(self)->GTArr:
         """Find the filtered genotype array."""
-        df = self.__get_filtered_df()
-        return GTArr((self.data[DATA])[df.index,:])
+        data = self.__get_filtered_data()
+        return GTArr((data[DATA]))
 
     def __get_filtered_samples(self):
         """Find the filtered pos."""
@@ -240,12 +313,20 @@ class VcfDataWrapper:
         sort_mode = SortMode(mode_int)
         self.sort_mode = sort_mode
     
-    # def filter_ref_variant_length(self):  #Scott didn't think this was necessary
-    #     return
-    # def filter_zygosity_type(self):   #See in zygosityOption ~~~~  toggling
-    #     return
-    # def filter_nucleotide_type(self):
-    #     return
+    def sort_by_case_ctrl(self, data:dict|None = None, in_place:bool = True)->dict:
+        if data is None:
+            data = self.data
+        if in_place:
+            new_data = data
+        else:
+            new_data = {}
+        
+        _cases = np.array(data[CASES])
+        for key in S_KEYS:
+            new_data[key] = np.concat((data[key][_cases[:]], data[key][data[CTRLS]]),axis=0)
+
+        new_data[DATA] = np.concat((data[DATA][:,data[CASES]], data[DATA][:,data[CTRLS]]),axis=1)
+        return new_data
 
 # Converts and allele character/string to an intagetr
 # 0 = multi-nucleotide, -1 = n0-data
