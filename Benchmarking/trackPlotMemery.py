@@ -4,7 +4,7 @@ Track the memory used by various plotting functions.
 
 """Used find the plotting time of various plotting methods"""
 # For time keeping
-import os
+import os, gc
 import csv
 
 import matplotlib as mpl
@@ -42,7 +42,7 @@ def track_zygoisty_plots(output_file:str = "zygosity_plotting_memory.csv"):
         for _s in SAMPLE_COUNTS:
 
             # Make data 
-            data = get_random_zygoisty()
+            data = get_random_zygoisty(n_variants=_v, n_samples=_s)
             
             # Iterate through various DPI values 
             for _dpi in DPI_VALS:
@@ -65,6 +65,9 @@ def track_zygoisty_plots(output_file:str = "zygosity_plotting_memory.csv"):
                     _ave_mem = sum(_mem)/N_CYCLES
                     _ave_peak = sum(_peak)/N_CYCLES
                     _csv.writerow(_row+[_ave_mem, _ave_peak]+_mem+_peak)
+
+                    gc.collect()
+                
     _f.close()
 
 def make_verification_images():
@@ -75,7 +78,6 @@ def make_verification_images():
     data = get_random_zygoisty(50,10)
     fig, ax = get_plot_figure(500,100,100)
     pcolor_plot(data=data, fig=fig)
-    #fig.draw()
 
 if __name__ == "__main__":
     track_zygoisty_plots()

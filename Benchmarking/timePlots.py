@@ -12,7 +12,7 @@ from Plots.plotMethods import *
 from trackTimeMem import monitor_time
 from config import *
 
-SAVE_DIR = os.path.join(RESULT_DIR,"Plots","ZygsityPlottingTimes")
+SAVE_DIR = os.path.join(RESULT_DIR,"Plots")
 
 def get_csv_header():
     main_heads = ["plot_type", "n_variants", "n_samples", "n_values", "dpi", "average"]
@@ -38,7 +38,7 @@ def time_zygoisty_plots(output_file:str = "zygosity_plotting_times.csv"):
         for _s in SAMPLE_COUNTS:
 
             # Make data 
-            data = get_random_zygoisty()
+            data = get_random_zygoisty(n_variants=_v, n_samples=_s)
             
             # Iterate through various DPI values 
             for _dpi in DPI_VALS:
@@ -70,7 +70,6 @@ def make_verification_images():
     data = get_random_zygoisty(50,10)
     fig, ax = get_plot_figure(500,100,100)
     pcolor_plot(data=data, fig=fig)
-    #fig.draw()
 
 if __name__ == "__main__":
     time_zygoisty_plots()
