@@ -398,9 +398,4 @@ def length_and_ratios(requested_lengths:list[int])->tuple[int,NDArray]:
     if full_length <= 0: return 0, np.array([])
     weights = np.array(requested_lengths)/full_length
     return full_length, weights
-
-
-#def scale_sets(view_sets:list[viewSetManager], fig:Figure, size:tuple[int,int]=tuple([0,0]), can_expand=tuple([False, False])):
-    """Function used to update the scale of a list of view sets without re-plotting"""
-
-    
+   

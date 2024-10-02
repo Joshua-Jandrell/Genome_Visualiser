@@ -15,9 +15,7 @@ from VCF.dataSetConfig import DataSetConfig
 
 from Plot.keyCanvas import KeyCanvas
 from Plot.scrollWidget import ScrollManager, ScrollWidget
-from Plot.plotUpdate import PlotUpdate
 
-from Util.event import Event
 from Util.box import Box
 
 X_VIEW_PAD = 40
@@ -27,7 +25,7 @@ DEFAULT_DPI = 100
 def px_to_inches(px:int, dpi:float=DEFAULT_DPI):
     """
     Converts pixes to inches
-    """
+#     """
 class FigureMount(ctk.CTkFrame):
     DPI = DEFAULT_DPI
     """

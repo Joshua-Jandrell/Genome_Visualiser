@@ -8,17 +8,18 @@ from matplotlib.figure import Figure as Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavToolbar
 
-from UI.menu import TopMenuBar
-from UI.viewPanel import ViewPanel
-from UI.sidePanel import SidePanel
+from UI.numberEntry import NumberEntry
 
-#from Plot.dummyPlotter import make_plot
+from UI.menu import TopMenuBar
+from UI.sidePanel import SidePanel
+from viewPanel import ViewPanel
+
 from VCF.globalDatasetManger import GlobalDatasetManager
 
 from UI.searchPanel import SearchPanel
 
 from Plot.plotInfo import ViewInfo_base
-from Plot.autoPlotter import AutoPlotter
+from autoPlotter import AutoPlotter
 from Plot.keyCanvas import KeyCanvas
 
 import pandas as pd # For set to stop deprecation 

@@ -1,7 +1,5 @@
 # This script contains tge code for a collapsable side panel
 import customtkinter as ctk # For general application features
-import tkinter as tk
-import tkinter.ttk as ttk
 from UI.deafultSettings import Dimenations as Dims
 
 class SidePanel(ctk.CTkFrame):

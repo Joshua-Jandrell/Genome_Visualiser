@@ -1,7 +1,7 @@
 """Contains definition for the `AutoPlotter` class."""
 
 from VCF.globalDatasetManger import GlobalDatasetManager
-from UI.viewPanel import ViewPanel
+from viewPanel import ViewPanel
 from Plot.plotInfo import DataSetInfo, ViewInfo_base
 from Plot.ViewInfos import ZygoteView, RefView
 from Plot.plotSelect import PlotOptionPanel, PlotOptionCard, ZYGOSITY_OPT, REF_OPT

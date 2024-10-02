@@ -1,8 +1,6 @@
 # This script contains classes used to implement the application menu bar
 
 import tkinter as tk    # Use standard tkinker because custom tkinker does not implement manubar
-import customtkinter as ctk
-import tkinter.ttk as ttk
 
 # This class is used to make the top menu bar for the visualizer app
 # TODO: There is no custom tkinker widget for this so we will need to format it properly some time.
