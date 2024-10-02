@@ -1,3 +1,6 @@
+"""
+used to filter files via the bcftools command line interface and then read filtered data into memory.
+"""
 import os, time, csv
 import pandas as pd
 pd.set_option('future.no_silent_downcasting', True) # Opt in to future pd dataframe replace behavior used by allel

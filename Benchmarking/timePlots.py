@@ -12,7 +12,7 @@ from Plots.plotMethods import *
 from trackTimeMem import monitor_time
 from config import *
 
-SAVE_DIR = os.path.join(RESULT_DIR,"Plots")
+SAVE_DIR = os.path.join(RESULT_DIR,"Plots","ZygsityPlotting")
 
 def get_csv_header():
     main_heads = ["plot_type", "n_variants", "n_samples", "n_values", "dpi", "average"]

@@ -1,2 +1,3 @@
 from .postFilter import *
-from .vcftoolsFilter import *
+from .bcftoolsFilter import *
+from .hybrid import *
