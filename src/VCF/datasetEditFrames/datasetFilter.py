@@ -25,7 +25,6 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.qual_min = ctk.DoubleVar()
         self.qual_max = ctk.DoubleVar()
         self.case_path = ctk.StringVar(value="")
-        self.ctrl_path = ctk.StringVar(value="")
 
         # NOTE dataset should only be set after variable have been constructed
         self.set_dataset(dataset)
@@ -37,7 +36,6 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.__qual_min_call__ = self.qual_min.trace_add('write', self.__on_qual_change)
         self.__qual_max_call__ = self.qual_max.trace_add('write', self.__on_qual_change)
         self.__case_call__ = self.case_path.trace_add('write', self.__on_case_ctrl_change)
-        self.__ctrl_call__ = self.ctrl_path.trace_add('write', self.__on_case_ctrl_change)
         
         # ==== Regional UI elements ====
         chromo_label = ctk.CTkLabel(self, text="Chromosome:")
@@ -80,28 +78,17 @@ class DatasetFilterFrame(ctk.CTkFrame):
 
         # ==== case control elements ====
         _case_row = 3
-        case_label = ctk.CTkLabel(self, text="Cases:")
+        case_label = ctk.CTkLabel(self, text="Case/Ctrl file:")
         case_label._font.configure(weight="bold")
         case_label.grid(row=_case_row, column=0, columnspan=1, padx=_padx, pady=_pady)
         self.case_picker = FilePicker(master=self, width=100,
-                                           filetypes=[("text file", "*.txt"), ('tab-separated values', '*tsv'), ('comma-separated value', '*csv')],
+                                           filetypes=[("any", "*.txt;*.tsv;*.csv"),("text file", "*.txt"), ('tab-separated values', '*.tsv'), ('comma-separated value', '*.csv')],
                                            path_variable=self.case_path,
                                            button_text="select",
+                                           dialog_title="Select Case/Ctrl file",
                                            clear_button=True
                                            )
         self.case_picker.grid(row=_case_row, column=1, columnspan=3, padx=_padx, sticky='ew')
-
-        _ctrl_row = 4
-        ctrl_label = ctk.CTkLabel(self, text="Controls:")
-        ctrl_label._font.configure(weight="bold")
-        ctrl_label.grid(row=_ctrl_row, column=0, columnspan=1, padx=_padx, pady=_pady)
-        self.ctrl_picker = FilePicker(master=self, width=100,
-                                           filetypes=[("text file", "*.txt"), ('tab-separated values', '*tsv'), ('comma-separated value', '*csv')],
-                                           path_variable=self.ctrl_path,
-                                           button_text="select",
-                                           clear_button=True
-                                           )
-        self.ctrl_picker.grid(row=_ctrl_row, column=1, columnspan=3, padx=_padx, sticky='ew')
 
     
 
@@ -113,7 +100,6 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.qual_min.trace_remove('write', self.__qual_min_call__)
         self.qual_max.trace_remove('write', self.__qual_max_call__)
         self.case_path.trace_remove('write', self.__case_call__)
-        self.ctrl_path.trace_remove('write', self.__ctrl_call__)
         return super().destroy()
     
     def set_dataset(self, dataset:DataSetInfo|None):
@@ -128,6 +114,10 @@ class DatasetFilterFrame(ctk.CTkFrame):
         _min, _max = dataset.get_quality()
         self.qual_min.set(_min)
         self.qual_max.set(_max)
+
+        _case_path = dataset.get_case_path()
+        if _case_path is not None:
+            self.case_path.set(_case_path)
 
     def update_all(self):
         """
@@ -152,6 +142,6 @@ class DatasetFilterFrame(ctk.CTkFrame):
             self.dataset.set_quality(min=self.qual_min.get(), max=self.qual_max.get())
     def __on_case_ctrl_change(self, *args):
         if self.dataset is not None:
-            self.dataset.configure(case_path=self.case_path.get(), ctrl_path=self.ctrl_path.get())
+            self.dataset.configure(case_path=self.case_path.get())
 
 

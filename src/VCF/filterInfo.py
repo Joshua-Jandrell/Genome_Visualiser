@@ -205,8 +205,8 @@ class DataSetInfo:
             self.set_source_path(source_path)
         if filters is not None: self.filters = filters
         if name is not None: self.__set__name(name)
-        if case_path is not None: self.set_case(case_path)
-        if ctrl_path is not None: self.set_ctrl(ctrl_path=ctrl_path)
+        if case_path is not None: self.set_case_path(case_path)
+        if ctrl_path is not None: self.set_ctrl_path(ctrl_path=ctrl_path)
 
     def destroy(self):
         """
@@ -371,9 +371,11 @@ class DataSetInfo:
         """
         return self.__quality_filter.get_range()
     
-    def set_case(self,case_path:str):
+    def set_case_path(self,case_path:str):
         self._case_path = case_path
-    def set_ctrl(self, ctrl_path:str):
+    def get_case_path(self)->str|None:
+        return self._case_path
+    def set_ctrl_path(self, ctrl_path:str):
         self._ctrl_path = ctrl_path
 
     

@@ -22,6 +22,7 @@ from Plot.plotInfo import ViewInfo_base
 from autoPlotter import AutoPlotter
 from Plot.keyCanvas import KeyCanvas
 
+
 import pandas as pd # For set to stop deprecation 
 pd.set_option('future.no_silent_downcasting', True)
 

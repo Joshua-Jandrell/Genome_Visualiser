@@ -10,7 +10,8 @@ class FilePicker(ctk.CTkFrame):
     """
     Class used to let the user select files.
     """
-    def __init__(self, master: Any, width: int = 200, height: int = 28, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, command:Callable[[],str]=None, filetypes:list[tuple[str,str]]=[("All files", "*")], button_text:str|None="select", clear_text:str|None="clear", default_text:str|None = "[No file.]", path_variable:ctk.StringVar|None =None, clear_button:bool = False, **kwargs):
+    def __init__(self, master: Any, width: int = 200, height: int = 28, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, command:Callable[[],str]=None,
+                 filetypes:list[tuple[str,str]]=[("All files", "*")], button_text:str|None="select", clear_text:str|None="clear", default_text:str|None = "[No file.]", dialog_title:str = "Select File", path_variable:ctk.StringVar|None =None, clear_button:bool = False, **kwargs):
         # Intercept styling
         # if border_color is None:
         #     border_color = ThemeManager.theme['CTkEntry']['border_color']
@@ -24,6 +25,8 @@ class FilePicker(ctk.CTkFrame):
         self._path_variable = path_variable
         self._label = ctk.CTkLabel(self, height=height-2*self._border_width, text=default_text)
         self._label.grid(row=0, column=0, pady=self._border_width)
+
+        self._dialog_title = dialog_title
         
         self._button = ctk.CTkButton(self, width = 40, height=height, 
                                      corner_radius=corner_radius,
@@ -55,6 +58,7 @@ class FilePicker(ctk.CTkFrame):
 
         self.__path_var_callback__ = None
         if self._path_variable is not None:
+            self.set_path(self._path_variable.get(), __ignore_path_var__=True)
             self.__path_var_callback__ = self._path_variable.trace_add('write', self.__on_path_change_var)
 
     def destroy(self):
@@ -63,7 +67,7 @@ class FilePicker(ctk.CTkFrame):
         return super().destroy()
 
     def __open_path_select(self):
-        _filepath = ctk.filedialog.askopenfilename(title=self._file_text, filetypes=self._filetypes)
+        _filepath = ctk.filedialog.askopenfilename(title=self._dialog_title, filetypes=self._filetypes)
         if _filepath == "": return
         self.set_path(_filepath)
 
