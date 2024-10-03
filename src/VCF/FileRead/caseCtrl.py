@@ -23,14 +23,20 @@ def read_case_ctrl(case_path:str)->tuple[list[str],list[str]]:
 
             if len(lines) == 0:
                 raise EmptyFileError(f"The file {case_path} is empty")
+            
+            split_str = ""
+            if case_path[-4:] == ".tsv":
+                split_str = ","
 
             # Check to see if a bool-list format is used 
-            if len(lines[0].split()) == 1:
+            if len(lines[0].split(split_str)) == 1:
                 cases = lines
             else:
-                cases = [line.split()[1] for line in lines if is_bool(line.split()[1]) and str_to_bool(line.split()[1])]
-                ctrls = [line.split()[1] for line in lines if is_bool(line.split()[1]) and not str_to_bool(line.split()[1])]
+                cases = [line.split(split_str)[0] for line in lines if is_bool(line.split(split_str)[1]) and str_to_bool(line.split(split_str)[1])]
+                ctrls = [line.split(split_str)[0] for line in lines if is_bool(line.split(split_str)[1]) and not str_to_bool(line.split(split_str)[1])]
+                
             f.close()
+
 
 
     return cases, ctrls

@@ -50,7 +50,7 @@ NUCLEOTIDE_DICT = {
 # Conatins vcf query data and returns it in various formats
 class VcfDataWrapper:
     def __init__(self, vcf_data:dict, df:DataFrame, cases:list[str]=[], ctrls:list[str]=[]) -> None:
-        print("MADE DW")
+
         # TPDOD Construct a pandas datafram form dict data 
 
         self._data = {key:vcf_data[key] for key in DW_S_KEYS+DW_V_KEYS+[DATA] if key in vcf_data.keys()}

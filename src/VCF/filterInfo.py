@@ -4,7 +4,7 @@ from os import path
 from typing import Literal
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 from .dataLoad import peek_vcf_data, read_vcf_df, read_vcf_data
-from .bcftoolSys import make_dataset_file, convert
+from .FileRead.bcftoolSys import make_dataset_file, convert
 from .FileRead.caseCtrl import read_case_ctrl
 
 import pandas as pd
@@ -382,6 +382,9 @@ class DataSetInfo:
     
     def set_case_path(self,case_path:str):
         self._case_path = case_path
+        if self.dw is not None:
+            cases, ctrls = read_case_ctrl(case_path)
+            self.dw.set_case_ctrl(cases, ctrls)
     def get_case_path(self)->str|None:
         return self._case_path
 

@@ -63,6 +63,7 @@ def select_views(data:DataSetInfo)->list[ViewInfo_base]:
     # get a reference to the view options panel
     PlotOptionPanel.select_instance_option(REF_OPT)
     PlotOptionPanel.select_instance_option(FREQ_BAR_OPT)
+    PlotOptionPanel.select_instance_option(ZYGOSITY_OPT)
 
     views = PlotOptionPanel.get_view_list()
     return views
