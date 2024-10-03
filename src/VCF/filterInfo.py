@@ -303,6 +303,13 @@ class DataSetInfo:
         or if the existing save file should be remade.
         """
         return not self.at_end and (not self.__save_flag or self.__reload_flag)
+    
+    def __should_reload_data(self)->bool:
+        """
+        Returns true is the given dataset should be reloaded from file into memory.\\
+        This is generally required if the filter parameters have been updated.
+        """
+        return self.dw is None or self.__reload_flag
 
     
     def get_data(self)->DataWrapper|None:
@@ -323,18 +330,23 @@ class DataSetInfo:
                                                    output_type=self.__FILE_EXTENSION)
             assert(data_path == self.__save_path)
             self.__save_flag = True
+
+        if self.__should_reload_data():
             
-        # Load datawrapper
-        data = read_vcf_data(data_path)
-        df = read_vcf_df(data_path)
+            # Load datawrapper
+            data = read_vcf_data(data_path)
+            df = read_vcf_df(data_path)
 
-        # Get cases and controls 
-        cases, ctrls = read_case_ctrl(self._case_path)
+            # Get cases and controls 
+            cases, ctrls = read_case_ctrl(self._case_path)
 
-        self.dw = DataWrapper(data, df, cases=cases, ctrls=ctrls)
+            self.dw = DataWrapper(data, df, cases=cases, ctrls=ctrls)
+
+            self.__reload_flag = False
 
         for filt in self.filters:
             filt.apply_to_wrapper(self.dw)
+                
 
         return self.dw
     

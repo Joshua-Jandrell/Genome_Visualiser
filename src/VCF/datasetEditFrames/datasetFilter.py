@@ -90,8 +90,6 @@ class DatasetFilterFrame(ctk.CTkFrame):
                                            )
         self.case_picker.grid(row=_case_row, column=1, columnspan=3, padx=_padx, sticky='ew')
 
-    
-
     def destroy(self):
         self.dataset = None           
         self.chromo.trace_remove('write', self.__chrom_call__)

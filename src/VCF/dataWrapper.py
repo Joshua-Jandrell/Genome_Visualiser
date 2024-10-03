@@ -236,13 +236,15 @@ class VcfDataWrapper:
         """Sets the range of nucleotide positions on the reference genome the user wants to view."""
         self.first_pos = min_pos
         self.last_pos = max_pos
-        self.filtered_df =  None
+        self._dict_filtered = False
+        self._df_filtered = False
     
     def set_qual_range(self, min_qual:int, max_qual:int):
         """Sets the range of nucleotide positions on the reference genome the user wants to view."""
         self.first_qual = min_qual
         self.last_qual = max_qual
-        self.filtered_df =  None
+        self._dict_filtered = False
+        self._df_filtered = False
         
     def set_population_tag(self, pop_target:str):
         """Sets the the tag to look for in the variant samples the user wants to view. """
@@ -296,14 +298,14 @@ class VcfDataWrapper:
             self._data[CASES] = np.array([True for s in self._data[SAMPLES]])
             self._data[CTRLS] = np.array([False for s in self._data[SAMPLES]])
 
-
+        self._dict_filtered = False
 
 
     def __get_filtered_df(self)->DataFrame:
         """Applies all filters and returns a dataframe containing only the desired values."""
 
 
-        if self._df_filtered and self.filtered_df:
+        if self._df_filtered:
             return self._df
         
         new_df = self._df
