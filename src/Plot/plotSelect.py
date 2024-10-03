@@ -4,7 +4,7 @@ from typing import Tuple
 import customtkinter as ctk
 from UI.optionPanel import OptionCtrl, OptionCard, OptionPanel
 from Plot.plotInfo import DataSetInfo, ViewInfo_base
-from Plot.ViewInfos import ZygoteView, RefView, VarPosView, FrequencyView, MutFreqView, CaseCtrlView
+from Plot.ViewInfos import ZygoteView, RefView, VarPosView, FrequencyView, MutFreqView, CaseCtrlView, MutationBarView
 
 from VCF.datasetDropDown import DatasetMenu
 
@@ -16,6 +16,7 @@ FREQUENCY_OPT = "Mutation Frequency Histograms"
 MUTATION_FREQUENCY_OPT = "Mutation Probabilities"
 POS_OPT = "Position"
 CASE_CTRL_OPT = "Case/Ctrl view "
+FREQ_BAR_OPT = "Mutation Frequency Bar Graph"
 
 class PlotOptionPanel(OptionPanel):
     __instance = None
@@ -74,6 +75,8 @@ class PlotOptionPanel(OptionPanel):
         self.content.register_option(OptionCtrl(self.content,FREQUENCY_OPT, option_value=FrequencyView))
         self.content.register_option(OptionCtrl(self.content,POS_OPT, option_value=VarPosView))
         self.content.register_option(OptionCtrl(self.content,CASE_CTRL_OPT, option_value=CaseCtrlView))
+        self.content.register_option(OptionCtrl(self.content,CASE_CTRL_OPT, option_value=CaseCtrlView))
+        self.content.register_option(OptionCtrl(self.content,FREQ_BAR_OPT, option_value=MutationBarView))
 
     def __get_views(self)->list[ViewInfo_base]:
         """

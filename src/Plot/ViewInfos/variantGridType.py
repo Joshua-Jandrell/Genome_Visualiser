@@ -98,7 +98,7 @@ class VariantGridView(ViewInfo_base):
             x_lim = float(size[0])/float(self.ideal_block_size)
             self._blocks_per_window_x = x_lim
             ax.set_xlim(self._lim_offset,x_lim+self._lim_offset)
-        if self._pos in [ViewPos.LEFT, ViewPos.MAIN]:
+        if self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN, ViewPos.MAIN]:
             self._blocks_per_window_y = float(size[1])/float(self.ideal_block_size)
             self._move_y(0)
 
@@ -169,5 +169,6 @@ class VariantGridView(ViewInfo_base):
     
     def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
         self.active_axis = axs[0]
+        self.fit_to_size(size)
         return super().make_plots(axs, size)
         

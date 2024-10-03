@@ -249,7 +249,12 @@ class ViewSetManager:
             _view_list = self.left_views
 
         if _pos == ViewPos.MAIN:
+            if self._has_main():
+                if self.main_view.get_view_pos() == ViewPos.LEFT_STAND_IN:
+                    self.main_view.set_main(False)
+                    self.left_views.append(self.main_view)
             self.main_view = view_info
+            view_info._is_main = True
 
 
         view_info.order_in_set = len(_view_list)
@@ -276,6 +281,8 @@ class ViewSetManager:
                     if self.main_view is None or self.main_view.get_priority() < view.get_priority():
                         # If there are multiple candidates main views, select the one with the highest priority
                         self.main_view = view
+                        view._is_main = True
+                        break
 
         # Remove main for view lists 
         if self._has_main():
@@ -369,6 +376,9 @@ class ViewSetManager:
             top = sum(h_ratios[-2:])
             left = 1-w_ratios[-1]
             y_scroll_box = Box(left, top, scroll_w, scroll_h)
+
+        # Set self main view to not be main until re-specified
+        self.main_view.set_main(False)
 
         return w,h, x_scroll_box, y_scroll_box
 

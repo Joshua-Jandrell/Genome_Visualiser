@@ -65,13 +65,13 @@ class RefView(VariantGridView):
         data_matrix = np.matrix(wrapped_data.get_ref_ints())
         if self.stack_mode != Y_STACK:
             data_matrix = np.transpose(data_matrix)
-        self.make_allele_plot(axs[0], data_matrix,self.REF_LABEL, wrapped_data.data[dw.REF], wrapped_data)
+        self.make_allele_plot(axs[0], data_matrix)
         
         if self.plot_alt:
             data_matrix = np.matrix(wrapped_data.get_alt_int())
             if self.stack_mode == Y_STACK:
                 data_matrix = np.transpose(data_matrix)
-            self.make_allele_plot(axs[1], data_matrix,self.ALT_LABEL,wrapped_data.data[dw.ALT], wrapped_data)
+            self.make_allele_plot(axs[1], data_matrix)
             axs[1].set_xlim([self._lim_offset,data_matrix.shape[1]+self._lim_offset])
 
         self._do_base_config(axs)
@@ -79,21 +79,10 @@ class RefView(VariantGridView):
         return super().make_plots(axs, size)
 
 
-    def make_allele_plot(self, axis:Axes, data:np.matrix, label:str, data_labels, wrapped_data: DataWrapper):
+    def make_allele_plot(self, axis:Axes, data:np.matrix):
         axis.imshow(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
-
-        if self.should_annotate(wrapped_data):
-            for y in range(data.shape[0]):
-                for x in range(data.shape[1]):
-                    axis.annotate(f"{data_labels[x][y]}", 
-                                  xy=(x+0.5,y+0.5),
-                                  horizontalalignment='center',
-                                  verticalalignment='center', 
-                                  fontsize=8)
                     
-    def should_annotate(self,wrapped_data:DataWrapper)->bool:
-        return False
-        #return self.annotated and wrapped_data.get_alt().shape[1] < self.ANNOTATION_MAX
+
     
     def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
             key_txt = [["   ","A"],

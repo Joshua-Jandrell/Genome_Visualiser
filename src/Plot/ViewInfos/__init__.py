@@ -10,3 +10,4 @@ from .varFrequecyView import FrequencyView
 from .varFrequecyView import FrequencyView
 from .mutFrequView import MutFreqView
 from .caseCtrlView import CaseCtrlView
+from .mutationBarView import MutationBarView

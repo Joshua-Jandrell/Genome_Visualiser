@@ -149,9 +149,8 @@ class VcfDataWrapper:
         if split:
             n_cases = self.get_n_cases()
             n_ctrls = n_cases - self.get_n_variants()
-            ctrl_data = gt_data[:n_ctrls]
-            case_data = gt_data[n_ctrls:]
-            print(case_data)
+            ctrl_data = gt_data[:,:n_ctrls]
+            case_data = gt_data[:,n_ctrls:]
             return [(((ctrl_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult,
                     (((case_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult]
 
@@ -213,7 +212,7 @@ class VcfDataWrapper:
     
     def get_alts(self):
         alts =  self.__get_filtered_data()[ALT]
-        mask = [all(col == "") for col in alts.T]
+        mask = [any(col != "") for col in alts.T]
         return alts[:,mask]
     
     def get_alt_int(self):
