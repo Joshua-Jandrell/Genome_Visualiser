@@ -5,7 +5,7 @@ from typing import Literal
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 from .dataLoad import peek_vcf_data, read_vcf_df, read_vcf_data
 from .bcftoolSys import make_dataset_file, convert
-from .caseCtrl import read_case_ctrl
+from .FileRead.caseCtrl import read_case_ctrl
 
 import pandas as pd
 
@@ -165,7 +165,6 @@ class DataSetInfo:
         self.abs_end = False
 
         self._case_path = None
-        self._ctrl_path = None
 
         self.__destroyed = False
 
@@ -180,7 +179,7 @@ class DataSetInfo:
             else:
                 name = "New Dataset"
         self.__set__name(name)
-        self.configure(source_path, name=name, case_path = case_path, ctrl_path=ctrl_path)
+        self.configure(source_path, name=name, case_path = case_path)
         self.get_dataset_name()
         #print(f"Make {self.__name}")
 
@@ -199,14 +198,12 @@ class DataSetInfo:
                   filters:DataFilter_base|None = None,
                   name:str|None = None,
                   case_path:str|None = None,
-                  ctrl_path:str|None = None
                   ):
         if source_path is not None and self.source_path != source_path:
             self.set_source_path(source_path)
         if filters is not None: self.filters = filters
         if name is not None: self.__set__name(name)
         if case_path is not None: self.set_case_path(case_path)
-        if ctrl_path is not None: self.set_ctrl_path(ctrl_path=ctrl_path)
 
     def destroy(self):
         """
@@ -332,7 +329,7 @@ class DataSetInfo:
         df = read_vcf_df(data_path)
 
         # Get cases and controls 
-        cases, ctrls = read_case_ctrl(self._case_path, self._ctrl_path)
+        cases, ctrls = read_case_ctrl(self._case_path)
 
         self.dw = DataWrapper(data, df, cases=cases, ctrls=ctrls)
 
@@ -375,8 +372,6 @@ class DataSetInfo:
         self._case_path = case_path
     def get_case_path(self)->str|None:
         return self._case_path
-    def set_ctrl_path(self, ctrl_path:str):
-        self._ctrl_path = ctrl_path
 
     
         
