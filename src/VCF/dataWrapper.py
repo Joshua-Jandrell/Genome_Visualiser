@@ -1,7 +1,7 @@
 # This script contains classes for managing and updating vcf data plots 
-from itertools import compress
+from typing import Literal
 import numpy as np
-import allel as allel
+import allel as al
 from allel import GenotypeArray as GTArr
 from pandas import DataFrame
 
@@ -32,6 +32,10 @@ S_KEYS = [SAMPLES, CASES, CTRLS]
 
 V_KEYS = [CHROM, ID, REF, ALT, POS, QUAL]
 """Data dict views which align with variant."""
+
+DW_S_KEYS = [SAMPLES, CASES, CTRLS]
+DW_V_KEYS = [ALT]
+DW_DF_KEYS = [CHROM, ID, REF, POS, QUAL]
  
 
 
@@ -46,18 +50,17 @@ NUCLEOTIDE_DICT = {
 # Conatins vcf query data and returns it in various formats
 class VcfDataWrapper:
     def __init__(self, vcf_data:dict, df:DataFrame, cases:list[str]=[], ctrls:list[str]=[]) -> None:
-
+        print("MADE DW")
         # TPDOD Construct a pandas datafram form dict data 
 
-        self.data = vcf_data
-        self.df = df    ####TODO TypeError: VcfDataWrapper.__init__() missing 1 required positional argument: 'df'
-        # # Make data into a (pandas?) dataframe ^^^^^ ??????
-        # df = al.vcf_to_dataframe(TEST_FILE)  <<<from vcfTest... idk if this helps
-
+        self._data = {key:vcf_data[key] for key in DW_S_KEYS+DW_V_KEYS+[DATA] if key in vcf_data.keys()}
         self.set_case_ctrl(cases=cases, ctrls=ctrls)
-        
-        self.filtered_df = None
-       
+
+        # Make pandas data frame
+        df_dict = {key.strip('variants/'):vcf_data[key] for key in DW_DF_KEYS if key in vcf_data.keys() and key != ALT}
+        self._df = DataFrame(df_dict)
+            
+              
 
         self.first_pos, self.last_pos = self.get_file_pos_range()
         self._pop_tag = None
@@ -68,7 +71,9 @@ class VcfDataWrapper:
         self.last_qual=100        
         #Default setting: don't sort by quality
         self.sort_mode:SortMode = SortMode.BY_POSITION
-        
+
+        self._df_filtered = False
+        self._dict_filtered = False       
 
     # Returns a matrix of zygosities for each sample variant.
     # 0 = no mutation, 1 = heterozygous, 2 = homozygous mutation, -1 = no-data
@@ -76,7 +81,7 @@ class VcfDataWrapper:
     def slice_v(self, mask:list[bool], data:dict|None = None, in_place:bool = True)->dict:
         """Slice all data that aligns with variants according to the given bool mask."""
         if data is None:
-            data = self.data
+            data = self._data
 
         # if len(mask) != len(data[POS]):
         #     raise ValueError("Data mask does not match length of variants")
@@ -86,15 +91,18 @@ class VcfDataWrapper:
         else:
             new_data={}
         for key in V_KEYS:
-            new_data[key] = data[key][mask]
+            if key in data.keys():
+                new_data[key] = data[key][mask]
 
         # Special case for callset data 
         new_data[DATA] = data[DATA][mask,:]
 
+        return new_data
+
     def slice_s(self, mask:list[bool], data:dict|None = None, in_place:bool = True)->dict:
         """Slice all data that aligns with samples according to the given bool mask."""
         if data is None:
-            data = self.data
+            data = self._data
         # if len(mask) != len(data[SAMPLES]):
         #     raise ValueError("Data mask does not match length of samples")
         if in_place:
@@ -102,9 +110,10 @@ class VcfDataWrapper:
         else:
             new_data = {}
         for key in S_KEYS:
-            new_data[key] = data[key][mask]
+            if key in data.keys():
+                new_data[key] = data[key][mask]
         # Special case for callset data 
-        new_data[DATA] = self.data[DATA][mask,:]
+        new_data[DATA] = self._data[DATA][mask,:]
 
         return new_data
         
@@ -120,7 +129,7 @@ class VcfDataWrapper:
         return self._zygos   #.transpose()[::-1,:] # Flip order so that first entry is on the top
     
     def get_mutation_probability(self):
-        """ Returns an array of probabilities (0 - 100 %) for any mutation (homo or hetero) occuring in a position, based on the queried data displayed.
+        """ Returns an array of probabilities (0 - 100 %) for any mutation (homo or hetero) occuring in a position, based on the queried data displayed.\\        
         """
         gt_data = self.__get_filtered_genotype_array()
         # Frequency of homzygos per position
@@ -128,20 +137,47 @@ class VcfDataWrapper:
                                 +(gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()*2))*100
         return zygo_total_probability
     
-    def get_homozygous_probability(self):
+    def get_homozygous_probability(self, split:bool = False, format:Literal['percentage', 'fraction']='percentage'):
         """ Returns an array of probabilities (0 - 100 %) for a homozygous mutation occuring in a position, based on the queried data displayed.
         """
+        mult = 1
+        if format == 'percentage':
+            mult = 100
+
         gt_data = self.__get_filtered_genotype_array()
+
+        if split:
+            n_cases = self.get_n_cases()
+            n_ctrls = n_cases - self.get_n_variants()
+            ctrl_data = gt_data[:n_ctrls]
+            case_data = gt_data[n_ctrls:]
+            print(case_data)
+            return [(((ctrl_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult,
+                    (((case_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult]
+
         # Frequency of homzygos per position
-        zygo_homo_probability = (((gt_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*100
+        zygo_homo_probability = (((gt_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult
         return zygo_homo_probability
     
-    def get_heterozygous_probability(self):
-        """ Returns an array of probabilities (0 - 100 %) for a heterozygous mutation occuring in a position, based on the queried data displayed.
+    def get_heterozygous_probability(self, split:bool = False, format:Literal['percentage', 'fraction']='percentage'):
+        """ 
+        Returns an array of probabilities (0 - 100 %) for a heterozygous mutation occuring in a position, based on the queried data displayed.\\
+        If `split` is set to true then a 2D list of cases and control will be returned 
         """
+        mult = 1
+        if format == 'percentage':
+            mult = 100
         gt_data = self.__get_filtered_genotype_array()
+        if split:
+            n_cases = self.get_n_cases()
+            n_ctrls = n_cases - self.get_n_variants()
+            ctrl_data = gt_data[:,:n_ctrls]
+            case_data = gt_data[:,n_ctrls:]
+            return [(((ctrl_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*mult,
+                    (((case_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*mult]
+
         # Frequency of homzygos per position
-        zygo_hetero_probability = (((gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*100
+        zygo_hetero_probability = (((gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*mult
         return zygo_hetero_probability
     
     # Returns a list indicating the nucleotide type of ref sequences
@@ -150,11 +186,18 @@ class VcfDataWrapper:
         return len(self.get_samples())
     def get_n_variants(self):
         return len(self.get_pos())
+    def get_n_alts(self):
+        return self.get_alts().shape[1]
     def get_samples(self):
         return self.__get_filtered_samples()
     
     def get_chromosome(self):
         return self.__get_filtered_df()["CHROM"].to_numpy()
+    
+    def get_n_cases(self):
+        return sum(self.__get_filtered_data()[CASES])
+    def get_n_ctrls(self):
+        return sum(self.__get_filtered_data()[CTRLS])
     
     def get_ref_ints(self):
         """Returns a `list` indicating the nucleotide type of the reference (`REF`) sequence.\\
@@ -168,10 +211,13 @@ class VcfDataWrapper:
         df = self.__get_filtered_df()
         return df["REF"].to_numpy()
     
+    def get_alts(self):
+        alts =  self.__get_filtered_data()[ALT]
+        mask = [all(col == "") for col in alts.T]
+        return alts[:,mask]
+    
     def get_alt_int(self):
-        _alts = np.array([alleles_to_numbs(alts) for alts in self.data[ALT][self.__get_filtered_df().index]])
-        filter_mask = np.array([np.max(_alts,axis=0) >= 0][0]) # filter out empty columns
-        _alts = _alts[:,filter_mask] # Put samples on the rows in descending order
+        _alts = np.array([alleles_to_numbs(alts) for alts in self.get_alts()])
         return _alts
 
     def get_pos(self):
@@ -181,10 +227,10 @@ class VcfDataWrapper:
     
     def get_file_pos_range(self):
         """Returns (min, max) possible range of genome sequence positons."""
-        self.df = self.df.sort_values(by=["POS"], ascending=True)   ### All the 'by=...' stuff needs: ""
+        self._df = self._df.sort_values(by=["POS"], ascending=True)   ### All the 'by=...' stuff needs: ""
         
-        min_pos = self.df["POS"].iloc[0]
-        max_pos = self.df["POS"].iloc[-1]
+        min_pos = self._df["POS"].iloc[0]
+        max_pos = self._df["POS"].iloc[-1]
         return(min_pos, max_pos)
     
     def set_pos_range(self, min_pos:int, max_pos:int):
@@ -212,13 +258,13 @@ class VcfDataWrapper:
             """
         #Find population-tag samples in all 'samples' data:
                 #  _pop_tag (== target = "NA")     <<<< set by `set_population_tag()`
-        population_tag_samples = [self._pop_tag in eg for eg in self.data[SAMPLES]]
+        population_tag_samples = [self._pop_tag in eg for eg in self._data[SAMPLES]]
         
         # Get zygosity that only has the "population-tag" from the vcf dataframe:
-        zygosity = allel.GenotypeArray(self.data[DATA])[self.df.index,:]
+        zygosity = al.GenotypeArray(self._data[DATA])[self._df.index,:]
         population_zygos = zygosity[:,population_tag_samples]
         self._zygos = population_zygos
-        population_samples = self.data[SAMPLES][population_tag_samples]         ###this should be given to... is this used???
+        population_samples = self._data[SAMPLES][population_tag_samples]         ###this should be given to... is this used???
         
         return self._zygos
     
@@ -238,26 +284,30 @@ class VcfDataWrapper:
 
         # Make case and control arrays
         if len(cases) > 0:
-            self.data[CASES] = np.array([s in cases for s in self.data[SAMPLES]])
+            self._data[CASES] = np.array([s in cases for s in self._data[SAMPLES]])
             if len(ctrls) == 0:
-                self.data[CTRLS] = np.array([not c for c in self.data[CASES]])
+                self._data[CTRLS] = np.array([not c for c in self._data[CASES]])
         
         if len(ctrls) > 0:
-            self.data[CASES] = np.array([s in ctrls for s in self.data[SAMPLES]])
+            self._data[CASES] = np.array([s in ctrls for s in self._data[SAMPLES]])
             if len(cases) == 0:
-                self.data[CASES] = np.array([not c for c in self.data[CTRLS]])
+                self._data[CASES] = np.array([not c for c in self._data[CTRLS]])
 
         if len(cases) == 0 and len(ctrls) == 0:
-            self.data[CASES] = np.array([True for s in self.data[SAMPLES]])
-            self.data[CTRLS] = np.array([False for s in self.data[SAMPLES]])
+            self._data[CASES] = np.array([True for s in self._data[SAMPLES]])
+            self._data[CTRLS] = np.array([False for s in self._data[SAMPLES]])
 
 
 
 
     def __get_filtered_df(self)->DataFrame:
         """Applies all filters and returns a dataframe containing only the desired values."""
-        #if isinstance(self.filtered_df, DataFrame): return self.filtered_df
-        new_df = self.df
+
+
+        if self._df_filtered and self.filtered_df:
+            return self._df
+        
+        new_df = self._df
         
         # filter by position range:
         min,max = self.get_file_pos_range()
@@ -278,26 +328,34 @@ class VcfDataWrapper:
         if self.sort_mode is SortMode.BY_POPULATION:
             new_df = sort_popualtion(new_df)
 
-        self.filtered_df = new_df
+        self._df = new_df
+        self._df_filtered = True
     
         return new_df
     
     def __get_filtered_data(self)->dict:
+        if self._dict_filtered:
+            return self._data
+        
         df = self.__get_filtered_df()
         
-        data = self.slice_v(df.index, self.data, in_place=False)
-        data = self.sort_by_case_ctrl(data=data, in_place=True)
-        return data
+        self._data = self.slice_v(df.index, self._data, in_place=True)
+        self._data = self.__sort_by_case_ctrl(data=self._data, in_place=True)
+        self._dict_filtered = True
+        return self._data
 
-    def __get_filtered_genotype_array(self)->GTArr:
+    def __get_filtered_genotype_array(self, split:bool = False)->GTArr|list[GTArr]:
         """Find the filtered genotype array."""
         data = self.__get_filtered_data()
+        if split:
+            n_ctrls = self.get_n_ctrls()
+            return [GTArr(data[:,:n_ctrls]), GTArr(data[:,n_ctrls:])]
         return GTArr((data[DATA]))
 
     def __get_filtered_samples(self):
         """Find the filtered pos."""
         df = self.__get_filtered_df()
-        return self.data[SAMPLES]
+        return self._data[SAMPLES]
 
     
     def set_sort_by_position(self):
@@ -313,9 +371,9 @@ class VcfDataWrapper:
         sort_mode = SortMode(mode_int)
         self.sort_mode = sort_mode
     
-    def sort_by_case_ctrl(self, data:dict|None = None, in_place:bool = True)->dict:
+    def __sort_by_case_ctrl(self, data:dict|None = None, in_place:bool = True)->dict:
         if data is None:
-            data = self.data
+            data = self._data
         if in_place:
             new_data = data
         else:
@@ -323,9 +381,9 @@ class VcfDataWrapper:
         
         _cases = np.array(data[CASES])
         for key in S_KEYS:
-            new_data[key] = np.concat((data[key][_cases[:]], data[key][data[CTRLS]]),axis=0)
+            new_data[key] = np.concat((data[key][data[CTRLS]], data[key][_cases[:]]),axis=0)
 
-        new_data[DATA] = np.concat((data[DATA][:,data[CASES]], data[DATA][:,data[CTRLS]]),axis=1)
+        new_data[DATA] = np.concat((data[DATA][:,data[CTRLS]], data[DATA][:,data[CASES]]),axis=1)
         return new_data
 
 # Converts and allele character/string to an intagetr
