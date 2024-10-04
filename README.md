@@ -1,16 +1,30 @@
 # Genome_Visualiser
 
 ## Requirements
-- python 3.12.2 or later
-- pip 24.0 or later
-- bcftools
+- [Python](https://www.python.org/downloads/) v3.12.2 or later
+- [pip](https://pypi.org/project/pip/) v24.0 or later
+- [bcftools](https://www.htslib.org/download/) v1.20 or later
 
-> [!NOTE]
-> On some Linux distributions python 3 must be accessed using `python3` instead of `python`. 
+> [!TIP]
+> On some Linux distributions Python v3+ must be accessed using `python3` instead of `python`. 
 > In the case use `python` instead of `python3` for all commands.
 
 
 ## Setup 
+### BCFTools 
+The aplication requires a build of bcftools to search and index files. Bcftools can be installed and downloweded [here](https://www.htslib.org/download/). Once downloaded add bcftools to your list of environmental variables.
+> [!TIP]
+> The bcftools setup instructions are written for posix-based systems (Linux, MacOs).
+> When building with windows, GNU make may be accessed via a different command: for example: `mingw32-make` if distibuted by MSYS.
+> It is recomdned that windows users first complie the executable and the manually move it to its desired location
+
+> [!IMPORTANT]
+> bcftools must be added as an evrionmental variable. To check this use the command:
+> ```bash
+> bcftools --version
+> ```
+
+The system vi
 ### Virtual Environment
 A python [virtual environment](https://docs.python.org/3/library/venv.html) (venv) with all required libraries, listed in [`requirements.txt`](requirements.txt), must be created and activated in order to build or run the application.
 
@@ -40,10 +54,10 @@ To run the visualizer application with python use the command:
 python src/app.py
 ```
 > [!NOTE]
-> The Application will only run if a venv has been created and activated.
+> The Application will only run if a venv (with all the required dependancies) has been created and activated.
 
 ## Build 
-To build an executable application is:
+To build an executable use:
 ```bash
 pyinstaller src/app.py
 ```
