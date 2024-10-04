@@ -8,7 +8,7 @@ from Plot.ViewInfos import ZygoteView, RefView, VarPosView, FrequencyView, MutFr
 
 from VCF.datasetDropDown import DatasetMenu
 
-from Plot.OptionCards import PlotOptionCard, RefOptionCard
+from Plot.OptionCards import PlotOptionCard, RefOptionCard, MutFreqOptionCard
 
 REF_OPT = "Ref. & Alt. Genome"
 ZYGOSITY_OPT = "Sample Zygosity Map"
@@ -70,15 +70,15 @@ class PlotOptionPanel(OptionPanel):
         PlotOptionPanel.__instance = self
 
         # Add plot options
-        self.content.register_option(OptionCtrl(self.content,ZYGOSITY_OPT, ZygoteView))
         self.content.register_option(OptionCtrl(self.content,REF_OPT, option_class=RefOptionCard,option_value=RefView))
-        self.content.register_option(OptionCtrl(self.content,MUTATION_FREQUENCY_OPT, option_value=MutFreqView))
-        self.content.register_option(OptionCtrl(self.content,FREQUENCY_OPT, option_value=FrequencyView))
-        self.content.register_option(OptionCtrl(self.content,POS_OPT, option_value=VarPosView))
-        self.content.register_option(OptionCtrl(self.content,CASE_CTRL_OPT, option_value=CaseCtrlView))
-        self.content.register_option(OptionCtrl(self.content,CASE_CTRL_OPT, option_value=CaseCtrlView))
+        self.content.register_option(OptionCtrl(self.content,ZYGOSITY_OPT, ZygoteView))
+        self.content.register_option(OptionCtrl(self.content,MUTATION_FREQUENCY_OPT, option_class= MutFreqOptionCard, option_value=MutFreqView))
         self.content.register_option(OptionCtrl(self.content,FREQ_BAR_OPT, option_value=MutationBarView))
-
+        self.content.register_option(OptionCtrl(self.content,CASE_CTRL_OPT, option_value=CaseCtrlView))
+        
+        self.content.register_option(OptionCtrl(self.content,POS_OPT, option_value=VarPosView))
+        self.content.register_option(OptionCtrl(self.content,FREQUENCY_OPT, option_value=FrequencyView))
+        
     def __get_views(self)->list[ViewInfo_base]:
         """
         Returns a list of all views and sets there datasets if required.
