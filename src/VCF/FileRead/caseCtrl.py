@@ -12,9 +12,6 @@ class EmptyFileError(ValueError):
 
 def read_case_ctrl(case_path:str)->tuple[list[str],list[str]]:
 
-
-
-
     cases = []
     ctrls = []
     if case_path != '':
@@ -24,7 +21,7 @@ def read_case_ctrl(case_path:str)->tuple[list[str],list[str]]:
             if len(lines) == 0:
                 raise EmptyFileError(f"The file {case_path} is empty")
             
-            split_str = ""
+            split_str = " "
             if case_path[-4:] == ".tsv":
                 split_str = ","
 
@@ -34,7 +31,7 @@ def read_case_ctrl(case_path:str)->tuple[list[str],list[str]]:
             else:
                 cases = [line.split(split_str)[0] for line in lines if is_bool(line.split(split_str)[1]) and str_to_bool(line.split(split_str)[1])]
                 ctrls = [line.split(split_str)[0] for line in lines if is_bool(line.split(split_str)[1]) and not str_to_bool(line.split(split_str)[1])]
-                
+
             f.close()
 
 

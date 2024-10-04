@@ -20,9 +20,11 @@ from .viewInfo import ViewInfo_base
 from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK, X_STACK
 from Util.box import Box
 
+from .__config__ import CASE_COLORS, CTRL_COLORS
+
 # Plotter for zygosity view
 class ZygoteView(VariantGridView):
-    MUTATION_COLORS = ["#00000000","#002164", "g", "y"]
+    MUTATION_COLORS = CASE_COLORS[1:] + CASE_COLORS[1:]
     def __init__(self) -> None:
         super().__init__()
         self.max_weight = 100

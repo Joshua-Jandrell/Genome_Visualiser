@@ -117,12 +117,13 @@ class VcfDataWrapper:
 
         return new_data
         
-    def get_zygosity(self):
+    def get_zygosity(self, split=True):
         """Returns an _`int`_ matrix of zygosities for each sample variant.\\
         0 = no mutation\\
         1 = heterozygous mutation\\
         2 = homozygous mutation\\
-        -1 = no-data
+        -1 = no-data\\
+        NOTE If `split` is set to `True` 
         """
         gt_data = self.__get_filtered_genotype_array()
         self._zygos = gt_data.is_hom_alt()*2 + gt_data.is_het()*1 + gt_data.is_missing()*(-1)
@@ -179,6 +180,13 @@ class VcfDataWrapper:
         zygo_hetero_probability = (((gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*mult
         return zygo_hetero_probability
     
+    def _split_mat_by_cases(self,arr:np.matrix)->tuple[np.matrix, np.matrix]:
+        """Split the given data into control data and case data."""
+        n_ctrls = self.get_n_ctrls()
+        ctrl_data = arr[:,:n_ctrls]
+        case_data = arr[:,n_ctrls:]
+        return ctrl_data, case_data
+
     # Returns a list indicating the nucleotide type of ref sequences
     # 0 = multi-nucleotide, -1 is no-data
     def get_n_samples(self):

@@ -22,22 +22,20 @@ from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK
 
 from Util.box import Box
 
+from .__config__ import ALLELE_COLORS
 
 class RefView(VariantGridView):
     REF_LABEL = "Ref."
     ALT_LABEL = "Alt."
-    # Boundaries   #TODO What boundaries???
     VAR_MAX = 4
     VAR_MIN = -1
     # Annotation limits 
     ANNOTATION_MAX = 500
-    ALLELE_COLORS = ["#00000000","grey", "#29E838", "#E829D8", "#E89829", "#2979E8"]
-
     def __init__(self,plot_alt:bool = True, annotated:bool = True) -> None:
         super().__init__()
         self.plot_alt = plot_alt
         self.annotated = annotated
-        self.allele_colors = colors.ListedColormap(self.ALLELE_COLORS)
+        self.allele_colors = colors.ListedColormap(ALLELE_COLORS)
 
         self._has_key = True
         self._view_type = GRID_TYPE_KEY
