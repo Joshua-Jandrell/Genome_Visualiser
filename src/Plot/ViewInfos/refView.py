@@ -25,6 +25,7 @@ from Util.box import Box
 from .__config__ import ALLELE_COLORS
 
 class RefView(VariantGridView):
+    ALLELE_COLORS = ALLELE_COLORS
     REF_LABEL = "Ref."
     ALT_LABEL = "Alt."
     VAR_MAX = 4

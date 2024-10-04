@@ -46,9 +46,9 @@ class OptionCard(ctk.CTkFrame):
         self.grid_columnconfigure(0,weight=1)
 
         # Pack items in grid
-        self.content.grid(row=1,column=0, rowspan=1,columnspan=2, sticky='nsew')
-        self.label.grid(row=0, column=0, sticky="w",ipadx=20)
-        self.remove_button.grid(row=0,column=1)
+        self.content.grid(row=1,column=0, rowspan=1,columnspan=2, sticky='nsew', pady = 3, padx=3)
+        self.label.grid(row=0, column=0, sticky="w",padx=20, pady=3)
+        self.remove_button.grid(row=0,column=1, padx=5, pady=3)
 
     def reconfigure_option(self, option_key:str|None = None, option_value=None):
         if option_key is not None:

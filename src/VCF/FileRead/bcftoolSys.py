@@ -66,7 +66,7 @@ def make_dataset_file(data_path:str, new_data_path:str, query_str:str="", output
     output_type = output_type.strip(".") # remove '.' from output type to avoid double dots
     data_path = prep_for_bcftools(data_path)
     new_data_path = get_base_pathname(new_data_path)+"."+output_type # Ensure that output has correct file extension 
-    subprocess.call(f"{BCFTOOLS_CMD} view {query_str.strip(" ")} {data_path} -O {get_conversion_char(output_type)} -o {new_data_path}")
+    subprocess.call(f"{BCFTOOLS_CMD} view {query_str.strip(' ')} {data_path} -O {get_conversion_char(output_type)} -o {new_data_path}")
     return new_data_path
 
         

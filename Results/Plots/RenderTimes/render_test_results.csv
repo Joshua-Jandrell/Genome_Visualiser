@@ -1,0 +1,7 @@
+canvas_type,scroll_type,plot_type,n_variants,n_samples,n_values,dpi,resized,plot_time,render_time
+Agg,tkinter_widget,pcolorfast,500,200,100000,100,True,0.0625,22.07813262939453
+Agg,tkinter_widget,pcolormesh,500,200,100000,100,False,0.09376859664916992,6.722019195556641
+Agg,tkinter_widget,matshow,500,200,100000,100,True,0.24999594688415527,18.018924713134766
+Agg,matplotlib_plot,pcolorfast,500,200,100000,100,True,0.04687857627868652,0
+Agg,matplotlib_plot,pcolormesh,500,200,100000,100,False,0.07812166213989258,0
+Agg,matplotlib_plot,matshow,500,200,100000,100,False,0.15625739097595215,0

@@ -14,4 +14,7 @@ class MutFreqOptionCard(PlotOptionCard):
         data_select_menu = self.get_dataset_menu_frame()
         
         # Put dataset menu onto the card using grid manager
-        data_select_menu.grid(row = 0, column=0,padx=5,pady=5)       
+        data_select_menu.grid(row = 0, column=0,padx=5,pady=5)
+        
+        # Configure the background color of the dataset menu frame
+        data_select_menu.configure(bg="lightblue")
