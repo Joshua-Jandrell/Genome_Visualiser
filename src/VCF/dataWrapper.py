@@ -117,17 +117,21 @@ class VcfDataWrapper:
 
         return new_data
         
-    def get_zygosity(self, split=True):
+    def get_zygosity(self, split=False, val_offset = 4):
         """Returns an _`int`_ matrix of zygosities for each sample variant.\\
         0 = no mutation\\
         1 = heterozygous mutation\\
         2 = homozygous mutation\\
         -1 = no-data\\
-        NOTE If `split` is set to `True` 
+        NOTE If `split` is set to `True` then then all numbers of controls (fist matrix) will be increase by `val_offset`
         """
         gt_data = self.__get_filtered_genotype_array()
-        self._zygos = gt_data.is_hom_alt()*2 + gt_data.is_het()*1 + gt_data.is_missing()*(-1)
-        return self._zygos   #.transpose()[::-1,:] # Flip order so that first entry is on the top
+        _zygos = gt_data.is_hom_alt()*2 + gt_data.is_het()*1 + gt_data.is_missing()*(-1)
+        if split:
+            ctrls, cases = self._split_mat_by_cases(_zygos)
+            return ctrls+val_offset, cases
+        else:
+            return _zygos   #.transpose()[::-1,:] # Flip order so that first entry is on the top
     
     def get_mutation_probability(self):
         """ Returns an array of probabilities (0 - 100 %) for any mutation (homo or hetero) occuring in a position, based on the queried data displayed.\\        
@@ -272,10 +276,10 @@ class VcfDataWrapper:
         # Get zygosity that only has the "population-tag" from the vcf dataframe:
         zygosity = al.GenotypeArray(self._data[DATA])[self._df.index,:]
         population_zygos = zygosity[:,population_tag_samples]
-        self._zygos = population_zygos
+        _zygos = population_zygos
         population_samples = self._data[SAMPLES][population_tag_samples]         ###this should be given to... is this used???
         
-        return self._zygos
+        return _zygos
     
     def get_cases(self):
         return self.__get_filtered_data()[CASES]

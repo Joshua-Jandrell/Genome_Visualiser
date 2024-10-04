@@ -4,6 +4,8 @@ import matplotlib as mpl
 from matplotlib.axes import Axes as Axes
 from .variantGridType import VariantGridView, DataWrapper, ViewPos, Y_STACK
 
+from .__config__ import CASE_COLORS, CTRL_COLORS
+
 class MutationBarView(VariantGridView):
     def __init__(self) -> None:
         super().__init__()
@@ -24,17 +26,22 @@ class MutationBarView(VariantGridView):
         hetro_z = dw.get_heterozygous_probability(split=True, format="fraction")
         homo_z = dw.get_homozygous_probability(split=True, format="fraction")
         _y_pts = np.arange(dw.get_n_variants())
+        
+        case_i = 1
+        ctrl_i = 0
+        homo_i = 4
+        hetro_i = 3
         if self._is_main:
             if self.stack_mode == Y_STACK:
                 print("yyyy")
             else:
                 # Plot cases 
-                ax.barh(_y_pts, homo_z[1])
-                ax.barh(_y_pts, hetro_z[1], left=homo_z[1])
+                ax.barh(_y_pts, homo_z[1], color=CASE_COLORS[homo_i])
+                ax.barh(_y_pts, hetro_z[case_i], left=homo_z[case_i], color=CASE_COLORS[hetro_i])
                 ax.grid()
                 if dw.get_n_ctrls() > 0:
-                    ax.barh(_y_pts, -homo_z[0], color="yellow")
-                    ax.barh(_y_pts, -hetro_z[0], left=-homo_z[0], color="green")
+                    ax.barh(_y_pts, -homo_z[ctrl_i], color=CTRL_COLORS[homo_i])
+                    ax.barh(_y_pts, -hetro_z[ctrl_i], left=-homo_z[ctrl_i], color=CTRL_COLORS[hetro_i])
 
                     ax.set_xlim([-1,1])
                 else:
@@ -42,13 +49,13 @@ class MutationBarView(VariantGridView):
 
         else:
             if dw.get_n_ctrls() > 0:
-                ax.barh(_y_pts+0.25, homo_z[1], 0.4, align='center', color='yellow')
-                ax.barh(_y_pts+0.25, hetro_z[1], 0.4, left=homo_z[1], align='center', color='green')
-                ax.barh(_y_pts-0.25, homo_z[0], 0.4, color="yellow")
-                ax.barh(_y_pts-0.25, hetro_z[0], 0.4, left=homo_z[0], color="green")
+                ax.barh(_y_pts+0.25, homo_z[case_i], 0.4, align='center', color=CASE_COLORS[homo_i])
+                ax.barh(_y_pts+0.25, hetro_z[case_i], 0.4, left=homo_z[case_i], align='center', color=CASE_COLORS[hetro_i])
+                ax.barh(_y_pts-0.25, homo_z[ctrl_i], 0.4, color=CTRL_COLORS[homo_i])
+                ax.barh(_y_pts-0.25, hetro_z[ctrl_i], 0.4, left=homo_z[ctrl_i], color=CTRL_COLORS[hetro_i])
             else:
-                ax.barh(_y_pts, homo_z[1])
-                ax.barh(_y_pts, hetro_z[1], left=homo_z[1])
+                ax.barh(_y_pts, homo_z[case_i], color=CASE_COLORS[homo_i])
+                ax.barh(_y_pts, hetro_z[case_i], left=homo_z[case_i], color=CASE_COLORS[hetro_i])
 
                 
 

@@ -24,7 +24,7 @@ from .__config__ import CASE_COLORS, CTRL_COLORS
 
 # Plotter for zygosity view
 class ZygoteView(VariantGridView):
-    MUTATION_COLORS = CASE_COLORS[1:] + CASE_COLORS[1:]
+    MUTATION_COLORS = CASE_COLORS[1:] + CTRL_COLORS[1:]
     def __init__(self) -> None:
         super().__init__()
         self.max_weight = 100
@@ -52,11 +52,13 @@ class ZygoteView(VariantGridView):
         # Get wrapped data and make the plot
         wrapped_data = self.dataset_info.get_data()
 
-        zygos_matrix = wrapped_data.get_zygosity()
+        ctrls, cases = wrapped_data.get_zygosity(split=True)
+        zygos_matrix = np.concat((ctrls,cases),axis=1)
+
         if self.stack_mode == Y_STACK:
             zygos_matrix = np.transpose(zygos_matrix)
 
-        axis.imshow(zygos_matrix, cmap=self.colors, vmax=2, vmin=-1)
+        axis.imshow(zygos_matrix, cmap=self.colors, vmax=6, vmin=-1)
 
         self._do_base_config(axs)      
         self.fit_to_size(size=size) # Not fitting to size must be done AFTER base config
