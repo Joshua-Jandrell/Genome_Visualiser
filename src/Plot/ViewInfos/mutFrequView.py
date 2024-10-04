@@ -7,7 +7,7 @@ from matplotlib import colors
 from Util.box import Box
 from .variantGridType import VariantGridView, ViewInfo_base, ViewPos, Y_STACK
     
-MUTATION_FREQ_SPECTRUM = ['#81C4E7','#CEFFFF','#C6F7D6', '#A2F49B', '#BBE453', '#D5CE04', '#E7B503', '#F19903','#F94902', '#E40515'] #, '#F6790B', '#F94902', ]
+MUTATION_FREQ_SPECTRUM = ['#81C4E7','#CEFFFF','#C6F7D6', '#A2F49B', '#BBE453', '#D5CE04', '#E7B503', '#F19903'] #,'#F94902', '#E40515'] #, '#F6790B', '#F94902', ]
 
 class MutFreqView(VariantGridView):
     """

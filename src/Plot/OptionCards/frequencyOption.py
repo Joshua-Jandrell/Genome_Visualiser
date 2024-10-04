@@ -13,15 +13,12 @@ class FreqOptionCard(PlotOptionCard):
     # Useful constants 
     COUNTS_VALUE = 'counts'
     DENSITY_VALUE = 'density'
-    def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
-        # Stupidly long list of constructor arguments (may be shortened in future)
+    def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 70, corner_radius: int | str | None = 9, border_width: int | str | None = 1, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = "#FFF8DC", border_color: str | Tuple[str] | None = "#CC6677", background_corner_colors: Tuple[str | Tuple[str]] | None = ("#CC6677", "#CC6677", "#CC6677", "#CC6677"), overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
-        # Get the dataset menu frame so that it can be put onto the card
-        data_select_menu = self.get_dataset_menu_frame()
-        # Put dataset menu onto the card using grid manager
-        data_select_menu.grid(row = 0, column=0,padx=5,pady=5)
-
+        self.t = ctk.CTkLabel(self.content ,text= "This displays the density distribution of mutations across the selected set.", wraplength= 150)
+        self.t.grid(row=1, column=1, padx=7, pady=5)
+        
         # Add a segmented to help pick between plotting counts or density 
         counts_toggle = ctk.CTkSegmentedButton(master=self.content, #NB add all new elements to the content of the panel (not the panel itself)
                                                values=[self.COUNTS_VALUE,self.DENSITY_VALUE], # Values that can be selected on segmented button

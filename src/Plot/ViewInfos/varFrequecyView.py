@@ -41,9 +41,9 @@ class FrequencyView(ViewInfo_base):
         bins = np.arange(min, max, bin_size)
         bin_size = int(bin_size)
         if self.plot_density == False:
-            axis.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow
+            axis.hist(x=pos, bins=bins, edgecolor='black', color = '#A2F49B') #DDCC77 <-sand yellow  #A2F49B <- mint green
             axis.set_mouseover(True)
-            axis.set_facecolor('#FEFBE9')
+            axis.set_facecolor('#FEFBE9')  #FEFBE9 <- pale biege
             axis.set_xlabel('Chromosome position (bp)')
             axis.set_ylabel('Variant count, bp$^{-1}$')
             axis.set_title(f'Number of Mutations per {bin_size} positions')
@@ -54,7 +54,7 @@ class FrequencyView(ViewInfo_base):
             h, _ = np.histogram(pos, bins=bins)
             y = h / bin_size
 
-            axis.bar(_[:-1], y, width=np.diff(_), align='edge', edgecolor='black', color='#CC6677')
+            axis.bar(_[:-1], y, width=np.diff(_), align='edge', edgecolor='black', color='#CC6677') #CC6677 <- rose
             axis.set_mouseover(True)
             axis.set_facecolor('#E8ECFB')
             axis.set_xlabel('Chromosome position (bp)')
