@@ -21,7 +21,7 @@ else
     source "$VENV"/"$BIN"/activate
 fi
 
-if [ ! -f 'src/assets/bin/bcftools.exe']; then
+if [ ! -f "src/assets/bin/bcftools.exe" ]; then
     echo "=== Building bcftools ==="
     "$PYTHON" build_bcftools.py
 fi
