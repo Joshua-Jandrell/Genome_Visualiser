@@ -1,6 +1,8 @@
 # This script contains option controllers for selectable plot views
 
 from typing import Tuple
+import customtkinter as ctk
+
 from UI.optionPanel import OptionCtrl, OptionCard, OptionPanel
 from Plot.ViewInfos import DataSetInfo, ViewInfo_base, ZygoteView, RefView, VarPosView, FrequencyView, MutFreqView, CaseCtrlView, MutationBarView
 
@@ -48,24 +50,35 @@ class PlotOptionPanel(OptionPanel):
 
 
     def __init__(self, master, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
-        super().__init__(master, True, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, text="Plots", add_text="New plot", **kwargs)
+        _swaps = False
+        super().__init__(master, _swaps, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, text="Plot", add_text="New plot", **kwargs)
 
 
         # Reposition some elements to fit dataset dropdown
-        self._opt_add_button.grid(row=0, column=2)
+        self._opt_add_button.grid_forget()
         self.content.grid(row=1, column=0, columnspan=3)
 
+        # Configure gird columns
+        self.grid_columnconfigure(1, weight=1)
+
+        # Make dataset dropdown label
+        _dropdown_label = ctk.CTkLabel(self, text="Dataset:", justify='right')
 
         # Make dataset dropdown 
         self._dataset_menu = DatasetMenu(self, width=self.BUTTON_W*2, height=self.BUTTON_H,
                                          command=self.__on_dataset_select)
+        
 
-        # Place dataset dropdown menu
-        self._dataset_menu.grid(row=0, column=1)
+        # Place dataset dropdown menu and label
+        _dropdown_label.grid(row=0, column=1, sticky="w", padx=0)
+        self._dataset_menu.grid(row=0, column=2)
 
         # There should only be one instance
         assert(not isinstance(PlotOptionPanel.__instance, PlotOptionPanel))
         PlotOptionPanel.__instance = self
+
+        # Set option list to toggle all view options as they are register (to create plot cards)
+        self.content.set_toggle_on_register(True)
 
         # Add plot options
         self.content.register_option(OptionCtrl(self.content,REF_OPT, option_class=RefOptionCard,option_value=RefView))

@@ -1,19 +1,20 @@
 # This script contains base the classes and functions for a plot type selection tkinter menu
 from typing import Tuple, Any, Callable
-from enum import Enum 
 import customtkinter as ctk
-import tkinter as tk
 
 from Util.event import Event
 
 from UI.dropDown import DropDown
+
+import UI._ui_config_ as _ui_config_
 
 # An option card that can be displayed in an option list.
 # This object must be a child on an OptionList 
 class OptionCard(ctk.CTkFrame):
     BUTTON_W = 20
     BUTTON_H = 20
-    def __init__(self, master, option_ctrl, option_key:str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master, option_ctrl, option_key:str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, 
+                 toggleable = False, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
         assert(isinstance(option_ctrl,OptionCtrl))
@@ -23,6 +24,7 @@ class OptionCard(ctk.CTkFrame):
         self.value = option_value
         self.ctrl = option_ctrl
         self.index = -1 # Holds the grid row/colum of the list managing the option
+        self._toggleable = toggleable
 
         # Even that can be be called whenever the option card or its value are updated
         self.update_event = Event()
@@ -33,9 +35,14 @@ class OptionCard(ctk.CTkFrame):
         self.update_event.invoke(self)
         ```
         """
-
+        self._selected_var = ctk.BooleanVar(value=True)
         # Create panels and buttons
-        self.remove_button = ctk.CTkButton(self,text="x", command=self.deselect, width=self.BUTTON_W, height=self.BUTTON_H)
+        if not toggleable:
+            self.deselected_button = ctk.CTkButton(self,text="x", command=self.deselect, width=self.BUTTON_W, height=self.BUTTON_H)
+        else:
+            #self.deselected_button = ctk.CTkSwitch(self, text="Active",command=self._toggle)
+            self.deselected_button = ctk.CTkCheckBox(self, text="", width=self.BUTTON_W, height=self.BUTTON_H, checkbox_width=self.BUTTON_W, checkbox_height=self.BUTTON_H,
+                                                     variable=self._selected_var)
         # Create panel content
         self.content = ctk.CTkFrame(self,fg_color="transparent",width=0, height=self._desired_height-2*self.BUTTON_H) # set width and hight to avoid massive expansion
         # Create label
@@ -48,7 +55,7 @@ class OptionCard(ctk.CTkFrame):
         # Pack items in grid
         self.content.grid(row=1,column=0, rowspan=1,columnspan=2, sticky='nsew', pady = 3, padx=3)
         self.label.grid(row=0, column=0, sticky="w",padx=20, pady=3)
-        self.remove_button.grid(row=0,column=1, padx=5, pady=3)
+        self.deselected_button.grid(row=0,column=1, padx=5, pady=3)
 
     def reconfigure_option(self, option_key:str|None = None, option_value=None):
         if option_key is not None:
@@ -59,14 +66,35 @@ class OptionCard(ctk.CTkFrame):
 
         self.update_event.invoke(self)
 
+    def toggle_on(self):
+        if not self._toggleable:
+            raise Exception("Attempt to toggle non-toggalabale option card.")
+        
+        self._selected_var.set(True)
+        self.update_event.invoke(self)
+
+    def toggle_off(self):
+        if not self._toggleable:
+            raise Exception("Attempt to toggle non-toggalabale option card.")
+        
+        self._selected_var.set(False)
+        self.update_event.invoke(self)
+
+    def is_toggleable(self)->bool:
+        return self._toggleable
+
+    def is_selected(self)->bool:
+        return self._selected_var.get()
+    
     def deselect(self):
         self.ctrl.deselect(self)
 
-        # Remove all listeners form update event
-        self.update_event.remove_all()
+        if not self._toggleable:
+            # Remove all listeners form update event
+            self.update_event.remove_all()
 
-        # Set value to be none to avoid hanging references (MUST be done AFTER deselection from control)
-        self.value = None 
+            # Set value to be none to avoid hanging references (MUST be done AFTER deselection from control)
+            self.value = None 
     def set_value(self,value):
         self.value = value
 
@@ -85,7 +113,7 @@ class OptionCard(ctk.CTkFrame):
 
 # Class used to spawn in new option panels
 class OptionCtrl():
-    def __init__(self,option_list,key, option_value:Callable|Any|None = None, option_class:type = OptionCard):
+    def __init__(self,option_list,key, option_value:Callable|Any|None = None, option_class:type = OptionCard, toggle_to:bool|None = None):
         """
         Create and option control that will add options to the specified option list.\n
         The option card will be assigned the value of `option_value` or the return value of `option_value` if it is a callable.
@@ -101,23 +129,45 @@ class OptionCtrl():
         self.__opt_class = option_class
         self.__opt_value = option_value
 
+        # Toggle option on an off if required
+        self._toggle_card:OptionCard|None = None
+        if toggle_to is not None:
+            self._toggle_card = self.select()
+        if toggle_to == False:
+            # Toggle back off again
+            self.deselect(self._toggle_card)
+
+
         # Register option control
         option_list.register_option(self)
 
+        
+
     # Select an option and add it to the option list
     def select(self)->OptionCard:
-        opt = self.make_option_card()
-        self.option_list._add_option_card(opt)
+        if self._toggle_card is None:
+            opt = self.make_option_card()
+            self.option_list._add_option_card(opt)
+        else:
+            opt = self._toggle_card
+            opt.toggle_on()
+
         self.count += 1
 
         return opt
 
     def deselect(self,opt:OptionCard):
-        self.option_list._remove_option_card(opt)
+
+        if opt.is_toggleable():
+            if self._toggle_card is None: self._toggle_card = opt
+            opt.toggle_off()
+        else:
+            self.option_list._remove_option_card(opt)
+            # delete option permanently
+            opt.destroy()
+
         self.count -= 1
 
-        # delete option permanently
-        opt.destroy()
 
     # Returns true if option is eligible to be selected 
     def is_selectable(self)->bool:
@@ -174,7 +224,9 @@ class OptionPanel(ctk.CTkFrame):
 
     def make_title(self):
         self.title_txt = ctk.CTkLabel(master=self,
-                                      text=self._text)
+                                      text=self._text,
+                                      font=_ui_config_.get_h1())
+        self.title_txt._font.configure()
         
     # Creates the basic dropdown button to add new plot types
     def __make_add_button(self):
@@ -202,11 +254,12 @@ class OptionPanel(ctk.CTkFrame):
     def select_option(self,key:str)->OptionCard:
         return self.content.select_option(key=key)
 
-#class ListChangeType(Enum)
+
 
 
 class OptionList(ctk.CTkScrollableFrame):
-    def __init__(self, master, has_swaps:bool = True, opts_update_command:Callable[[],Any]|None=None, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master, has_swaps:bool = True, opts_update_command:Callable[[],Any]|None=None, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None,
+                 toggle_on_register:bool = False,  **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
         
         # Configure local valriables
@@ -217,6 +270,7 @@ class OptionList(ctk.CTkScrollableFrame):
         self.swap_buttons = []
         self.option_index = 0 # the row for the next option to be added 
         self._has_swaps = has_swaps
+        self._toggle_on_register = toggle_on_register
 
         # configure content grid layout
         self.grid_columnconfigure(0,weight=1)
@@ -224,6 +278,9 @@ class OptionList(ctk.CTkScrollableFrame):
         
         # Create an event to be called when options are updated
         self.update_event = Event()
+
+    def set_toggle_on_register(self,value:bool):
+        self._toggle_on_register = value
 
     def destroy(self):
         self.update_event.remove_all()
@@ -237,6 +294,10 @@ class OptionList(ctk.CTkScrollableFrame):
     def register_option(self, option_ctrl:OptionCtrl):
         self.opt_ctrls[option_ctrl.key] = option_ctrl
 
+        if self._toggle_on_register:
+            _dummy = option_ctrl.select()
+            option_ctrl.deselect(_dummy)
+
         # Invoke the command for option registration
         if self.opts_update_command is not None:
             self.opts_update_command()
@@ -246,7 +307,8 @@ class OptionList(ctk.CTkScrollableFrame):
         vals = []
         for opt in self.active_opt_cards:
             assert(isinstance(opt,OptionCard))
-            vals.append(opt.value)
+            if opt.is_selected():
+                vals.append(opt.value)
         return vals
     
     def get_opt_count(self)->int:
