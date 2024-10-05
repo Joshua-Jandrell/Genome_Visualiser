@@ -1,3 +1,4 @@
+import customtkinter as ctk
 from Plot.OptionCards import PlotOptionCard, OptionCard
 from Plot.ViewInfos import ZygoteView
 from typing import Tuple
@@ -9,11 +10,13 @@ class ZygoOptionCard(PlotOptionCard):
     # Useful constants 
     COUNTS_VALUE = 'counts'
     DENSITY_VALUE = 'density'
-    def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = None, border_color: str | Tuple[str] | None = None, background_corner_colors: Tuple[str | Tuple[str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 70, corner_radius: int | str | None = 10, border_width: int | str | None = 1, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = '#FEF65B', border_color: str | Tuple[str] | None = '#3DA13F', background_corner_colors: Tuple[str | Tuple[str]] | None = ('#3DA13F', '#3DA13F', '#3DA13F', '#3DA13F'), overwrite_preferred_drawing_method: str | None = None, **kwargs):
     #def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 90, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str = "transparent", fg_color = None, border_color = None, background_corner_colors = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         # Stupidly long list of constructor arguments (may be shortened in future)
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
+        self.t = ctk.CTkLabel(self.content ,text= "This view displays the zygosity of a mutation for each sample across the selected set.", wraplength= 290)
+        self.t.pack()
         # # Add a segmented to help pick between plotting counts or density 
         # counts_toggle = ctk.CTkSegmentedButton(master=self.content, #NB add all new elements to the content of the panel (not the panel itself)
         #                                        values=[self.COUNTS_VALUE,self.DENSITY_VALUE], # Values that can be selected on segmented button

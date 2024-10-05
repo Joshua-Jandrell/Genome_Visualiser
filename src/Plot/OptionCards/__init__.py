@@ -10,3 +10,4 @@ from Plot.OptionCards.frequencyOption import FreqOptionCard
 from .refOption import RefOptionCard
 from .posCard import PosOptionCard
 from Plot.OptionCards.mutfreqCard import MutFreqOptionCard
+from .casecntrlCard import CasecntrlOptionCard
