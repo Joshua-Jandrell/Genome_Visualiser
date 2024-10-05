@@ -11,3 +11,4 @@ from .refOption import RefOptionCard
 from .posCard import PosOptionCard
 from Plot.OptionCards.mutfreqCard import MutFreqOptionCard
 from .casecntrlCard import CasecntrlOptionCard
+from .mutbarCard import MutationBarOptionCard
