@@ -1,8 +1,9 @@
 # This script contains simple classes for data fetching and selection
 import subprocess, os
-import allel as al
 from typing import Literal
-BCFTOOLS_CMD = "bcftools"
+
+from _config_ import BCFTOOLS_CMD
+
 #from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 
 def prep_for_bcftools(file_path:str)->str:

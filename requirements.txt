@@ -6,3 +6,9 @@ pandas==2.2.2
 
 # For building app install 
 pyinstaller==6.10.0
+
+# For app an build config files
+toml==0.10.2
+
+# For building and installing bcftools
+wget==3.2

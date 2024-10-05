@@ -1,12 +1,40 @@
-# Genome_Visualiser
+# Genome Visualiser
+
+## Quick Build and Run
+To build the genome visualizer app use the command:
+```bash
+bash build.sh
+```
+> [!NOTE]
+> This command will automatically set install all required Python librates to `.venv/` and a bcftools build to `src/assets/bin/`.
+
+After the build is completed the app executable can be run using:
+```bash
+dist/app/Genome\ Visualizer.exe 
+```
+To run un-packaged Python scripts activate `.venv` and run the command:
+```bash
+python src/app.py
+```
+> [!TIP]
+> If you have run `build.sh` the `.vevn/` directory will have been created and can be activated using:
+> ```bash 
+> source .venv/bin/activate # On Linux/MacOS/Unix
+> ```
+> or 
+> ```bash
+> source .venv/Script/activate # On Windows
+> ```
+> If `build.sh` has not been run, follow the [setup instructions](#make-the-virtual-environment) to create a new venv.
+
 
 ## Requirements
-The visulsier app requires the follwing to be configured, run, and packaged:
+The visulsier app requires the following to be configured, run, and packaged:
 - [Python](https://www.python.org/downloads/) v3.12.2+
 - [pip](https://pypi.org/project/pip/) v24.0+
 - gcc compiler with [GNU make](https://www.gnu.org/software/make/) OR [bcftools](https://www.htslib.org/download/) v1.20+ pre-installed on system.
 - Pyhon [virtual environment](https://docs.python.org/3/library/venv.html) (venv) and bcftools install configured according to the [setup instructions](#Setup).
-- All pre-requisites for the (automatically installed) python librabies listed in [`requirements.txt`](requirements.txt). 
+- All pre-requisites for the (automatically installed) python libraries listed in [`requirements.txt`](requirements.txt). 
 
 > [!TIP]
 > If using Windows [MSYS](https://www.msys2.org/), a Windows native (non-posix) version of GNU make may be installed with the command `mingw32-make`.
@@ -20,24 +48,24 @@ The visulsier app requires the follwing to be configured, run, and packaged:
 ## Setup 
 The aplication must be run in an active [virtual environment](https://docs.python.org/3/library/venv.html) (venv) with the required libraies installed. A build of [bcftools](https://www.htslib.org/download/) must also be configured.
 ### Make the Virtual Environment
-To create a [venv](https://docs.python.org/3/library/venv.html) in the `.venv/` directory;  acitivate it; and install all required python libraires use one of the following sets of (operating system dependant) bash commands.
+To create a [venv](https://docs.python.org/3/library/venv.html) in the `.venv/` directory;  activate it; and install all required python libraries use one of the following sets of (operating system dependant) bash commands:
 #### Build for Linux/MacOs and other Unix-like systems:
 ```bash
-python3 venv .venv                 # Create venv in .venv/ directory.
+python3 -m venv .venv                 # Create venv in .venv/ directory.
 source .venv/bin/activate          # Activate venv.
 pip install -r requirements.txt    # Install requirments.
 ```
 #### Build for Windows:
 ```bash
-python venv .venv                 # Create venv in .venv/ directory.
+python -m venv .venv                 # Create venv in .venv/ directory.
 source .venv/Scripts/activate     # Activate venv.
 pip install -r requirements.txt   # Install requirments.
 ```
 
 ### Install Bcftools 
-A build of bcftools to search and index files. This can either be a [local build](#Local-build) or a [pre-exisiting install](#Existing-build) configured as an evironmental vriable. If you intend to buidl and package the app as an executable a local build is strongly reccomended.
+A build of bcftools to search and index files. This can either be a [local build](#Local-build) or a [pre-existing install](#Existing-build) configured as an environmental path variable. If you intend to build and package the app as an executable a local build is strongly recommended.
 #### Local build
-A local build of bcftools can be acutaomtically compiled and installed in the `src/aseerts/bin/` directory with:
+A local build of bcftools can be automatically compiled and installed in the `src/assets/bin/` directory with:
 ```bash
 python build_bcftools.py          # Replace python with python3 if required.
 ```
@@ -46,7 +74,7 @@ python build_bcftools.py          # Replace python with python3 if required.
 > The executable must be copied to `src/aseerts/bin/` after compliation.
 
 #### Existing build
-To use a pre-exisitng install of bcftools set `local = false` in [`config.toml`](config.toml).
+To use a pre-existing install of bcftools set `local = false` in [`config.toml`](config.toml).
 
 > [!WARNING]
 > This will only work if bcftools ins accesable as an environkental veirbale.
@@ -57,10 +85,10 @@ To use a pre-exisitng install of bcftools set `local = false` in [`config.toml`]
 > ```
 
 > [!CAUTION]
-> If you with to build and distribute the visuslider as an executable a [local build](#Local-build) must be used.
+> If you with to build and distribute the app as an executable a [local build](#Local-build) must be used.
 
 ## Run the App
-To run the app user the comamnd:
+To run the app user the command:
 ```bash
 python src/app.py         # Replace python with python3 if required.
 ```

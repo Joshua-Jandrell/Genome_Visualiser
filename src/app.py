@@ -22,9 +22,11 @@ from Plot.plotInfo import ViewInfo_base
 from autoPlotter import AutoPlotter
 from Plot.keyCanvas import KeyCanvas
 
-
 import pandas as pd # For set to stop deprecation 
 pd.set_option('future.no_silent_downcasting', True)
+
+# Used to configure the app settings and paths
+import _config_, os
 
 # Constants
 DEFAULT_WIDTH = 1200
@@ -52,6 +54,9 @@ class App(ctk.CTk):
         App.instance = self
 
         self.title("Genome Visualizer")
+
+        # Give app an icon 
+        self.iconbitmap(os.path.join(_config_.IMG_PATH, 'icon.ico'))
 
         # set size app window
         self.geometry(f"{DEFAULT_WIDTH}x{DEFAULT_HIGHT}")

@@ -1,0 +1,7 @@
+[bcftools]
+local = true
+path = "assets/bin/bcftools.*"
+
+[assets]
+images = "assets/img/"
+executables = "assets/bin"
