@@ -12,8 +12,7 @@ with open(os.path.join(BASE_PATH,'config.toml'), 'r') as f:
     config = toml.load(f)
 
 # ==== Configure bcf tools ====
-
-BCFTOOLS_PATH:str = os.path.join(BASE_PATH, config['bcftools']['path'])
+BCFTOOLS_PATH:str = os.path.realpath(os.path.join(BASE_PATH, config['bcftools']['path']))
 """The path to local bcftools erectable, if it exists."""
 
 BCFTOOLS_CMD:str=BCFTOOLS_PATH

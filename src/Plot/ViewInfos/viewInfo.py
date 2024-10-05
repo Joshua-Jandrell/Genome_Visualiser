@@ -119,6 +119,10 @@ class ViewInfo_base:
     def get_desired_width(self)->list[int]:
         return [500]
     
+    def get_plot_name(self)->str:
+        """Returns the name of the plot.\n"""
+        return "Plot"
+    
 
     
     

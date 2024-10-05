@@ -20,7 +20,7 @@ from .viewInfo import ViewInfo_base
 from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK, X_STACK
 from Util.box import Box
 
-from .__config__ import CASE_COLORS, CTRL_COLORS
+from ._plot_config_ import CASE_COLORS, CTRL_COLORS
 
 # Plotter for zygosity view
 class ZygoteView(VariantGridView):

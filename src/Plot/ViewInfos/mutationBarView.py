@@ -4,7 +4,7 @@ import matplotlib as mpl
 from matplotlib.axes import Axes as Axes
 from .variantGridType import VariantGridView, DataWrapper, ViewPos, Y_STACK
 
-from .__config__ import CASE_COLORS, CTRL_COLORS
+from ._plot_config_ import CASE_COLORS, CTRL_COLORS
 
 class MutationBarView(VariantGridView):
     def __init__(self) -> None:

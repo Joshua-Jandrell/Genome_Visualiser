@@ -61,11 +61,17 @@ class VariantGridView(ViewInfo_base):
         """
         for _ax in axs:
             _ax.yaxis.set_tick_params(labelleft=False, left=False)
+            _ax.xaxis.set_tick_params(labeltop=False, labelbottom=False, top=False, bottom=False)
 
+        # Configure y axis labels 
         if self.is_fist_in_set() and self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
             # Set axis title
             axs[0].set_ylabel("Variant Position", ha='left')
             self.make_y_labels(axs[0],)
+
+        # Configure x labels 
+        if self.stack_mode == Y_STACK:
+            print("good")
 
 
     def make_y_labels(self, ax:Axes):

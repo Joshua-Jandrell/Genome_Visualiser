@@ -4,6 +4,7 @@ from typing import Literal
 
 from _config_ import BCFTOOLS_CMD
 
+print(BCFTOOLS_CMD)
 #from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 
 def prep_for_bcftools(file_path:str)->str:

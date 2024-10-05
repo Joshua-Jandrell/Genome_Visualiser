@@ -22,7 +22,7 @@ from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK
 
 from Util.box import Box
 
-from .__config__ import ALLELE_COLORS
+from ._plot_config_ import ALLELE_COLORS
 
 class RefView(VariantGridView):
     ALLELE_COLORS = ALLELE_COLORS

@@ -1,6 +1,6 @@
 [bcftools]
 local = true
-path = "assets/bin/bcftools.*"
+path = "assets/bin/bcftools.exe"
 
 [assets]
 images = "assets/img/"
