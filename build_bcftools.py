@@ -19,8 +19,7 @@ def install_bcftools():
     # Download file
     print(f"> Downloading bcftools version {VERSION}:")
     wget.download(BCFTOOLS_URL)
-    print("\n=============================================")
-    print("Download completed.")
+    print("Download completed.\n")
 
     # Extract contents
     BCFTOOLS_FILE = os.path.basename(BCFTOOLS_URL)
@@ -31,14 +30,13 @@ def install_bcftools():
     try:
         subprocess.run(f"{make_cmd} --version", stdout = subprocess.DEVNULL)
     except:
-        print(f"{make_cmd} not found.")
         # try again with possible cmd for windows device
         make_cmd = 'mingw32-make'
         try:
             subprocess.run(f"{make_cmd} --version", stdout = subprocess.DEVNULL)
             print(f"{make_cmd} detected.")
         except:
-            print("No version of cmake detected: cannot build executable.\n Please attempt manual install.")
+            print("No version of cmake detected: cannot build executable.")
     finally:
         print(f"> Building executable with {make_cmd}:")
 
@@ -48,6 +46,7 @@ def install_bcftools():
 
         # Find and move .exe to desired location
         _tmp_bcf_tool_path = os.path.join(BASE_PATH,BCFTOOLS_DIR,'bcftools.exe')
+        os.makedirs(os.path.dirname(_target_path), exist_ok=True)
         shutil.move(_tmp_bcf_tool_path, _target_path)
 
         print("=============================================\n")
