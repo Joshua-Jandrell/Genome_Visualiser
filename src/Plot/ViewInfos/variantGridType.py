@@ -69,9 +69,18 @@ class VariantGridView(ViewInfo_base):
             axs[0].set_ylabel("Variant Position", ha='left')
             self.make_y_labels(axs[0],)
 
-        # Configure x labels 
-        if self.stack_mode == Y_STACK:
-            print("good")
+        # Configure plot labels
+        _ax_names = self.get_plot_names()
+        if self._is_main:
+            for _i, _ax in enumerate(axs):
+                if len(_ax_names) > _i:
+                    _ax.set_title(_ax_names[_i])
+        elif self.stack_mode != Y_STACK and self._pos and self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
+            for _i, _ax in enumerate(axs):
+                if len(_ax_names) > _i:
+                    _ax.set_xlabel(_ax_names[_i], va='top', rotation=90)
+                    _ax.xaxis.set_label_position('top')
+            
 
 
     def make_y_labels(self, ax:Axes):
@@ -174,6 +183,7 @@ class VariantGridView(ViewInfo_base):
         self._move_y(y_pt)
     
     def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
+        self._do_base_config(axs)
         self.active_axis = axs[0]
         self.fit_to_size(size)
         return super().make_plots(axs, size)

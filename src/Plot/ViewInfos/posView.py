@@ -12,7 +12,7 @@ class VarPosView(VariantGridView):
     def __init__(self) -> None:
         super().__init__()
         self._pos = ViewPos.LEFT
-    def get_desired_hight(self) -> list[int]:
+    def _get_samples_size(self) -> list[int]:
         return [self.ideal_block_size]
 
     def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
@@ -23,10 +23,8 @@ class VarPosView(VariantGridView):
             pos_mat = np.transpose(pos_mat)    
 
         ax.imshow(pos_mat, cmap='plasma')
-        
-        if self.order_in_set == 0:
-            self.fit_to_size(size=size)
-        
-        self._do_base_config(axs)
-
+              
         return super().make_plots(axs, size)
+    
+    def get_plot_names(self) -> [str]:
+        return ['Pos']

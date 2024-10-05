@@ -13,7 +13,7 @@ from VCF.globalDatasetManger import GlobalDatasetManager
 
 from VCF.dataWrapper import VcfDataWrapper, SortMode
 from VCF.datasetEditFrames import DatasetFilterFrame
-from Plot.plotInfo import ViewInfo_base
+from Plot.ViewInfos import ViewInfo_base
 
 
 # Panel used to add and remove Datasets and the filter options of each "Dataset".

@@ -9,7 +9,7 @@ from UI.deafultSettings import Dimenations
 
 from matplotlib.figure import Figure 
 
-from Plot.plotInfo import ViewPlotter, ViewInfo_base
+from Plot.ViewInfos.viewInfo import ViewInfo_base
 from VCF.dataSetConfig import DataSetConfig
 
 class KeyCanvas(ctk.CTkFrame):

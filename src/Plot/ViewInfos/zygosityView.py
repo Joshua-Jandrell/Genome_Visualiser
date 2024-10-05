@@ -84,3 +84,6 @@ class ZygoteView(VariantGridView):
             # tab.auto_set_font_size([False, False])
             # tab.auto_set_column_width([0, 1])
             key_ax.axis('off')
+
+    def get_plot_names(self) -> [str]:
+        return ["Zygosity Map"]

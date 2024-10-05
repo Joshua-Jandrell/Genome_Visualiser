@@ -73,8 +73,6 @@ class RefView(VariantGridView):
             self.make_allele_plot(axs[1], data_matrix)
             axs[1].set_xlim([self._lim_offset,data_matrix.shape[1]+self._lim_offset])
 
-        self._do_base_config(axs)
-
         return super().make_plots(axs, size)
 
 
@@ -106,3 +104,6 @@ class RefView(VariantGridView):
             key_ax.set_xlabel("")
             key_ax.set_ylabel("")
             key_ax.axis('off')
+
+    def get_plot_names(self) -> [str]:
+        return ['Ref.', 'Alt.']

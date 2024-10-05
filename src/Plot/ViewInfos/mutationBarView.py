@@ -68,3 +68,9 @@ class MutationBarView(VariantGridView):
         if self.stack_mode != Y_STACK:
             return False
         return super().should_add_x_scroll()
+    
+    def get_plot_names(self) -> [str]:
+        if self._is_main:
+            return ["Mutation Frequency"]
+        else:
+            return ["Mut.\nFreq."]

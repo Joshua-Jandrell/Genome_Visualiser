@@ -5,7 +5,7 @@ import customtkinter as ctk
 from UI.optionPanel import OptionCard, OptionCtrl
 from VCF.datasetDropDown import DatasetMenu
 
-from Plot.plotInfo import ViewInfo_base
+from Plot.ViewInfos import ViewInfo_base
 
 
 class PlotOptionCard(OptionCard):

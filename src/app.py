@@ -18,7 +18,7 @@ from VCF.globalDatasetManger import GlobalDatasetManager
 
 from UI.searchPanel import SearchPanel
 
-from Plot.plotInfo import ViewInfo_base
+from Plot.ViewInfos import ViewInfo_base
 from autoPlotter import AutoPlotter
 from Plot.keyCanvas import KeyCanvas
 

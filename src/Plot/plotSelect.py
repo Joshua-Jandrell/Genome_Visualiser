@@ -1,10 +1,8 @@
 # This script contains option controllers for selectable plot views
 
 from typing import Tuple
-import customtkinter as ctk
 from UI.optionPanel import OptionCtrl, OptionCard, OptionPanel
-from Plot.plotInfo import DataSetInfo, ViewInfo_base
-from Plot.ViewInfos import ZygoteView, RefView, VarPosView, FrequencyView, MutFreqView, CaseCtrlView, MutationBarView
+from Plot.ViewInfos import DataSetInfo, ViewInfo_base, ZygoteView, RefView, VarPosView, FrequencyView, MutFreqView, CaseCtrlView, MutationBarView
 
 from VCF.datasetDropDown import DatasetMenu
 

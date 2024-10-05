@@ -9,8 +9,7 @@ from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavToolbar
 from matplotlib.figure import Figure 
 from matplotlib.gridspec import GridSpec as GridSpec
 
-from Plot.ViewInfos.viewInfo import get_view_sets, ViewSetManager
-from Plot.plotInfo import ViewPlotter, ViewInfo_base
+from Plot.ViewInfos.viewInfo import get_view_sets, ViewSetManager, ViewInfo_base
 from VCF.dataSetConfig import DataSetConfig
 
 from Plot.keyCanvas import KeyCanvas
