@@ -1,71 +1,79 @@
 # Genome_Visualiser
 
 ## Requirements
-- [Python](https://www.python.org/downloads/) v3.12.2 or later
-- [pip](https://pypi.org/project/pip/) v24.0 or later
-- [bcftools](https://www.htslib.org/download/) v1.20 or later
+The visulsier app requires the follwing to be configured, run, and packaged:
+- [Python](https://www.python.org/downloads/) v3.12.2+
+- [pip](https://pypi.org/project/pip/) v24.0+
+- gcc compiler with [GNU make](https://www.gnu.org/software/make/) OR [bcftools](https://www.htslib.org/download/) v1.20+ pre-installed on system.
+- Pyhon [virtual environment](https://docs.python.org/3/library/venv.html) (venv) and bcftools install configured according to the [setup instructions](#Setup).
+- All pre-requisites for the (automatically installed) python librabies listed in [`requirements.txt`](requirements.txt). 
 
 > [!TIP]
-> On some Linux distributions Python v3+ must be accessed using `python3` instead of `python`. 
-> In the case use `python` instead of `python3` for all commands.
+> If using Windows [MSYS](https://www.msys2.org/), a Windows native (non-posix) version of GNU make may be installed with the command `mingw32-make`.
+> This can be used on Windows systems if the regurlar `make` command does not work.
+
+> [!IMPORTANT]
+> On some Unix/Unix-like systems (Linux, MacOS) Python v3+ must be accessed using `python3` instead of `python`. 
+> In the case please use `python` instead of `python3` for all commands listed below to ensure that scripts are executed with Python v3.x.
 
 
 ## Setup 
-### BCFTools 
-The aplication requires a build of bcftools to search and index files. Bcftools can be installed and downloweded [here](https://www.htslib.org/download/). Once downloaded add bcftools to your list of environmental variables.
-> [!TIP]
-> The bcftools setup instructions are written for posix-based systems (Linux, MacOs).
-> When building with windows, GNU make may be accessed via a different command: for example: `mingw32-make` if distibuted by MSYS.
-> It is recomdned that windows users first complie the executable and the manually move it to its desired location
+The aplication must be run in an active [virtual environment](https://docs.python.org/3/library/venv.html) (venv) with the required libraies installed. A build of [bcftools](https://www.htslib.org/download/) must also be configured.
+### Make the Virtual Environment
+To create a [venv](https://docs.python.org/3/library/venv.html) in the `.venv/` directory;  acitivate it; and install all required python libraires use one of the following sets of (operating system dependant) bash commands.
+#### Build for Linux/MacOs and other Unix-like systems:
+```bash
+python3 venv .venv                 # Create venv in .venv/ directory.
+source .venv/bin/activate          # Activate venv.
+pip install -r requirements.txt    # Install requirments.
+```
+#### Build for Windows:
+```bash
+python venv .venv                 # Create venv in .venv/ directory.
+source .venv/Scripts/activate     # Activate venv.
+pip install -r requirements.txt   # Install requirments.
+```
 
-> [!IMPORTANT]
-> bcftools must be added as an evrionmental variable. To check this use the command:
+### Install Bcftools 
+A build of bcftools to search and index files. This can either be a [local build](#Local-build) or a [pre-exisiting install](#Existing-build) configured as an evironmental vriable. If you intend to buidl and package the app as an executable a local build is strongly reccomended.
+#### Local build
+A local build of bcftools can be acutaomtically compiled and installed in the `src/aseerts/bin/` directory with:
+```bash
+python build_bcftools.py          # Replace python with python3 if required.
+```
+> [!TIP]
+> If this above method failes, the bcftools sourc code can be downloded [here](https://www.htslib.org/download/) and manunally compiled.
+> The executable must be copied to `src/aseerts/bin/` after compliation.
+
+#### Existing build
+To use a pre-exisitng install of bcftools set `local = false` in [`config.toml`](config.toml).
+
+> [!WARNING]
+> This will only work if bcftools ins accesable as an environkental veirbale.
+>
+> To check this use the command:
 > ```bash
 > bcftools --version
 > ```
 
-The system vi
-### Virtual Environment
-A python [virtual environment](https://docs.python.org/3/library/venv.html) (venv) with all required libraries, listed in [`requirements.txt`](requirements.txt), must be created and activated in order to build or run the application.
+> [!CAUTION]
+> If you with to build and distribute the visuslider as an executable a [local build](#Local-build) must be used.
 
-To create a new venv in the `~.venv/` directory use the consol command:
+## Run the App
+To run the app user the comamnd:
 ```bash
-python venv .venv
+python src/app.py         # Replace python with python3 if required.
 ```
----
-After the venv has been created it must be activated.
 
-For MacOS or Linux use:
+## Package the App
+To package the app as an executable use the command:
 ```bash
-source .venv/bin/activate
-```
-For widows used:
-```bash
-source .venv/Scripts/activate
-```
----
-To install all required dependencies to the venv with [pip](https://pypi.org/project/pip/) use the command:
-```bash
-pip install -r requirements.txt 
-```
-## Run
-To run the visualizer application with python use the command:
-```bash
-python src/app.py
-```
-> [!NOTE]
-> The Application will only run if a venv (with all the required dependancies) has been created and activated.
-
-## Build 
-To build an executable use:
-```bash
-pyinstaller src/app.py
+pyinstaller app.spec 
 ```
 
 
 
-
-# --- OLD READ ME ---
+## Fetures
 `Version 1.0` of the Genome Visualiser Application supports basic functionality for visualising `.vcf` and `.vcf.gz` files. Unfortunately `.bcf` files are not supported for visualisation. Version 1.0 is best suited for initial Usability Testing, alowing developers to understand which features of the visualiser need to be further developed and improved in future App releases.
 
 ## `Version 1.0` Features:
@@ -85,18 +93,3 @@ pyinstaller src/app.py
 **Sorting the genome dataset by**:
 * [Default] Position (lowest to highest)
 * Quality (high to lowest)
-
-
-## Requirments
-To run the genome visuliser python3 and the required libraries mus be installed. To install these requiremnts in a virtual envrioments (in the directry `.venv`) run the command below:
-```bash
-bash make_venv.sh
-```
-❗NOTE: Some required librbaies like scikit-allele have further requirements which must be satesfied.
-
-## Running
-In order run the genome visuliser use the command:
-```bash
-.venv/Scripts/python.exe ./GVDashboard/app.py
-```
-❗ NOTE there many be issues with reltive script impots, to avoid this please navgate to `./GVDashboard/`.
