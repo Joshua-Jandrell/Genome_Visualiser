@@ -20,7 +20,8 @@ from VCF.dataWrapper import VcfDataWrapper as Wrapper
 from VCF.vcfTest import getData
 from VCF.vcfTest import TEST_FILE
 
-MUTATION_FREQ_SPECTRUM = ['#81C4E7','#CEFFFF','#C6F7D6', '#A2F49B', '#BBE453', '#D5CE04', '#E7B503', '#F6790B', '#F94902', '#E40515']
+# MUTATION_FREQ_SPECTRUM = ['#81C4E7','#CEFFFF','#C6F7D6', '#A2F49B', '#BBE453', '#D5CE04', '#E7B503', '#F6790B', '#F94902', '#E40515']
+MUTATION_FREQ_SPECTRUM = ['#81C4E7','#CEFFFF','#C6F7D6', '#A2F49B', '#BBE453', '#D5CE04', '#E7B503', '#F19903', '#E94C1F', '#D11807'] #, '#F6790B', '#F94902']
 
 def update(val):
     ax.set_ylim(dw.get_n_variants()-val, dw.get_n_variants()-val-span)
@@ -68,11 +69,11 @@ if __name__ == "__main__":
     # Normalize the color scale
     norm = colors.Normalize(vmin=0, vmax=100)
     # Create the colorbar
-    cbar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=ax, orientation='vertical', label="Zygosity Frequency key")
+    cbar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=ax, orientation='horizontal', label="Mutation Probability (%)")
     # Set custom ticks and labels
     ticks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     cbar.set_ticks(ticks)
-    cbar.set_ticklabels([f'{tick}%' for tick in ticks])
+    cbar.set_ticklabels([f'{tick} ' for tick in ticks])
     plt.show()
 
 
