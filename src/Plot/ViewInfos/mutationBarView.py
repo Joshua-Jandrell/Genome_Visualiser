@@ -10,6 +10,8 @@ class MutationBarView(VariantGridView):
     def __init__(self) -> None:
         super().__init__()
         self._pos = ViewPos.LEFT_STAND_IN
+        self._priority = 100
+        self._group_title = "Mutation Frequency"
 
     def _get_samples_size(self) -> list[int]:
         if self._is_main:
@@ -69,7 +71,7 @@ class MutationBarView(VariantGridView):
             return False
         return super().should_add_x_scroll()
     
-    def get_plot_names(self) -> [str]:
+    def get_plot_names(self) -> list[str]:
         if self._is_main:
             return ["Mutation Frequency"]
         else:

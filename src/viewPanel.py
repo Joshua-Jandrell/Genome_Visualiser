@@ -47,6 +47,7 @@ class FigureMount(ctk.CTkFrame):
         # Create scroll bars
         self.vsb = ScrollWidget(self.plot, orientation='vertical')
         self.hsb = ScrollWidget(self.plot, orientation='horizontal')
+        self.hsb2 = ScrollWidget(self.plot, orientation='horizontal') # Needed is special cases where there are two main axes
 
         # Subscribe to scroll events
         self.vsb.scroll_event.add_listener(self.__on_scroll)
@@ -183,8 +184,6 @@ class ViewPanel(ctk.CTkFrame):
         
         # group views into a collection of view sets
         view_sets = get_view_sets(views)
-
-        print(len(view_sets))
         
         # Scale figure based on window size
         _w = self.winfo_width()-X_VIEW_PAD

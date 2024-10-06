@@ -60,9 +60,6 @@ class ZygoteView(VariantGridView):
 
         axis.imshow(zygos_matrix, cmap=self.colors, vmax=6, vmin=-1)
 
-        self._do_base_config(axs)      
-        self.fit_to_size(size=size) # Note fitting to size must be done AFTER base config
-
         return super().make_plots(axs, size)
 
 
@@ -84,5 +81,5 @@ class ZygoteView(VariantGridView):
             # tab.auto_set_column_width([0, 1])
             key_ax.axis('off')
 
-    def get_plot_names(self) -> [str]:
+    def get_plot_names(self) -> list[str]:
         return ["Zygosity Map"]

@@ -33,6 +33,7 @@ class VariantGridView(ViewInfo_base):
         self.ideal_block_size = 20
         self.active_axis:Axes|None = None
         self._view_type = GRID_TYPE_KEY
+        self._group_title = 'Zygoisty Map'
 
         # Data dimensions
         self._n_samps = 0
@@ -73,13 +74,13 @@ class VariantGridView(ViewInfo_base):
             axs[0].set_ylabel("Variant Position", ha='left')
             self.make_y_labels(axs[0],)
 
+        if self.is_on_top():
+            axs[0].set_title(self.get_group_title())
+
         # Configure plot labels
         _ax_names = self.get_plot_names()
-        if self._is_main:
-            for _i, _ax in enumerate(axs):
-                if len(_ax_names) > _i:
-                    _ax.set_title(_ax_names[_i])
-        elif self.stack_mode != Y_STACK and self._pos and self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
+
+        if not self._is_main and (self.stack_mode != Y_STACK and self._pos and self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]):
             for _i, _ax in enumerate(axs):
                 if len(_ax_names) > _i:
                     _ax.set_xlabel(_ax_names[_i], va='top', rotation=90)
@@ -110,13 +111,12 @@ class VariantGridView(ViewInfo_base):
         return [self._n_vars * self.ideal_block_size]
 
     def fit_to_size(self, size:tuple[int,int]):
-        ax = self.active_axis
         if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:
         if self._pos in [ViewPos.TOP, ViewPos.MAIN]:
             x_lim = float(size[0])/float(self.ideal_block_size)
             self._blocks_per_window_x = x_lim
-            ax.set_xlim(self._lim_offset,x_lim+self._lim_offset)
+            self._move_x(0)
         if self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN, ViewPos.MAIN]:
             self._blocks_per_window_y = float(size[1])/float(self.ideal_block_size)
             self._move_y(0)
@@ -216,4 +216,5 @@ class VariantGridView(ViewInfo_base):
         self.active_axis = axs[0]
         self.fit_to_size(size)
         return super().make_plots(axs, size)
+
         

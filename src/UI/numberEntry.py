@@ -97,7 +97,6 @@ class NumberEntry(ctk.CTkEntry):
 
     def __on_focus_out(self, *args):
         valid_value = self._number_variable.get() # note: the number value should always be valid
-        print("aha")
         if self.is_int: valid_value = int(valid_value)
         if str(valid_value) != self._textvariable.get():
             self._textvariable.set(str(valid_value))
@@ -136,8 +135,8 @@ class NumberEntry(ctk.CTkEntry):
         This will also set the other number entry to be below this one
         """
         if other._number_variable is self._number_variable:
-            print("WARNING! Attempt to set variable as above itself!")
-            return
+            raise ValueError("Attempt to set variable as above itself.")
+
         self.entry_below = other
         other.entry_above = self
 

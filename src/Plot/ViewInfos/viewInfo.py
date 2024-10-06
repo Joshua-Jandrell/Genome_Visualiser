@@ -82,6 +82,11 @@ class ViewInfo_base:
         self._is_main = False
         """Set to true if this view is the main view."""
 
+        self._on_top = False
+        """Set to ture if the given view is on top"""
+
+        self._group_title = "Plot group"
+
         self._is_plotted = False
 
     def get_priority(self)->int:
@@ -89,6 +94,8 @@ class ViewInfo_base:
 
     def set_main(self, is_main:bool):
         self._is_main = is_main
+    def get_main(self)->bool:
+        return self._is_main
         
     def get_view_pos(self)->ViewPos:
         return self._pos
@@ -123,9 +130,15 @@ class ViewInfo_base:
     def get_desired_width(self)->list[int]:
         return [500]
     
-    def get_plot_names(self)->[str]:
+    def get_plot_names(self)->list[str]:
         """Returns the name of the plot axes lables.\n"""
         return ["Plot"]
+    
+    def set_group_title(self, title:str):
+        self._group_title = title
+    
+    def get_group_title(self)->str:
+        return self._group_title
     
     def is_plotted(self)->bool:
         """Returns true if the current view has been plotted."""
@@ -143,7 +156,7 @@ class ViewInfo_base:
         """
         self._axs = axs
         self._plot_size = size
-        
+
     def make_key(self, axs, size):
         pass
     def fit_to_size(self,size:tuple[int,int]):
@@ -167,6 +180,12 @@ class ViewInfo_base:
 
     def is_fist_in_set(self):
         return self.order_in_set == 0
+    
+    def set_on_top(self, on_top:bool):
+        self._on_top = on_top
+    def is_on_top(self)->bool:
+        return self._on_top
+
     
     def get_view_type(self):
         return self._view_type
@@ -228,7 +247,7 @@ class ViewSetManager:
         """
         self.is_linked = False
         self.view_type = None
-        self.views:list[ViewInfo_base] = []
+        self.top_views:list[ViewInfo_base] = []
         self.additional_views:list[ViewInfo_base] = []
         self.main_view:ViewInfo_base = None
         self.left_views:list[ViewInfo_base] = []
@@ -259,17 +278,20 @@ class ViewSetManager:
 
         # Add view to correct list depending on intended position
         _pos = view_info.get_view_pos()
-        _view_list = self.views
+        _view_list = self.top_views
         if _pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
             _view_list = self.left_views
 
         if _pos == ViewPos.MAIN:
             if self._has_main():
-                if self.main_view.get_view_pos() == ViewPos.LEFT_STAND_IN:
+                # Check to see if current main is a stand-in
+                if self.main_view.get_view_pos() in [ViewPos.LEFT_STAND_IN, ViewPos.TOP_STAND_IN]:
                     self.main_view.set_main(False)
-                    self.left_views.append(self.main_view)
+                else: raise Exception("Double main view")
             self.main_view = view_info
-            view_info._is_main = True
+            view_info.set_main(True)
+        else:
+            view_info.set_main(False)
 
 
         view_info.order_in_set = len(_view_list)
@@ -279,42 +301,59 @@ class ViewSetManager:
         _view_list.append(view_info)
         self.additional_views += view_info.get_set_views()
 
+
         return True
     
     def get_desired_hight(self):
         """Returns the desired hight of the full view set"""
-        if STACK_MODE == Y_STACK: return sum([sum(view.get_desired_hight()) for view in self.views+self.additional_views])
-        else: return sum(self.views[0].get_desired_hight())
+        if STACK_MODE == Y_STACK: return sum([sum(view.get_desired_hight()) for view in self.top_views+self.additional_views])
+        else: return sum(self.top_views[0].get_desired_hight())
 
     def plot(self, fig:Figure, ax:Axes, size:tuple[int,int], pad_l = LEFT_PADDING, pad_r = RIGHT_PADDING, pad_t = TOP_PADDING, pad_b = BOTTOM_PADDING)->tuple[int, int, Box|None, Box|None]:
         """Plot all views in the view set on the given axes"""
 
         # Find main view 
         if not self._has_main():
-            for view in self.left_views:
-                if view.get_view_pos() == ViewPos.LEFT_STAND_IN:
+            for view in self.left_views + self.top_views:
+                if view.get_view_pos() in [ViewPos.LEFT_STAND_IN, ViewPos.TOP_STAND_IN, ViewPos.MAIN]:
                     if self.main_view is None or self.main_view.get_priority() < view.get_priority():
                         # If there are multiple candidates main views, select the one with the highest priority
+                        if self.main_view is not None:
+                            self.main_view.set_main(False)
                         self.main_view = view
                         view._is_main = True
-                        break
+
 
         # Remove main for view lists 
-        if self._has_main():
-            if self.main_view in self.views: self.views.remove(self.main_view)
-            elif self.main_view in self.left_views: self.left_views.remove(self.main_view)
+        # if self._has_main():
+        #     if self.main_view in self.top_views: self.top_views.remove(self.main_view)
+        #     elif self.main_view in self.left_views: self.left_views.remove(self.main_view)
 
         # Find width of left views
         left_widths = []
         for v in self.left_views:
-            left_widths += v.get_desired_width()
+            if not v.get_main():
+                left_widths += v.get_desired_width()
         left_width = sum(left_widths)
+
 
         # Find hight of top views
         top_hights = []
-        for v in self.views:
-            top_hights += v.get_desired_hight()
+        top_set = False # Latch to see if view is on top
+        for v in self.top_views:
+            if not v.get_main():
+                
+                v.set_on_top(not top_set)
+                # Set top view latch
+                if not top_set:
+                    top_set = True
+
+                # Update view title to match main view 
+                view.set_group_title(self.main_view.get_group_title())
+                top_hights += v.get_desired_hight()
         top_hight = sum(top_hights)
+        if not top_set:
+            self.main_view.set_on_top(not top_set)
 
         # Find dimensions of main view 
         desired_main_width = sum(self.main_view.get_desired_width())
@@ -329,6 +368,9 @@ class ViewSetManager:
         # Get ratios and total length/hight
         w, w_ratios = length_and_ratios([pad_l]+left_widths+[main_w, pad_r])
         h, h_ratios = length_and_ratios([pad_t]+top_hights+[main_h, pad_b])
+
+        # Scale figure padding
+        fig.subplots_adjust(left=pad_l/w, right=1-pad_r/w, top=1-pad_t/h, bottom=pad_b/h)
        
         # Make the main plot
         self.main_view.make_plots([ax],(main_w, main_h))    
@@ -338,7 +380,7 @@ class ViewSetManager:
 
         plot_i = 0
         _axs:list[Axes] = []
-        for view in reversed(self.left_views):
+        for view in reversed([view for view in self.left_views if not view.get_main()]):
             _axes:list[Axes] = []
             _x_size = 0
             for _ in range(view.get_plot_count()):
@@ -355,7 +397,7 @@ class ViewSetManager:
 
         
         plot_i = 0
-        for view in reversed(self.views):
+        for view in reversed([view for view in self.top_views if not view.get_main()]):
             _axes:list[Axes] = []
             _y_size = 0
             for _ in range(view.get_plot_count()):
@@ -366,10 +408,6 @@ class ViewSetManager:
                 _axes.reverse()
             view.make_plots(_axes, size=(main_w, _y_size))
 
-
-        # Scale figure padding
-        self.main_view.fit_to_size(size=(main_w, main_h))
-        fig.subplots_adjust(left=pad_l/w, right=1-pad_r/w, top=1-pad_t/h, bottom=pad_b/h)
 
 
         # Check if main view needs scroll bars
@@ -392,14 +430,7 @@ class ViewSetManager:
             left = 1-w_ratios[-1]
             y_scroll_box = Box(left, top, scroll_w, scroll_h)
 
-        # Set self main view to not be main until re-specified
-        self.main_view.set_main(False)
-
         return w,h, x_scroll_box, y_scroll_box
-
-
-
-        
 
 
 def get_view_sets(view_infos:ViewInfo_base)->list[ViewSetManager]:
