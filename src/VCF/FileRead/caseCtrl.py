@@ -11,7 +11,6 @@ class EmptyFileError(ValueError):
 
 
 def read_case_ctrl(case_path:str)->tuple[list[str],list[str]]:
-    print("ccc here")
     cases = []
     ctrls = []
     if case_path != '':
@@ -24,9 +23,6 @@ def read_case_ctrl(case_path:str)->tuple[list[str],list[str]]:
             split_str = " "
             if case_path[-4:] == ".csv":
                 split_str = ","
-
-                print(lines[0].split(split_str))
-
             # Check to see if a bool-list format is used 
             if len(lines[0].split(split_str)) == 1:
                 cases = lines
@@ -35,8 +31,6 @@ def read_case_ctrl(case_path:str)->tuple[list[str],list[str]]:
                 lines = [line for line in lines if len(line.split(split_str)) >= 2]
                 cases = [line.split(split_str)[0] for line in lines if is_bool(line.split(split_str)[1]) and str_to_bool(line.split(split_str)[1])]
                 ctrls = [line.split(split_str)[0] for line in lines if is_bool(line.split(split_str)[1]) and not str_to_bool(line.split(split_str)[1])]
-                print(cases)
-                print(ctrls)
 
             f.close()
 

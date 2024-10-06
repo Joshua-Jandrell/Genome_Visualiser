@@ -63,8 +63,8 @@ class App(ctk.CTk):
         self.minsize(MIN_WIDTH,MIN_HIGHT)
 
         # Add topbar menu
-        self.menubar = TopMenuBar(master=self)
-        self.config(menu=self.menubar)
+        #self.menubar = TopMenuBar(master=self)
+        #self.config(menu=self.menubar)
 
         
         # Make collapsable side-panels and put them in the app window
@@ -94,6 +94,13 @@ class App(ctk.CTk):
 
         # Add event to define behavior when deleted
         self.protocol("WM_DELETE_WINDOW", self._on_app_delete)
+
+        self.after(0,self.__set_size)
+
+    def __set_size(self):
+        # set size app window
+        self.state('zoomed')
+        #self.resizable(False, False)
 
     def destroy(self):
         GlobalDatasetManager.deregister_all()

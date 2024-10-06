@@ -49,7 +49,7 @@ NUCLEOTIDE_DICT = {
 
 # Conatins vcf query data and returns it in various formats
 class VcfDataWrapper:
-    def __init__(self, vcf_data:dict, df:DataFrame, cases:list[str]=[], ctrls:list[str]=[]) -> None:
+    def __init__(self, vcf_data:dict,chrom:str,cases:list[str]=[], ctrls:list[str]=[]) -> None:
 
         # TPDOD Construct a pandas datafram form dict data 
 
@@ -63,6 +63,7 @@ class VcfDataWrapper:
               
 
         self.first_pos, self.last_pos = self.get_file_pos_range()
+        self._chrom = chrom
         self._pop_tag = None
         
         self.mutation_prob = None
@@ -322,7 +323,9 @@ class VcfDataWrapper:
             return self._df
         
         new_df = self._df
-        
+
+        new_df = new_df[new_df["CHROM"]==self._chrom]
+
         # filter by position range:
         min,max = self.get_file_pos_range()
         if self.first_pos > min or self.last_pos < max:
@@ -393,7 +396,6 @@ class VcfDataWrapper:
         else:
             new_data = {}
         
-        print(data)
         _cases = np.array(data[CASES])
         for key in S_KEYS:
             new_data[key] = np.concat((data[key][data[CTRLS]], data[key][_cases[:]]),axis=0)

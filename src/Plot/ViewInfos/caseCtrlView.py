@@ -26,6 +26,7 @@ class CaseCtrlView(VariantGridView):
         ax:Axes = axs[0]
         _data = np.matrix(dw.get_ctrls()*1)
         ax.imshow(_data, cmap=self._colors, vmin=0, vmax=1)
+        return super().make_plots(axs, size)
     
     def get_plot_names(self) -> list[str]:
         return ["Control samples & Case samples"]

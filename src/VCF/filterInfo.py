@@ -16,6 +16,9 @@ DEFAULT_DISPLAY = 500
 REGION_CMD = '-r'
 INCLUDE_CMD = '-i'
 
+class FilterError(ValueError):
+    pass
+
 
 # Class used to define how bcf filters should be applied
 # Acts as a base class for more advanced data filters
@@ -347,16 +350,18 @@ class DataSetInfo:
             assert(data_path == self.__save_path)
             self.__save_flag = True
 
+
         if self.__should_reload_data():
-            
             # Load datawrapper
             data = read_vcf_data(data_path)
-            df = read_vcf_df(data_path)
+            if data is None:
+                return None
 
             # Get cases and controls 
             cases, ctrls = read_case_ctrl(self._case_path)
 
-            self.dw = DataWrapper(data, df, cases=cases, ctrls=ctrls)
+            chr = f"{self.chr_prefix}{self.__range_filter.chromosome}"
+            self.dw = DataWrapper(data, chr, cases=cases, ctrls=ctrls)
 
             self.__reload_flag = False
 
@@ -368,13 +373,15 @@ class DataSetInfo:
     
     # Range Filter parameters 
     def set_range(self, chromosome:int|None = None, min:int|None = None, max:int|None = None):
-        
         requires_reload = self.__range_filter.min is None or self.__range_filter.max is None
         if not requires_reload and min is not None:
             requires_reload =  self.__range_filter.min > min
         if not requires_reload and max is not None:
              requires_reload = self.__range_filter.max < max
-        self.__reload_flag = requires_reload
+        if not requires_reload and chromosome is not None:
+            requires_reload = self.__range_filter.chromosome != chromosome
+        if requires_reload:
+            self.__reload_flag = True
 
         # Set region reload flag if on a new chromosome
         self.__save_flag = self.__range_filter.chromosome == chromosome
@@ -394,7 +401,11 @@ class DataSetInfo:
     
     # Quality filter parameters 
     def set_quality(self, min:float|None=None, max:float|None=None):
+        if (min is not None and min < self.__quality_filter.min) or (max is not None and max > self.__quality_filter.max):
+            self.__reload_flag = True
+
         self.__quality_filter.set_range(min,max)
+
         if self.dw is not None:
             self.__quality_filter.apply_to_wrapper(self.dw)
 

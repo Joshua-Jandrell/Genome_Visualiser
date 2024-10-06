@@ -39,9 +39,6 @@ X_STACK = 0
 Y_STACK =1
 STACK_MODE = X_STACK
 
-class FilterError(ValueError):
-    pass
-
 class ViewInfo_base:
     """
     Base class used to define and plot different views
@@ -358,11 +355,11 @@ class ViewSetManager:
                     top_set = True
 
                 # Update view title to match main view 
-                view.set_group_title(self.main_view.get_group_title())
+                v.set_group_title(self.main_view.get_group_title())
                 top_hights += v.get_desired_hight()
         top_hight = sum(top_hights)
-        if not top_set:
-            self.main_view.set_on_top(not top_set)
+        print(self.main_view)
+        self.main_view.set_on_top(not top_set)
 
         # Find dimensions of main view 
         desired_main_width = sum(self.main_view.get_desired_width())

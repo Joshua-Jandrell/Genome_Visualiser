@@ -3,7 +3,9 @@ import customtkinter as ctk
 
 from UI.numberEntry import NumberEntry  
 from UI.filePicker import FilePicker    
-from VCF.filterInfo import DataSetInfo
+from VCF.filterInfo import DataSetInfo, FilterError
+
+from Util.event import Event
 
 
 class DatasetFilterFrame(ctk.CTkFrame):
@@ -18,6 +20,12 @@ class DatasetFilterFrame(ctk.CTkFrame):
         """
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
+        # Filter error event
+        self.on_filter_error = Event()
+        """
+        Event called when a filter error occurs.\n
+        Subscribers to this event must accept and error sting as an argument.
+        """
         # Tkinter variables
         self.chromo = ctk.IntVar()
         self.pos_min = ctk.IntVar()
@@ -137,7 +145,10 @@ class DatasetFilterFrame(ctk.CTkFrame):
             self.dataset.set_range(max=self.pos_max.get())
     def __on_qual_change(self, *args):
         if self.dataset is not None:
-            self.dataset.set_quality(min=self.qual_min.get(), max=self.qual_max.get())
+            try:
+                self.dataset.set_quality(min=self.qual_min.get(), max=self.qual_max.get())
+            except FilterError:
+                self.on_filter_error.invoke("No data in the given quality range.")
     def __on_case_ctrl_change(self, *args):
         if self.dataset is not None:
             self.dataset.configure(case_path=self.case_path.get())

@@ -10,16 +10,19 @@ from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec as GridSpec
 
 from Plot.ViewInfos.viewInfo import get_view_sets, ViewSetManager, ViewInfo_base
-from VCF.dataSetConfig import DataSetConfig
+from VCF.dataSetConfig import DataSetConfig, GlobalDatasetManager
 
 from Plot.keyCanvas import KeyCanvas
-from Plot.scrollWidget import ScrollManager, ScrollWidget
+from Plot.scrollWidget import ScrollWidget
 
 from Util.box import Box
+
+from _config_ import ERROR_RED
 
 X_VIEW_PAD = 40
 Y_VIEW_PAD = 100
 DEFAULT_DPI = 100
+IS_DYNAMIC = False
 
 def px_to_inches(px:int, dpi:float=DEFAULT_DPI):
     """
@@ -71,8 +74,8 @@ class FigureMount(ctk.CTkFrame):
 
 
     def __on_scroll(self):
-        return
-        self.canvas.draw_idle()
+        if not IS_DYNAMIC:
+            self.canvas.draw_idle()
         
     def clear(self):
         self.fig.clear()
@@ -104,9 +107,8 @@ class FigureMount(ctk.CTkFrame):
 
 
     def _on_main_update(self,viewinfo:ViewInfo_base|None, type):
-        print("Check for none ...")
         
-        if viewinfo is not None:
+        if IS_DYNAMIC and viewinfo is not None:
             self.canvas.draw_idle()
 
 class PlotLoadPanel(ctk.CTkFrame):
@@ -160,9 +162,15 @@ class ViewPanel(ctk.CTkFrame):
                                                 command=lambda: DataSetConfig.open()
         )
 
+        self._error_frame = ctk.CTkLabel(self, text="Error: cannot plot.",
+                                            fg_color=ERROR_RED,
+                                            text_color="red")
+
+
         self.__plot_load_panel = PlotLoadPanel(self)
 
         self.__hide_plots()
+        self.__show_select_button()
         ViewPanel.__instance = self
 
     def __get_mount(self)->FigureMount:
@@ -188,9 +196,6 @@ class ViewPanel(ctk.CTkFrame):
 
         self.scroll_frame.pack_forget()
 
-        # show dataset selection button 
-        self.data_select_button.place(relx=.5, rely=.5, anchor="center")
-
         self.hidden = True
          
 
@@ -202,19 +207,26 @@ class ViewPanel(ctk.CTkFrame):
     def make_plot(self, views:list[ViewInfo_base])->None:
 
         # Filter for view with data
-        no_data = False
-        views = [view for view in views if isinstance(view,ViewInfo_base) and view.has_data()]
-        no_data = len(views) == 0
+        no_views = len(views) == 0
+        #views = [view for view in views if isinstance(view,ViewInfo_base) and view.has_data()]
+        no_data = len(GlobalDatasetManager.get_datasets())==0
         # Filter for only valid views
         views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
+        print(views)
         if len(views) == 0: 
+            if no_data:
+                DataSetConfig.open(register_on_create = True)
+                self.__show_select_button()
+            elif no_views:
+                self.__show_no_plots_frame()
+            else:
+                self.__show_no_values_frame()
+
             self.__hide_plots()
             KeyCanvas.hide_canvas()
-            if no_data:
-                print("no data lol")
-            else:
-                print("params not met")
             return
+        
+        print("here...")
         
         self.__plot_load_panel.show()
         self.__plot_load_panel.update()
@@ -238,7 +250,21 @@ class ViewPanel(ctk.CTkFrame):
         make_keys(views=views)
 
         #self.__plot_load_panel.hide()
-        self.__plot_load_panel.place_forget()
+        self.__plot_load_panel.hide()
+
+    def __show_select_button(self):
+        """Shows the dataset select button."""
+        # show dataset selection button 
+        self.data_select_button.place(relx=.5, rely=.5, anchor="center")
+
+    def __show_no_plots_frame(self):
+        """Shows frame indicating that there are not plots."""
+        self._error_frame.configure(text="Error: Cannot plot:\n No plots selected.\n Please select view from plot tap on left of screen.")
+        self._error_frame.place(relx=.5, rely=.5, anchor="center")
+    def __show_no_values_frame(self):
+        """Shows frame indicating that there is not data matching the given filter."""
+        self._error_frame.configure(text="Error: Cannot plot:\n Dataset is empty\n TDall data has been excluded from dataset due it its current filter parameters.\n Please reconfigure filters to include data to plot.")
+        self._error_frame.place(relx=.5, rely=.5, anchor="center")
            
 
 
@@ -261,3 +287,5 @@ def make_keys(views:list[ViewInfo_base]):
         view.make_key(ax,(0,0))
 
     KeyCanvas.show_canvas()
+
+

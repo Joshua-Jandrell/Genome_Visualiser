@@ -26,8 +26,9 @@ class DataSetConfig(ctk.CTkToplevel):
     """
     instance = None
 
-    def open(app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, get_file_first:bool = True, fg_color: str | Tuple[str] | None = None, **kwargs):
-        
+    @classmethod
+    def open(cls, app:ctk.CTk|None = None, dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, get_file_first:bool = True, fg_color: str | Tuple[str] | None = None, **kwargs):
+        """Open the datset config panel"""
         new_file = False
         if get_file_first and dataset is None:
             file_name = FileFetcher.get_vcf_filename()

@@ -3,26 +3,20 @@ Variant grid type views are views with samples on the first axis and variants on
 These view types are compatible with one another and can be set to share axes for each variant.\n
 TODO: The views will need to be able to change orientation and axis sharing.
 """
-from typing import Literal
-import numpy as np
-import matplotlib as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from VCF.filterInfo import DataSetInfo
+from VCF.filterInfo import DataSetInfo, FilterError
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
-import VCF.dataWrapper as dw
 
 from matplotlib.figure import Figure as Figure
 from matplotlib.axes import Axes as Axes
-from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
-from .viewInfo import ViewInfo_base, ViewPos, FilterError, X_STACK, Y_STACK, STACK_MODE
+from .viewInfo import ViewInfo_base, ViewPos, X_STACK, Y_STACK, STACK_MODE
 from Util.box import Box
 
-# For scroll view 
-from Plot.scrollWidget import ScrollWidget, ScrollManager
 GRID_TYPE_KEY = "Var-Grid"
+IS_DYNAMIC = False
 
 class VariantGridView(ViewInfo_base):
     def __init__(self) -> None:
@@ -76,9 +70,6 @@ class VariantGridView(ViewInfo_base):
 
         if self.is_on_top():
             axs[0].set_title(self.get_group_title())
-            print("Set tp ", self.get_group_title())
-        else:
-            axs[0].set_title("")
 
         # Configure plot labels
         _ax_names = self.get_plot_names()
@@ -171,6 +162,8 @@ class VariantGridView(ViewInfo_base):
             self._replot()
 
     def _replot(self):
+        if not IS_DYNAMIC:
+            return
         for ax in self._axs:
             ax.clear()
         if self.can_plot():

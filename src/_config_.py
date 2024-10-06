@@ -24,4 +24,6 @@ if not config['bcftools']['local']:
 IMG_PATH:str = os.path.join(BASE_PATH, config['assets']['images'])
 """Path to all images (.png and .ico files)"""
 
+ERROR_RED = "#FF8585"
+
 
