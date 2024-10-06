@@ -74,8 +74,7 @@ class VcfDataWrapper:
         self.sort_mode:SortMode = SortMode.BY_POSITION
 
         self._df_filtered = False
-        self._dict_filtered = False 
-        self._case_filtered = False      
+        self._dict_filtered = False      
 
     # Returns a matrix of zygosities for each sample variant.
     # 0 = no mutation, 1 = heterozygous, 2 = homozygous mutation, -1 = no-data
@@ -155,7 +154,7 @@ class VcfDataWrapper:
 
         if split:
             n_cases = self.get_n_cases()
-            n_ctrls = n_cases - self.get_n_variants()
+            n_ctrls = self.get_n_ctrls()
             ctrl_data = gt_data[:,:n_ctrls]
             case_data = gt_data[:,n_ctrls:]
             return [(((ctrl_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult,
@@ -315,8 +314,6 @@ class VcfDataWrapper:
             self._data[CASES] = np.array([True for s in self._data[SAMPLES]])
             self._data[CTRLS] = np.array([False for s in self._data[SAMPLES]])
 
-        self._case_filtered = False
-
 
     def __get_filtered_df(self)->DataFrame:
         """Applies all filters and returns a dataframe containing only the desired values."""
@@ -354,16 +351,16 @@ class VcfDataWrapper:
         return new_df
     
     def __get_filtered_data(self)->dict:
-        if self._dict_filtered and self._case_filtered:
+        if self._dict_filtered:
             return self._data
         df = self.__get_filtered_df()
         
-        if not self._dict_filtered:
-            self._data = self.slice_v(df.index, self._data, in_place=True)
-            self._dict_filtered = True
-        if not self._case_filtered:
-            self._data = self.__sort_by_case_ctrl(data=self._data, in_place=True)
-            self._case_filtered = True        
+
+        self._data = self.slice_v(df.index, self._data, in_place=True)
+        self._data = self.__sort_by_case_ctrl(data=self._data, in_place=True)
+
+        self._dict_filtered = True
+
         return self._data
 
     def __get_filtered_genotype_array(self, split:bool = False)->GTArr|list[GTArr]:
