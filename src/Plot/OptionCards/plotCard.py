@@ -1,12 +1,7 @@
 """This script contains the base class for plot option control and plot option cards"""
 from typing import Tuple
-import customtkinter as ctk
 
-from UI.optionPanel import OptionCard, OptionCtrl
-from VCF.datasetDropDown import DatasetMenu
-
-from Plot.ViewInfos import ViewInfo_base
-
+from UI.optionPanel import OptionCard
 
 class PlotOptionCard(OptionCard):
     """
@@ -17,7 +12,5 @@ class PlotOptionCard(OptionCard):
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, toggleable=True, **kwargs)
         # Set default width of menu buttons
         self.MENU_W = 125
-        
-        # Create dataset menu
-        self.dataset_menu_frame = None
+    
    

@@ -52,6 +52,12 @@ class FigureMount(ctk.CTkFrame):
         self.vsb.scroll_event.add_listener(self.__on_scroll)
         self.hsb.scroll_event.add_listener(self.__on_scroll)
 
+        # subscribe to canvas mouse/over event 
+        #self.fig.canvas.mpl_connect('motion_notify_event', self.__on_mouse_move)
+
+    def __on_mouse_move(self, pos):
+        print(f"yeee {pos}")
+
     @classmethod
     def _place_scroll(cls, scroll:ScrollWidget, scroll_box:Box):
         scroll.place(relx=scroll_box.get_left(),
@@ -62,6 +68,7 @@ class FigureMount(ctk.CTkFrame):
 
 
     def __on_scroll(self):
+        return
         self.canvas.draw_idle()
         
     def clear(self):
@@ -76,16 +83,25 @@ class FigureMount(ctk.CTkFrame):
 
         self.canvas.draw_idle()
         self.toolbar.update()
+
         # Make scroll bars if required
         if x_scroll_box is not None:
-            ScrollManager.make_scroll(view_set.main_view,x_scroll_box, orientation='horizontal')
+            self.hsb.set_view(view=view_set.main_view) # NB this must be done first
             self._place_scroll(self.hsb, x_scroll_box)
-            self.hsb.set_view(view=view_set.main_view)
 
         if y_scroll_box is not None:
-            ScrollManager.make_scroll(view_set.main_view,y_scroll_box, orientation='vertical')
+            self.vsb.set_view(view=view_set.main_view) # NB this must be done first
             self._place_scroll(self.vsb, y_scroll_box)
-            self.vsb.set_view(view=view_set.main_view)
+
+        # Subscribe to main view update event 
+        view_set.main_view.update_event.add_listener(self._on_main_update)
+
+
+    def _on_main_update(self,viewinfo:ViewInfo_base|None, type):
+        print("Check for none ...")
+        
+        if viewinfo is not None:
+            self.canvas.draw_idle()
 
 
 
@@ -135,6 +151,7 @@ class ViewPanel(ctk.CTkFrame):
         # hide canvas and toolbar
         for mount in self.__mounts_in_use:
             mount.clear()
+            mount.pack_forget()
             self.__mounts.append(mount)
         self.__mounts_in_use.clear()  
 
@@ -152,7 +169,6 @@ class ViewPanel(ctk.CTkFrame):
         self.hidden = False
 
     def make_plot(self, views:list[ViewInfo_base])->None:
-
         self.__hide_plots()
 
         # Filter for only valid views
@@ -161,12 +177,14 @@ class ViewPanel(ctk.CTkFrame):
             self.__hide_plots()
             KeyCanvas.hide_canvas()
             return
-        
+               
         # Pack plot frame
         self.__show_plots()
         
         # group views into a collection of view sets
         view_sets = get_view_sets(views)
+
+        print(len(view_sets))
         
         # Scale figure based on window size
         _w = self.winfo_width()-X_VIEW_PAD

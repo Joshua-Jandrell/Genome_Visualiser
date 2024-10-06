@@ -53,6 +53,8 @@ class ViewInfo_base:
         """Defines what type of views this view can be combined with."""
 
         self._pos:ViewPos = ViewPos.MAIN
+        self._axs:list[Axes] = []
+        self._plot_size = (0,0)
         """
         Defines where the view should be positioned in the group
         """
@@ -62,7 +64,7 @@ class ViewInfo_base:
         self.update_event = Event()
         """
         Event to be called when a major update is made to a view info.\n
-        All listeners should accept view info base as their only argument.
+        All listeners should accept view info base and string = ['move', 'scale', 'draw'] as its arguments
         """
 
         self.key_row_size = 12
@@ -79,6 +81,8 @@ class ViewInfo_base:
 
         self._is_main = False
         """Set to true if this view is the main view."""
+
+        self._is_plotted = False
 
     def get_priority(self)->int:
         return self._priority
@@ -123,8 +127,13 @@ class ViewInfo_base:
         """Returns the name of the plot axes lables.\n"""
         return ["Plot"]
     
+    def is_plotted(self)->bool:
+        """Returns true if the current view has been plotted."""
+        return self._is_plotted
 
-    
+    def set_plotted(self, plotted):
+        self._is_plotted = plotted    
+
     
     def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         """
@@ -132,7 +141,9 @@ class ViewInfo_base:
         Returns the axis used for plotting and a log-string containing any errors or notes.\n
         NOTE: This function must be overridden, only then can the `ViewInfo_base` class is implemented.
         """
-        pass
+        self._axs = axs
+        self._plot_size = size
+        
     def make_key(self, axs, size):
         pass
     def fit_to_size(self,size:tuple[int,int]):

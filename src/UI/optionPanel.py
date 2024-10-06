@@ -42,7 +42,8 @@ class OptionCard(ctk.CTkFrame):
         else:
             #self.deselected_button = ctk.CTkSwitch(self, text="Active",command=self._toggle)
             self.deselected_button = ctk.CTkCheckBox(self, text="", width=self.BUTTON_W, height=self.BUTTON_H, checkbox_width=self.BUTTON_W, checkbox_height=self.BUTTON_H,
-                                                     variable=self._selected_var)
+                                                     variable=self._selected_var,
+                                                     command=self.__on_button_toggle)
         # Create panel content
         self.content = ctk.CTkFrame(self,fg_color="transparent",width=0, height=self._desired_height-2*self.BUTTON_H) # set width and hight to avoid massive expansion
         # Create label
@@ -65,6 +66,13 @@ class OptionCard(ctk.CTkFrame):
             self.value = option_value
 
         self.update_event.invoke(self)
+
+    def __on_button_toggle(self):
+        
+        if self._selected_var.get():
+            self.toggle_on()
+        else:
+            self.toggle_off()
 
     def toggle_on(self):
         if not self._toggleable:

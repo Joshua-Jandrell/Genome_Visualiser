@@ -4,8 +4,12 @@ import customtkinter as ctk
 
 class NumberEntry(ctk.CTkEntry):
     """Special ctk variable that can only hold a numerical value."""
-    def __init__(self, master: Any, width: int = 140, height: int = 28, corner_radius: int | None = None, border_width: int | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, text_color: str | Tuple[str, str] | None = None, placeholder_text_color: str | Tuple[str, str] | None = None, number_variable: ctk.DoubleVar | ctk.IntVar | None = None, value: float | None = None, value_range: tuple[float|None, float|None] = (0,None), is_int:bool = False, instant_validate:bool = False, placeholder_text: str | None = None, font: tuple | ctk.CTkFont | None = None, state: str = NORMAL, **kwargs):
-        
+    def __init__(self, master: Any, width: int = 140, height: int = 28, corner_radius: int | None = None, border_width: int | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, text_color: str | Tuple[str, str] | None = None, placeholder_text_color: str | Tuple[str, str] | None = None,
+                 number_variable: ctk.DoubleVar | ctk.IntVar | None = None, value: float | None = None, dynamic_clamp:bool = False, value_range: tuple[float|None, float|None] = (0,None), is_int:bool = False, instant_validate:bool = False, placeholder_text: str | None = None, font: tuple | ctk.CTkFont | None = None, state: str = NORMAL, **kwargs):
+        """
+        If `dynamic clamp` is set to true the value entry will update the value to the lowest possible value in range if the value is invalid.\n
+        If `focus clamp` is set to true the value will be clamped to range only after the user leaves the entry
+        """
         self.is_int = is_int
         if isinstance(number_variable, ctk.DoubleVar) or isinstance(number_variable, ctk.IntVar):
             self._number_variable = number_variable
@@ -29,6 +33,7 @@ class NumberEntry(ctk.CTkEntry):
         textvariable.set(f"{self._number_variable.get()}")
 
         self.min, self.max = value_range
+        self._dynamic_clamp = dynamic_clamp
         self.entry_above:'NumberEntry'|None = None
         self.entry_below:'NumberEntry'|None = None
 
@@ -75,11 +80,12 @@ class NumberEntry(ctk.CTkEntry):
 
         # Check that value is in range
         _new_number_value = self.__in_range(_number_value)
-        if _new_number_value != self._number_variable.get():
-            self._number_variable.set(_new_number_value) 
+        if _number_value == _new_number_value or self._dynamic_clamp:
+            if _new_number_value != self._number_variable.get():
+                self._number_variable.set(_new_number_value) 
 
         if self._instant_validate:
-            # update text value if previous sting was invalid
+            # update text value if previous string was invalid
             if _new_number_value != _number_value:
                 _new_value = str(_new_number_value)
 
@@ -91,6 +97,7 @@ class NumberEntry(ctk.CTkEntry):
 
     def __on_focus_out(self, *args):
         valid_value = self._number_variable.get() # note: the number value should always be valid
+        print("aha")
         if self.is_int: valid_value = int(valid_value)
         if str(valid_value) != self._textvariable.get():
             self._textvariable.set(str(valid_value))

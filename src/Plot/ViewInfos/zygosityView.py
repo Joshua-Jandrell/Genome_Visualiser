@@ -45,7 +45,7 @@ class ZygoteView(VariantGridView):
     def get_height_weights(self) -> list[int]:
         wrapped_data = self.dataset_info.get_data()
         return [min(wrapped_data.get_n_samples(),self.max_weight)]
-    
+         
     def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         axis = axs[0]
         self.active_axis = axis
@@ -61,10 +61,9 @@ class ZygoteView(VariantGridView):
         axis.imshow(zygos_matrix, cmap=self.colors, vmax=6, vmin=-1)
 
         self._do_base_config(axs)      
-        self.fit_to_size(size=size) # Not fitting to size must be done AFTER base config
+        self.fit_to_size(size=size) # Note fitting to size must be done AFTER base config
 
-
-        return ""
+        return super().make_plots(axs, size)
 
 
     def has_key(self)->bool:

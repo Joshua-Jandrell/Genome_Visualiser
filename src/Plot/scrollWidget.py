@@ -63,9 +63,10 @@ class ScrollWidget(ctk.CTkFrame):
             self.view = None
         self.place_forget()
 
-    def __on_view_update(self, view:ViewInfo_base):
+    def __on_view_update(self, view:ViewInfo_base, type:str):
         """Event to bae called (automatically) when the view info is updated."""
-        self.__aupdate_scroll()
+        if type == 'scale':
+            self.__aupdate_scroll()
         
     def __aupdate_scroll(self):
         view = self.view

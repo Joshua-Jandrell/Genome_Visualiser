@@ -1,15 +1,17 @@
 # Contains classes and data that can be used to filter, query and manage datasets
 import random, os
-from os import path
-from typing import Literal
+import pandas as pd
+from typing import Any, Literal, Callable
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
+from Util.event import Event
+
 from .dataLoad import peek_vcf_data, read_vcf_df, read_vcf_data
 from .FileRead.bcftoolSys import make_dataset_file, convert
 from .FileRead.caseCtrl import read_case_ctrl
 
-import pandas as pd
 
-DEFAULT_VARIANTS = 10000
+
+DEFAULT_VARIANTS = 25000
 DEFAULT_DISPLAY = 500
 REGION_CMD = '-r'
 INCLUDE_CMD = '-i'
@@ -137,9 +139,12 @@ class DataSetInfo:
 
     def __init__(self,source_path:str|None = None,name:str|None = None, case_path:str|None="", ctrl_path:str|None="") -> None:
         
+        self._update_event = Event()
+        """
+        Event called whenever dataset parameters are updated.\n
+        """
+
         # Flags used to see which fields must be updated 
-        self.__sample_flag = False
-        self.__qaul_flag = False
         self.__reload_flag = False
         """Set to true if sample save file should be re-loaded"""
         self.__save_flag = False
@@ -175,7 +180,7 @@ class DataSetInfo:
 
         if name is None:
             if source_path is not None:
-                name = path.basename(source_path)
+                name = os.path.basename(source_path)
             else:
                 name = "New Dataset"
         self.__set__name(name)
@@ -192,6 +197,11 @@ class DataSetInfo:
         #print(f"killed {self.__name}")
         self.destroy()
 
+    def add_listener(self, command:Callable[["DataSetInfo", Literal['source', 'variants', 'samples', 'delete']],Any]):
+        self._update_event.add_listener(command=command)
+
+    def remove_listener(self, command:Callable[["DataSetInfo", Literal['source', 'variants', 'samples', 'delete']],Any]):
+        self._update_event.remove_listener(command)
 
     def configure(self,
                   source_path:str|None = None,
@@ -216,6 +226,7 @@ class DataSetInfo:
         if self.__save_path is not None:
             DataSetInfo.__clear_save_file_name(self.__save_path)
         self.__clear_save()
+        self._update_event.remove_all()
         self.__destroyed = True
 
     def set_source_path(self,source_path:str|None):
@@ -235,6 +246,8 @@ class DataSetInfo:
             # Peaking did not reveal the full file, that dataset is big and should thus be stored in memory
             self.__save_path = self.__make_valid_save_file_name(os.path.dirname(source_path))
 
+        self._update_event.invoke(self, 'source')
+
     def __clear_save(self):
         """
         Remove the save file if it exists.
@@ -247,6 +260,9 @@ class DataSetInfo:
 
     def add_filter(self,filter:DataFilter_base):
         self.filters.append(filter)
+
+        
+        self._update_event.invoke(self, 'variants')
 
     def is_valid(self):
         """Returns true if the given dataset is valid and can be created
@@ -352,14 +368,21 @@ class DataSetInfo:
     
     # Range Filter parameters 
     def set_range(self, chromosome:int|None = None, min:int|None = None, max:int|None = None):
+        
+        requires_reload = self.__range_filter.min is None or self.__range_filter.max is None
+        if not requires_reload and min is not None:
+            requires_reload =  self.__range_filter.min > min
+        if not requires_reload and max is not None:
+             requires_reload = self.__range_filter.max < max
+        self.__reload_flag = requires_reload
+
         # Set region reload flag if on a new chromosome
         self.__save_flag = self.__range_filter.chromosome == chromosome
         
-
         self.__range_filter.configure(chromosome=chromosome, min=min, max=max)
 
-        # Set datawrapper to be None to force data reload
-        self.dw = None
+        self._update_event.invoke(self, 'variants')
+
     def get_range(self)->tuple[int, int]:
         """
         Get the position range of the dataset in the form (min, max)
@@ -374,6 +397,9 @@ class DataSetInfo:
         self.__quality_filter.set_range(min,max)
         if self.dw is not None:
             self.__quality_filter.apply_to_wrapper(self.dw)
+
+        self._update_event.invoke(self, 'variants')
+
     def get_quality(self)->tuple[float, float]:
         """
         Get the quality range of the dataset
@@ -385,6 +411,8 @@ class DataSetInfo:
         if self.dw is not None:
             cases, ctrls = read_case_ctrl(case_path)
             self.dw.set_case_ctrl(cases, ctrls)
+
+        self._update_event.invoke(self, 'samples')
     def get_case_path(self)->str|None:
         return self._case_path
 

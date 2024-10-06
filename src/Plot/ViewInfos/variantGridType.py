@@ -38,6 +38,10 @@ class VariantGridView(ViewInfo_base):
         self._n_samps = 0
         self._n_vars = 0
 
+        # Replot rules
+        self._replot_on_vars = True
+        self._replot_on_samps = True
+
         # Scroll properties
         self._blocks_per_window_x = 0
         """The number of blocks shown on the x axis."""
@@ -117,7 +121,7 @@ class VariantGridView(ViewInfo_base):
             self._blocks_per_window_y = float(size[1])/float(self.ideal_block_size)
             self._move_y(0)
 
-        self.update_event.invoke(self)
+        self.update_event.invoke(self, 'scale')
 
     def _move_y(self,value:float):
         """Move the view vertically to the given y value."""
@@ -126,6 +130,8 @@ class VariantGridView(ViewInfo_base):
         ax.set_ylim(value+self._blocks_per_window_y+self._lim_offset,
                     value+self._lim_offset)
         
+        self.update_event.invoke(self, 'move')
+        
     def _move_x(self,value:float):
         """Move the view vertically to the given y value."""
         ax = self.active_axis
@@ -133,16 +139,38 @@ class VariantGridView(ViewInfo_base):
         ax.set_xlim(value+self._lim_offset,
                     value+self._blocks_per_window_x+self._lim_offset)
         
+        self.update_event.invoke(self, 'move')
+        
     def set_data(self, dataset_info: DataSetInfo|None):
-        print("add update event to dw")
+        if dataset_info == self.dataset_info: return
+
+        # unsubscribe from event if required
+        if self.dataset_info is not None:
+            self.dataset_info.remove_listener(self._on_vargird_dataset_update)
+
         if dataset_info is not None:
             dw = dataset_info.get_data()
             self._n_vars = dw.get_n_variants()
             self._n_samps = dw.get_n_samples()
+            dataset_info.add_listener(self._on_vargird_dataset_update)
         else:
             self._n_vars = 0
             self._n_samps = 0
         return super().set_data(dataset_info)
+    
+    def _on_vargird_dataset_update(self,dataset:DataSetInfo,update_type):
+        if update_type == 'variants' and self._replot_on_vars:
+            _n_vars = dataset.get_data().get_n_variants()
+            self._n_vars = _n_vars
+            self._replot()
+        elif update_type == 'samples' and self._replot_on_samps:
+            self._n_samps = dataset.get_data().get_n_samples()
+            self._replot()
+
+    def _replot(self):
+        for ax in self._axs:
+            ax.clear()
+        self.make_plots(self._axs, self._plot_size)
 
     # Scroll configuration 
 
@@ -183,6 +211,7 @@ class VariantGridView(ViewInfo_base):
         self._move_y(y_pt)
     
     def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
+        self._plot_size = size
         self._do_base_config(axs)
         self.active_axis = axs[0]
         self.fit_to_size(size)
