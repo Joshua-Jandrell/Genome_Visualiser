@@ -75,4 +75,4 @@ class MutationBarView(VariantGridView):
         if self._is_main:
             return ["Mutation Frequency"]
         else:
-            return ["Mut.\nFreq."]
+            return ["Mut\nFreq."]

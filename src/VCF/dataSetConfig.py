@@ -13,7 +13,8 @@ from VCF.globalDatasetManger import GlobalDatasetManager
 
 from VCF.datasetEditFrames import DatasetFilterFrame, DatasetFileFrame, FileFetcher
 
-
+# Used to configures the app settings and paths
+import _config_, os
 # This class is used to select and return files throughout the application
 
         
@@ -56,7 +57,7 @@ class DataSetConfig(ctk.CTkToplevel):
         self.new_dataset = (treat_as_new or dataset is None)
 
         self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}")
-
+        
         self.file_frame = DatasetFileFrame(self)
         self.file_frame.pack(side=ctk.TOP, fill=ctk.X, padx=10, pady=5)
         # Track file path change event
@@ -114,8 +115,12 @@ class DataSetConfig(ctk.CTkToplevel):
         self.__close_config()
 
     def _configure_title(self):
+        # Give the frame an icon 
+        self.after(1, lambda: self.iconbitmap(os.path.join(_config_.IMG_PATH, 'icon.ico')))
+        
         if self.new_dataset: self.title("Create Dataset")
         else: self.title("Edit Dataset")
+        
 
     def __open_config(self,dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, treat_as_new:bool = False):
         
