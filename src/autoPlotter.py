@@ -26,7 +26,7 @@ class AutoPlotter():
     def __on_data_update(dataset_names:list[str]):
         AutoPlotter.view_change_ignore_flag =True # Stop views from double plotting
         data_available = len(dataset_names) > 0
-        if AutoPlotter.no_data  and data_available:
+        if AutoPlotter.no_data and data_available:
             # Make automatic plot
             AutoPlotter.make_autoPlot()
 
@@ -34,7 +34,7 @@ class AutoPlotter():
         AutoPlotter.no_data = not data_available
 
         if AutoPlotter.no_data:
-            ViewPanel.set_plots([])
+            ViewPanel.set_plots([], block_popups=True)
 
         AutoPlotter.view_change_ignore_flag = False
 
@@ -43,7 +43,7 @@ class AutoPlotter():
         if AutoPlotter.view_change_ignore_flag: return
         ViewPanel.set_plots(PlotOptionPanel.get_view_list())
 
-    def make_autoPlot():
+    def make_autoPlot(block_popups:bool = False):
 
         plot_data = GlobalDatasetManager.get_datasets()[0]
 
@@ -52,8 +52,8 @@ class AutoPlotter():
 
         if len(views) == 0:
             views = select_views(plot_data)
+        ViewPanel.set_plots(views, block_popups=block_popups)
 
-        ViewPanel.set_plots(views)
 def select_views(data:DataSetInfo)->list[ViewInfo_base]:
     """
     Selects views to be plotted based on size and nature of data.

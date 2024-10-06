@@ -74,7 +74,8 @@ class VcfDataWrapper:
         self.sort_mode:SortMode = SortMode.BY_POSITION
 
         self._df_filtered = False
-        self._dict_filtered = False       
+        self._dict_filtered = False 
+        self._case_filtered = False      
 
     # Returns a matrix of zygosities for each sample variant.
     # 0 = no mutation, 1 = heterozygous, 2 = homozygous mutation, -1 = no-data
@@ -248,17 +249,19 @@ class VcfDataWrapper:
     
     def set_pos_range(self, min_pos:int, max_pos:int):
         """Sets the range of nucleotide positions on the reference genome the user wants to view."""
+        filt = self.first_pos == min_pos and self.last_pos == max_pos
         self.first_pos = min_pos
         self.last_pos = max_pos
-        self._dict_filtered = False
-        self._df_filtered = False
+        self._dict_filtered = filt
+        self._df_filtered = filt
     
     def set_qual_range(self, min_qual:int, max_qual:int):
         """Sets the range of nucleotide positions on the reference genome the user wants to view."""
+        filt = self.first_qual == min_qual and  self.last_qual == max_qual
+        self._dict_filtered = filt
+        self._df_filtered = filt
         self.first_qual = min_qual
         self.last_qual = max_qual
-        self._dict_filtered = False
-        self._df_filtered = False
         
     def set_population_tag(self, pop_target:str):
         """Sets the the tag to look for in the variant samples the user wants to view. """
@@ -312,7 +315,7 @@ class VcfDataWrapper:
             self._data[CASES] = np.array([True for s in self._data[SAMPLES]])
             self._data[CTRLS] = np.array([False for s in self._data[SAMPLES]])
 
-        self._dict_filtered = False
+        self._case_filtered = False
 
 
     def __get_filtered_df(self)->DataFrame:
@@ -351,14 +354,16 @@ class VcfDataWrapper:
         return new_df
     
     def __get_filtered_data(self)->dict:
-        if self._dict_filtered:
+        if self._dict_filtered and self._case_filtered:
             return self._data
-        
         df = self.__get_filtered_df()
         
-        self._data = self.slice_v(df.index, self._data, in_place=True)
-        self._data = self.__sort_by_case_ctrl(data=self._data, in_place=True)
-        self._dict_filtered = True
+        if not self._dict_filtered:
+            self._data = self.slice_v(df.index, self._data, in_place=True)
+            self._dict_filtered = True
+        if not self._case_filtered:
+            self._data = self.__sort_by_case_ctrl(data=self._data, in_place=True)
+            self._case_filtered = True        
         return self._data
 
     def __get_filtered_genotype_array(self, split:bool = False)->GTArr|list[GTArr]:

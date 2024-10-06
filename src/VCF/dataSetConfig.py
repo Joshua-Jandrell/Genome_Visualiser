@@ -98,7 +98,10 @@ class DataSetConfig(ctk.CTkToplevel):
 
     def _on_create(self):
  
-        # TODO Validate input
+        # Redirect events
+        self.grab_release()
+        # Hide the window
+        self.withdraw()
         
         # Update dataset according to settings
         self.filter_frame.update_all()

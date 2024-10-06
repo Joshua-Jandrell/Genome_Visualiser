@@ -30,8 +30,8 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.chromo = ctk.IntVar()
         self.pos_min = ctk.IntVar()
         self.pos_max = ctk.IntVar()
-        self.qual_min = ctk.DoubleVar()
-        self.qual_max = ctk.DoubleVar()
+        self.qual_min = ctk.DoubleVar(value=0)
+        self.qual_max = ctk.DoubleVar(value=100)
         self.case_path = ctk.StringVar(value="")
 
         # NOTE dataset should only be set after variable have been constructed
@@ -53,9 +53,9 @@ class DatasetFilterFrame(ctk.CTkFrame):
         range_label = ctk.CTkLabel(self, text="Position:")
         range_label._font.configure(weight="bold")
         #range_min_label = ctk.CTkLabel(self, text="From")
-        range_min = NumberEntry(self, width=90, number_variable=self.pos_min)
+        range_min = NumberEntry(self, width=75, number_variable=self.pos_min)
         range_max_label = ctk.CTkLabel(self, text="to")
-        range_max = NumberEntry(self, width=90, number_variable=self.pos_max)
+        range_max = NumberEntry(self, width=75, number_variable=self.pos_max)
         range_max.set_as_above(range_min)
 
         # Pack UI elements
@@ -73,9 +73,9 @@ class DatasetFilterFrame(ctk.CTkFrame):
         # ==== Quality UI elements ====
         qual_label = ctk.CTkLabel(self, text="Quality:")
         qual_label._font.configure(weight="bold")
-        self.qual_min_entry = NumberEntry(self, width=60, value=0, value_range=(0,100), number_variable=self.qual_min)
+        self.qual_min_entry = NumberEntry(self, width=75, value_range=(0,100), number_variable=self.qual_min)
         qual_max_label = ctk.CTkLabel(self, text="to")
-        self.qual_max_entry = NumberEntry(self, width=60, value=100, value_range=(0,100), number_variable=self.qual_max)
+        self.qual_max_entry = NumberEntry(self, width=75, value_range=(0,100), number_variable=self.qual_max)
         self.qual_max_entry.set_as_above(self.qual_min_entry)
 
         _qual_row = 2

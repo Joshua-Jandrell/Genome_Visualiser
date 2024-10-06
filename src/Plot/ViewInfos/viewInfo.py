@@ -358,7 +358,6 @@ class ViewSetManager:
                 v.set_group_title(self.main_view.get_group_title())
                 top_hights += v.get_desired_hight()
         top_hight = sum(top_hights)
-        print(self.main_view)
         self.main_view.set_on_top(not top_set)
 
         # Find dimensions of main view 
