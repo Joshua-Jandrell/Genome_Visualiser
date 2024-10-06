@@ -39,6 +39,9 @@ X_STACK = 0
 Y_STACK =1
 STACK_MODE = X_STACK
 
+class FilterError(ValueError):
+    pass
+
 class ViewInfo_base:
     """
     Base class used to define and plot different views
@@ -166,6 +169,10 @@ class ViewInfo_base:
         pass
     def can_plot(self)->bool:
         """Returns true if the view can be plotted."""
+        return self.has_data()
+    
+    def has_data(self)->bool:
+        """Returns true if the given viewinfo has a dataste to plot."""
         return self.dataset_info is not None and self.dataset_info.get_data() is not None
     def can_link(self, other):
         """Returns `True` if two view infos are compatible to be linked."""

@@ -127,6 +127,8 @@ class DataOptionCard(OptionCard):
         #Sort heading Textbox:
         self.instruct_headingLabel = ctk.CTkLabel(self.content, text="Click the Plot button to apply filter options.", justify="center", fg_color='light green')
         self.instruct_headingLabel.pack(side=ctk.BOTTOM, fill=ctk.X, pady=_pady)
+
+        self.error_label = ctk.CTkLabel(self.content, text="Click the Plot button to apply filter options.", justify="center", fg_color='red')
         #self.instruct_headingLabel.grid(row=9, column=0, columnspan=3, padx=_padx_lastcol, pady=_pady, sticky="ew")
         
     # dropdown 

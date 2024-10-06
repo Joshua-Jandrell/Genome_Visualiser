@@ -239,7 +239,8 @@ class VcfDataWrapper:
     def get_file_pos_range(self):
         """Returns (min, max) possible range of genome sequence positons."""
         self._df = self._df.sort_values(by=["POS"], ascending=True)   ### All the 'by=...' stuff needs: ""
-        
+        if len(self._df["POS"]) == 0:
+            return 0,0
         min_pos = self._df["POS"].iloc[0]
         max_pos = self._df["POS"].iloc[-1]
         return(min_pos, max_pos)
@@ -302,7 +303,7 @@ class VcfDataWrapper:
                 self._data[CTRLS] = np.array([not c for c in self._data[CASES]])
         
         if len(ctrls) > 0:
-            self._data[CASES] = np.array([s in ctrls for s in self._data[SAMPLES]])
+            self._data[CTRLS] = np.array([s in ctrls for s in self._data[SAMPLES]])
             if len(cases) == 0:
                 self._data[CASES] = np.array([not c for c in self._data[CTRLS]])
 
@@ -392,6 +393,7 @@ class VcfDataWrapper:
         else:
             new_data = {}
         
+        print(data)
         _cases = np.array(data[CASES])
         for key in S_KEYS:
             new_data[key] = np.concat((data[key][data[CTRLS]], data[key][_cases[:]]),axis=0)

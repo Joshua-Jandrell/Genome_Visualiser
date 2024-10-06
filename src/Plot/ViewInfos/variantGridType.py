@@ -17,7 +17,7 @@ from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 
-from .viewInfo import ViewInfo_base, ViewPos, X_STACK, Y_STACK, STACK_MODE
+from .viewInfo import ViewInfo_base, ViewPos, FilterError, X_STACK, Y_STACK, STACK_MODE
 from Util.box import Box
 
 # For scroll view 
@@ -173,7 +173,11 @@ class VariantGridView(ViewInfo_base):
     def _replot(self):
         for ax in self._axs:
             ax.clear()
-        self.make_plots(self._axs, self._plot_size)
+        if self.can_plot():
+            self.make_plots(self._axs, self._plot_size)
+        else:
+            raise FilterError()
+            
 
     # Scroll configuration 
 
@@ -219,5 +223,10 @@ class VariantGridView(ViewInfo_base):
         self.active_axis = axs[0]
         self.fit_to_size(size)
         return super().make_plots(axs, size)
+    
+    def can_plot(self) -> bool:
+        if self._n_samps == 0 or self._n_vars == 0:
+            return False
+        return super().can_plot()
 
         

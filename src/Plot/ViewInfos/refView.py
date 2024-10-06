@@ -105,5 +105,5 @@ class RefView(VariantGridView):
             key_ax.set_ylabel("")
             key_ax.axis('off')
 
-    def get_plot_names(self) -> [str]:
+    def get_plot_names(self) -> list[str]:
         return ['Ref.', 'Alt.']

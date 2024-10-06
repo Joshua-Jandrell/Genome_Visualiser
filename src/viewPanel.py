@@ -116,20 +116,19 @@ class PlotLoadPanel(ctk.CTkFrame):
         label = ctk.CTkLabel(self,text="Plotting...")
         label.pack(expand=True, fill=ctk.BOTH)
 
-        # self.delay = delay_ms
-        # self.__plotting_flag = False
-    # def show(self):
-    #     print("show...")
-    #     self.__plotting_flag = True
-    #     #self.after(self.delay,self.__show_self)
-    #     self.__show_self()
-    # def hide(self):
-    #     self.__plotting_flag = False
-    #     self.place_forget()
+        self.delay = delay_ms
+        self.__plotting_flag = False
+    def show(self):
+        self.__plotting_flag = True
+        #self.after(self.delay,self.__show_self)
+        self.__show_self()
+    def hide(self):
+        self.__plotting_flag = False
+        self.place_forget()
         
-    # def __show_self(self):
-    #     if self.__plotting_flag or True:
-    #         self.place(x=0,y=0,relw=1,relh=1)
+    def __show_self(self):
+        if self.__plotting_flag or True:
+            self.place(x=0,y=0,relw=1,relh=1)
         
 
 
@@ -201,17 +200,25 @@ class ViewPanel(ctk.CTkFrame):
         self.hidden = False
 
     def make_plot(self, views:list[ViewInfo_base])->None:
-        #self.__plot_load_panel.show()
-        self.__hide_plots()
-        self.__plot_load_panel.place(x=0,y=0,relw=1,relh=1)
-        self.__plot_load_panel.update()
 
+        # Filter for view with data
+        no_data = False
+        views = [view for view in views if isinstance(view,ViewInfo_base) and view.has_data()]
+        no_data = len(views) == 0
         # Filter for only valid views
         views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
         if len(views) == 0: 
             self.__hide_plots()
             KeyCanvas.hide_canvas()
+            if no_data:
+                print("no data lol")
+            else:
+                print("params not met")
             return
+        
+        self.__plot_load_panel.show()
+        self.__plot_load_panel.update()
+        self.__hide_plots()
                
         # Pack plot frame
         self.__show_plots()
