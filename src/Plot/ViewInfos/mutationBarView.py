@@ -11,7 +11,7 @@ class MutationBarView(VariantGridView):
         super().__init__()
         self._pos = ViewPos.LEFT_STAND_IN
         self._priority = 100
-        self._group_title = "Mutation Frequency"
+        self._group_title = "Zygosity Frequency"
 
     def _get_samples_size(self) -> list[int]:
         if self._is_main:

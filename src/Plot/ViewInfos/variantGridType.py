@@ -76,6 +76,9 @@ class VariantGridView(ViewInfo_base):
 
         if self.is_on_top():
             axs[0].set_title(self.get_group_title())
+            print("Set tp ", self.get_group_title())
+        else:
+            axs[0].set_title("")
 
         # Configure plot labels
         _ax_names = self.get_plot_names()

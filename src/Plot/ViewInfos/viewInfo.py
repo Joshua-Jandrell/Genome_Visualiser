@@ -183,6 +183,7 @@ class ViewInfo_base:
     
     def set_on_top(self, on_top:bool):
         self._on_top = on_top
+
     def is_on_top(self)->bool:
         return self._on_top
 
@@ -333,6 +334,7 @@ class ViewSetManager:
         left_widths = []
         for v in self.left_views:
             if not v.get_main():
+                v.set_on_top(False)
                 left_widths += v.get_desired_width()
         left_width = sum(left_widths)
 

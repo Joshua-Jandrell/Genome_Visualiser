@@ -53,6 +53,8 @@ class FigureMount(ctk.CTkFrame):
         self.vsb.scroll_event.add_listener(self.__on_scroll)
         self.hsb.scroll_event.add_listener(self.__on_scroll)
 
+        self._viewset:ViewSetManager|None = None
+
         # subscribe to canvas mouse/over event 
         #self.fig.canvas.mpl_connect('motion_notify_event', self.__on_mouse_move)
 
@@ -93,9 +95,12 @@ class FigureMount(ctk.CTkFrame):
         if y_scroll_box is not None:
             self.vsb.set_view(view=view_set.main_view) # NB this must be done first
             self._place_scroll(self.vsb, y_scroll_box)
-
+            
+        if self._viewset is not None:
+            self._viewset.main_view.update_event.remove_listener(self._on_main_update)
         # Subscribe to main view update event 
         view_set.main_view.update_event.add_listener(self._on_main_update)
+        self._viewset = view_set
 
 
     def _on_main_update(self,viewinfo:ViewInfo_base|None, type):
@@ -103,6 +108,29 @@ class FigureMount(ctk.CTkFrame):
         
         if viewinfo is not None:
             self.canvas.draw_idle()
+
+class PlotLoadPanel(ctk.CTkFrame):
+    def __init__(self, master: Any, fg_color: str | Tuple[str] | None = None, delay_ms = 1):
+        super().__init__(master, fg_color=fg_color, corner_radius=0)
+
+        label = ctk.CTkLabel(self,text="Plotting...")
+        label.pack(expand=True, fill=ctk.BOTH)
+
+        # self.delay = delay_ms
+        # self.__plotting_flag = False
+    # def show(self):
+    #     print("show...")
+    #     self.__plotting_flag = True
+    #     #self.after(self.delay,self.__show_self)
+    #     self.__show_self()
+    # def hide(self):
+    #     self.__plotting_flag = False
+    #     self.place_forget()
+        
+    # def __show_self(self):
+    #     if self.__plotting_flag or True:
+    #         self.place(x=0,y=0,relw=1,relh=1)
+        
 
 
 
@@ -132,6 +160,9 @@ class ViewPanel(ctk.CTkFrame):
         self.data_select_button = ctk.CTkButton(self, text="Select Dataset File",
                                                 command=lambda: DataSetConfig.open()
         )
+
+        self.__plot_load_panel = PlotLoadPanel(self)
+
         self.__hide_plots()
         ViewPanel.__instance = self
 
@@ -170,7 +201,10 @@ class ViewPanel(ctk.CTkFrame):
         self.hidden = False
 
     def make_plot(self, views:list[ViewInfo_base])->None:
+        #self.__plot_load_panel.show()
         self.__hide_plots()
+        self.__plot_load_panel.place(x=0,y=0,relw=1,relh=1)
+        self.__plot_load_panel.update()
 
         # Filter for only valid views
         views = [view for view in views if isinstance(view,ViewInfo_base) and view.can_plot()]
@@ -195,6 +229,9 @@ class ViewPanel(ctk.CTkFrame):
 
         # Plot keys if possible
         make_keys(views=views)
+
+        #self.__plot_load_panel.hide()
+        self.__plot_load_panel.place_forget()
            
 
 
