@@ -80,7 +80,7 @@ class ZygoteView(VariantGridView):
             ["Ctrl/Case", _blank, _blank],
             ["Homo. Ref",_blank, _blank],
             ["Hetrozygos", _blank,_blank],
-            ["Home Alt.", _blank, _blank],
+            ["Homo. Alt.", _blank, _blank],
             ["No Data", _blank, _blank]]
         key_colors = [
                         ["#00000000", CTRL_COLORS[0], CASE_COLORS[0]],
@@ -90,7 +90,7 @@ class ZygoteView(VariantGridView):
                         ["#00000000", self.MUTATION_COLORS[4], self.MUTATION_COLORS[0]]]
         tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_column_width, self.key_row_hight,self.key_row_hight])
         tab.auto_set_font_size([False, False, False])
-        tab.auto_set_column_width([1, 0,0])
+        tab.auto_set_column_width([1,0,0])
         key_ax.axis('off')
 
     def get_plot_names(self) -> list[str]:

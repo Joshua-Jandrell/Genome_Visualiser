@@ -80,7 +80,7 @@ class MutationBarView(VariantGridView):
             ["Ctrl/Case", _blank, _blank],
             ["Homo. Ref",_blank, _blank],
             ["Hetrozygos", _blank,_blank],
-            ["Home Alt.", _blank, _blank],
+            ["Homo. Alt.", _blank, _blank],
             ["No Data", _blank, _blank]]
         key_colors = [
                         ["#00000000", "#00000000", "#00000000"],
