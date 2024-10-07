@@ -314,7 +314,7 @@ class DataSetInfo:
 
         self.at_end = peek_info['POS/at_end']
 
-        self.__range_filter.configure(chromosome=chr, min=min_pos, max=max_pos)
+        self.set_range(chromosome=chr, min=min_pos, max=max_pos)
 
     def __should_make_save_file(self)->bool:
         """
@@ -336,7 +336,6 @@ class DataSetInfo:
         if self.__destroyed:
             raise Exception("Trying to get data from destroyed da")
 
-        
         data_path = self.__save_path
         if data_path is None: data_path = self.source_path
         
@@ -365,8 +364,8 @@ class DataSetInfo:
 
             self.__reload_flag = False
 
-        for filt in self.filters:
-            filt.apply_to_wrapper(self.dw)
+            for filt in self.filters:
+                filt.apply_to_wrapper(self.dw)
                 
 
         return self.dw
@@ -380,6 +379,7 @@ class DataSetInfo:
              requires_reload = self.__range_filter.max < max
         if not requires_reload and chromosome is not None:
             requires_reload = self.__range_filter.chromosome != chromosome
+
         if requires_reload:
             self.__reload_flag = True
 
@@ -387,6 +387,9 @@ class DataSetInfo:
         self.__save_flag = self.__range_filter.chromosome == chromosome
         
         self.__range_filter.configure(chromosome=chromosome, min=min, max=max)
+
+        if self.dw is not None:
+            self.__range_filter.apply_to_wrapper(self.dw)
 
         self._update_event.invoke(self, 'variants')
 

@@ -251,14 +251,14 @@ class VcfDataWrapper:
         filt = self.first_pos == min_pos and self.last_pos == max_pos
         self.first_pos = min_pos
         self.last_pos = max_pos
-        self._dict_filtered = filt
-        self._df_filtered = filt
+        self._dict_filtered = filt and self._dict_filtered
+        self._df_filtered = filt and self._dict_filtered
     
     def set_qual_range(self, min_qual:int, max_qual:int):
         """Sets the range of nucleotide positions on the reference genome the user wants to view."""
         filt = self.first_qual == min_qual and  self.last_qual == max_qual
-        self._dict_filtered = filt
-        self._df_filtered = filt
+        self._dict_filtered = filt and self._dict_filtered
+        self._df_filtered = filt and self._dict_filtered
         self.first_qual = min_qual
         self.last_qual = max_qual
         

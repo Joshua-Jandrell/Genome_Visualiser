@@ -344,9 +344,10 @@ class ViewSetManager:
         plot_top = self.main_view is not None and self.main_view.get_view_pos() == ViewPos.MAIN
 
         top_hights = []
+        top_set = False # Latch to see if view is on top
         if plot_top:
         # Find hight of top views
-            top_set = False # Latch to see if view is on top
+
             for v in self.top_views:
                 if not v.get_main():
                     
@@ -358,7 +359,7 @@ class ViewSetManager:
                     # Update view title to match main view 
                     v.set_group_title(self.main_view.get_group_title())
                     top_hights += v.get_desired_hight()
-            self.main_view.set_on_top(not top_set)
+        if self.main_view is not None: self.main_view.set_on_top(not top_set)
         top_hight = sum(top_hights)
         
 
