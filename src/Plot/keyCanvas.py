@@ -29,6 +29,11 @@ class KeyCanvas(ctk.CTkFrame):
     def hide_canvas():
         if isinstance(KeyCanvas.instance, KeyCanvas): KeyCanvas.instance.hide()
 
+    @classmethod
+    def get_height(cls)->int:
+        if isinstance(cls.instance, cls): return cls.instance.winfo_height()
+        else :return 0
+
     def __init__(self, master, width: int = 100, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 

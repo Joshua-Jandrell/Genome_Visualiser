@@ -11,6 +11,7 @@ from matplotlib.gridspec import GridSpec as GridSpec
 from matplotlib.widgets import Slider, Button, RadioButtons
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from VCF.filterInfo import DataSetInfo
 from Util.box import Box
@@ -157,7 +158,7 @@ class ViewInfo_base:
         self._axs = axs
         self._plot_size = size
 
-    def make_key(self, axs, size):
+    def make_key(self, key_ax):
         pass
     def fit_to_size(self,size:tuple[int,int]):
         """
@@ -240,6 +241,9 @@ TOP_PADDING = 60
 BOTTOM_PADDING = 60
 LEFT_PADDING = 100
 RIGHT_PADDING = 40
+KEY_WIDTH = 300
+KEY_HEIGHT = 40
+REL_KEY_WIDTH = "80%"
 
 class ViewSetManager:
     """Class used to store information about a group of linked (or similar) views."""
@@ -328,12 +332,6 @@ class ViewSetManager:
                         self.main_view = view
                         view._is_main = True
 
-
-        # Remove main for view lists 
-        # if self._has_main():
-        #     if self.main_view in self.top_views: self.top_views.remove(self.main_view)
-        #     elif self.main_view in self.left_views: self.left_views.remove(self.main_view)
-
         # Find width of left views
         left_widths = []
         for v in self.left_views:
@@ -342,23 +340,37 @@ class ViewSetManager:
                 left_widths += v.get_desired_width()
         left_width = sum(left_widths)
 
+        
+        plot_top = self.main_view is not None and self.main_view.get_view_pos() == ViewPos.MAIN
 
-        # Find hight of top views
         top_hights = []
-        top_set = False # Latch to see if view is on top
-        for v in self.top_views:
-            if not v.get_main():
-                
-                v.set_on_top(not top_set)
-                # Set top view latch
-                if not top_set:
-                    top_set = True
+        if plot_top:
+        # Find hight of top views
+            top_set = False # Latch to see if view is on top
+            for v in self.top_views:
+                if not v.get_main():
+                    
+                    v.set_on_top(not top_set)
+                    # Set top view latch
+                    if not top_set:
+                        top_set = True
 
-                # Update view title to match main view 
-                v.set_group_title(self.main_view.get_group_title())
-                top_hights += v.get_desired_hight()
+                    # Update view title to match main view 
+                    v.set_group_title(self.main_view.get_group_title())
+                    top_hights += v.get_desired_hight()
+            self.main_view.set_on_top(not top_set)
         top_hight = sum(top_hights)
-        self.main_view.set_on_top(not top_set)
+        
+
+        # Find width of key
+        # Plot keys on same figure
+        # full_view_list = [view for view in self.top_views if not view.get_main()] + [self.main_view] + [view for view in self.left_views if not view.get_main()]
+        # has_key = any([view.has_key() for view in full_view_list])
+        # if has_key:
+        #     _key_w = KEY_WIDTH
+        #     pad_r += _key_w
+        # else:
+        #     _key_w = 0
 
         # Find dimensions of main view 
         desired_main_width = sum(self.main_view.get_desired_width())
@@ -375,7 +387,8 @@ class ViewSetManager:
         h, h_ratios = length_and_ratios([pad_t]+top_hights+[main_h, pad_b])
 
         # Scale figure padding
-        fig.subplots_adjust(left=pad_l/w, right=1-pad_r/w, top=1-pad_t/h, bottom=pad_b/h)
+        #fig.subplots_adjust(left=pad_l/w, right=1-(pad_r-_key_w)/w, top=1-pad_t/h, bottom=pad_b/h)
+        fig.subplots_adjust(left=pad_l/w, right=1-(pad_r)/w, top=1-pad_t/h, bottom=pad_b/h)
        
         # Make the main plot
         self.main_view.make_plots([ax],(main_w, main_h))    
@@ -400,19 +413,31 @@ class ViewSetManager:
                 _axes.reverse()
             view.make_plots(_axes, size=(_x_size, main_h))
 
-        
-        plot_i = 0
-        for view in reversed([view for view in self.top_views if not view.get_main()]):
-            _axes:list[Axes] = []
-            _y_size = 0
-            for _ in range(view.get_plot_count()):
-                prop_size =  top_hights[-(1+plot_i)]/main_h
-                _axes.append(divider.append_axes('top',size=f"{prop_size*100}%",pad=0, sharex=ax))
-                _y_size += top_hights[-(1+plot_i)]
-                plot_i += 1
-                _axes.reverse()
-            view.make_plots(_axes, size=(main_w, _y_size))
 
+        if plot_top:
+            plot_i = 0
+            for view in reversed([view for view in self.top_views if not view.get_main()]):
+                _axes:list[Axes] = []
+                _y_size = 0
+                for _ in range(view.get_plot_count()):
+                    prop_size =  top_hights[-(1+plot_i)]/main_h
+                    _axes.append(divider.append_axes('top',size=f"{prop_size*100}%",pad=0, sharex=ax))
+                    _y_size += top_hights[-(1+plot_i)]
+                    plot_i += 1
+                    _axes.reverse()
+                view.make_plots(_axes, size=(main_w, _y_size))
+
+        # if has_key:
+        #     pass
+        #     # Make key axs
+        #     rel_w = _key_w/main_w
+        #     key_ax:Axes = divider.append_axes('right', size=f"{rel_w*100}%", pad=0)
+        #     key_ax.axes.set_visible(False)
+        #     for view in [view for view in full_view_list if view.has_key()]:
+        #         # Make new axes for key 
+        #         rel_h = KEY_HEIGHT/main_h
+        #         _ax = inset_axes(key_ax,width=REL_KEY_WIDTH, height="20%")
+        #         view.make_key(key_ax=_ax)
 
 
         # Check if main view needs scroll bars
@@ -434,7 +459,7 @@ class ViewSetManager:
             top = sum(h_ratios[-2:])
             left = 1-w_ratios[-1]
             y_scroll_box = Box(left, top, scroll_w, scroll_h)
-
+            
         return w,h, x_scroll_box, y_scroll_box
 
 

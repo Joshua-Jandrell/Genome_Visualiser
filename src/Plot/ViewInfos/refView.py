@@ -10,6 +10,7 @@ import matplotlib as plt
 from VCF.dataWrapper import VcfDataWrapper as DataWrapper
 import VCF.dataWrapper as dw
 
+from matplotlib.cm import ScalarMappable
 from matplotlib.figure import Figure as Figure
 from matplotlib.axes import Axes as Axes
 from matplotlib import colors
@@ -42,6 +43,8 @@ class RefView(VariantGridView):
         self._view_type = GRID_TYPE_KEY
         self._pos = ViewPos.LEFT
 
+        self.mat = None
+
     def _get_samples_size(self) -> list[int]:
         l = [self.ideal_block_size]
         if self.plot_alt:
@@ -64,7 +67,7 @@ class RefView(VariantGridView):
         data_matrix = np.matrix(wrapped_data.get_ref_ints())
         if self.stack_mode != Y_STACK:
             data_matrix = np.transpose(data_matrix)
-        self.make_allele_plot(axs[0], data_matrix)
+        self.mat = self.make_allele_plot(axs[0], data_matrix)
         
         if self.plot_alt:
             data_matrix = np.matrix(wrapped_data.get_alt_int())
@@ -77,33 +80,51 @@ class RefView(VariantGridView):
 
 
     def make_allele_plot(self, axis:Axes, data:np.matrix):
-        axis.imshow(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
+        return axis.imshow(data,cmap=self.allele_colors, vmin=self.VAR_MIN, vmax=self.VAR_MAX)
                     
 
     
-    def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
-            key_txt = [["   ","A"],
-                ["   ", "C"],
-                ["   ", "G"],
-                ["   ", "T"],
-                ["   ", "Multiple"],
-                ["   ", "Deletion"],
-                ["   ", "None"]]
-            key_colors = [[self.ALLELE_COLORS[2], "#00000000"],
-                          [self.ALLELE_COLORS[3], "#00000000"],
-                          [self.ALLELE_COLORS[4], "#00000000"],
-                          [self.ALLELE_COLORS[5], "#00000000"],
-                          [self.ALLELE_COLORS[1], "#00000000"],
-                          [self.ALLELE_COLORS[1], "#00000000"],
-                          [self.ALLELE_COLORS[0], "#00000000"]]
-            tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_row_hight, self.key_column_width])
+    def make_key(self,key_ax:Axes, size:tuple[int,int]):
 
-            #tab.auto_set_column_width([0, 1])
-            key_ax.set_xticklabels([])
-            key_ax.set_yticklabels([])
-            key_ax.set_xlabel("")
-            key_ax.set_ylabel("")
-            key_ax.axis('off')
+        # fig = key_ax.figure
+        # key_txt = ["A","C","G","T","Other","None"]
+        # sm = ScalarMappable(cmap=colors.ListedColormap([self.ALLELE_COLORS[2],self.ALLELE_COLORS[3], self.ALLELE_COLORS[4], self.ALLELE_COLORS[5],self.ALLELE_COLORS[1],'#FFFFFF']))
+        # cbar = fig.colorbar(sm,cax=key_ax, orientation="horizontal")
+        # cbar.set_ticks(ticks=((np.arange(5)/5)+0.1), labels=['A', 'C', 'G', 'Other', 'None'])
+
+        # key_txt = [["A","C","G","T","Other","None"]]
+        # key_colors = [[self.ALLELE_COLORS[2],self.ALLELE_COLORS[3], self.ALLELE_COLORS[4], self.ALLELE_COLORS[5],self.ALLELE_COLORS[1],self.ALLELE_COLORS[0]]]
+        # tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center")
+        # tab.auto_set_font_size(False)
+        # tab.set_fontsize(20) 
+        # key_ax.set_xticklabels([])
+        # key_ax.set_yticklabels([])
+        # key_ax.set_xlabel("")
+        # key_ax.set_ylabel("")
+        # key_ax.axis('off')
+            
+        key_txt = [["   ","A"],
+            ["   ", "C"],
+            ["   ", "G"],
+            ["   ", "T"],
+            ["   ", "Multiple"],
+            ["   ", "Deletion"],
+            ["   ", "None"]]
+        key_colors = [[self.ALLELE_COLORS[2], "#00000000"],
+                        [self.ALLELE_COLORS[3], "#00000000"],
+                        [self.ALLELE_COLORS[4], "#00000000"],
+                        [self.ALLELE_COLORS[5], "#00000000"],
+                        [self.ALLELE_COLORS[1], "#00000000"],
+                        [self.ALLELE_COLORS[1], "#00000000"],
+                        [self.ALLELE_COLORS[0], "#00000000"]]
+        tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_row_hight, self.key_column_width])
+
+        tab.auto_set_column_width([0, 1])
+        key_ax.set_xticklabels([])
+        key_ax.set_yticklabels([])
+        key_ax.set_xlabel("")
+        key_ax.set_ylabel("")
+        key_ax.axis('off')
 
     def get_plot_names(self) -> list[str]:
         return ['Ref.', 'Alt.']

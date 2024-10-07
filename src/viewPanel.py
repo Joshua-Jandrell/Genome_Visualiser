@@ -282,11 +282,12 @@ def make_keys(views:list[ViewInfo_base]):
         KeyCanvas.hide_canvas()
         return
 
+    h = KeyCanvas.get_height()/key_count
     # Make a gridspec for all keys
     gs = GridSpec(nrows=key_count, ncols=1)
     for i, view in enumerate(key_views):
         ax = key_fig.add_subplot(gs[i])
-        view.make_key(ax,(0,0))
+        view.make_key(ax,(0,h))
 
     KeyCanvas.show_canvas()
 
