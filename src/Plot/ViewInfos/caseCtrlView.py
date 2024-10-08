@@ -2,14 +2,15 @@ import numpy as np
 from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from .variantGridType import VariantGridView, ViewInfo_base, ViewPos, GRID_TYPE_KEY
+import matplotlib.patches as mpatches
 
-
+from ._plot_config_ import CASE_COLORS, CTRL_COLORS
 
 class CaseCtrlView(VariantGridView):
     """
     View used to indicate if an individual is a case or a control sample.
     """
-    CASE_CTRL_COLORS = ['pink', 'red']
+    CASE_CTRL_COLORS = [CASE_COLORS[0], CTRL_COLORS[0]]
     def __init__(self) -> None:
         super().__init__()
 
@@ -30,3 +31,12 @@ class CaseCtrlView(VariantGridView):
     
     def get_plot_names(self) -> list[str]:
         return ["Control samples & Case samples"]
+    
+    def has_key(self) -> bool:
+        return True
+    
+    def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
+        _case = mpatches.Patch(color=self.CASE_CTRL_COLORS[0], label='Homozygous Ref.')
+        _ctrl = mpatches.Patch(color=self.CASE_CTRL_COLORS[1], label='Heterozygous')
+        key_ax.legend(handles=[_ctrl, _case])
+        key_ax.axis('off')

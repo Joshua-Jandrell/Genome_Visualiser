@@ -314,6 +314,8 @@ class VcfDataWrapper:
             self._data[CASES] = np.array([True for s in self._data[SAMPLES]])
             self._data[CTRLS] = np.array([False for s in self._data[SAMPLES]])
 
+        self._data = self.__sort_by_case_ctrl(self._data, in_place=True)
+
 
     def __get_filtered_df(self)->DataFrame:
         """Applies all filters and returns a dataframe containing only the desired values."""
