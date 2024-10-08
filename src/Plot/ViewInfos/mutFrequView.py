@@ -50,8 +50,7 @@ class MutFreqView(VariantGridView):
         fig = key_ax.figure
         cmap = colors.LinearSegmentedColormap.from_list('custom_cmap', MUTATION_FREQ_SPECTRUM)
         norm = colors.Normalize(vmin=0, vmax=100)
-        prop_size = size[1]
-        cax = inset_axes(key_ax,width="90%",height=f"{prop_size*100}%")
+        cax = inset_axes(key_ax,width="90%",height=f"{25}%")
         cbar = fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), cax=cax, orientation='horizontal', label="Mutation Frequency")
         key_ticks = [0, 50, 100]
         cbar.set_ticks(key_ticks)

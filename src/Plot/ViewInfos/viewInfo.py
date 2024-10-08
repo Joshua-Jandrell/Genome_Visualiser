@@ -241,7 +241,7 @@ class ViewInfo_base:
     
 ############################################################################################################
 
-TOP_PADDING = 60
+TOP_PADDING = 100
 BOTTOM_PADDING = 60
 LEFT_PADDING = 100
 RIGHT_PADDING = 40

@@ -15,6 +15,8 @@ from matplotlib.gridspec import GridSpec as GridSpec
 from .viewInfo import ViewInfo_base, ViewPos, X_STACK, Y_STACK, STACK_MODE
 from Util.box import Box
 
+import numpy as np
+
 GRID_TYPE_KEY = "Var-Grid"
 IS_DYNAMIC = False
 
@@ -70,6 +72,11 @@ class VariantGridView(ViewInfo_base):
 
         if self.is_on_top():
             axs[0].set_title(self.get_group_title())
+            data = self.get_data().get_data()
+            if data is not None:
+                labels = data.get_samples()
+                axs[0].xaxis.set_ticks(np.arange(len(labels)),data.get_samples(), rotation=90)
+                axs[0].xaxis.set_tick_params(labeltop=True, labelsize=8)
 
         # Configure plot labels
         _ax_names = self.get_plot_names()
@@ -88,6 +95,7 @@ class VariantGridView(ViewInfo_base):
         assert(dw is not None)
         y_labels = dw.get_pos()
         ax.set_yticks(ticks=range(len(y_labels)), labels=y_labels)
+        ax.yaxis.set_tick_params(labelsize=8)
 
     def get_desired_hight(self) -> list[int]:
         if self.stack_mode == Y_STACK: return self._get_samples_size()

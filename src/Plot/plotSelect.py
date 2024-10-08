@@ -10,10 +10,10 @@ from VCF.datasetDropDown import DatasetMenu
 
 from Plot.OptionCards import PlotOptionCard, RefOptionCard, MutFreqOptionCard, FreqOptionCard, ZygoOptionCard, CasecntrlOptionCard, PosOptionCard, MutationBarOptionCard
 
-REF_OPT = "Ref. & Alt. Genome"
+REF_OPT = "Ref/Alt Sequence"
 ZYGOSITY_OPT = "Sample Zygosity Map"
-MUTATION_FREQUENCY_OPT = "Mutation Probabilities Map"
-FREQ_BAR_OPT = "Zygosity Frequency Bar Graph"
+MUTATION_FREQUENCY_OPT = "Mutation Frequency Heatmap"
+FREQ_BAR_OPT = "Proportional Zygosity Bar Graph"
 CASE_CTRL_OPT = "Case/Control View"
 
 POS_OPT = "Position Heatmap"
