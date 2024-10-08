@@ -27,7 +27,7 @@ class VariantGridView(ViewInfo_base):
         self.ideal_block_size = 20
         self.active_axis:Axes|None = None
         self._view_type = GRID_TYPE_KEY
-        self._group_title = 'Zygoisty Map'
+        self._group_title = 'Zygosity Map'
 
         # Data dimensions
         self._n_samps = 0
