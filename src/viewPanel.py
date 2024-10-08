@@ -246,7 +246,7 @@ class ViewPanel(ctk.CTkFrame):
             mount.plot_set(view_set,size=(_w,_h))
 
         # Plot keys if possible
-        make_keys(views=views)
+        #make_keys(views=views)
 
         #self.__plot_load_panel.hide()
         self.__plot_load_panel.hide()
@@ -270,25 +270,25 @@ class ViewPanel(ctk.CTkFrame):
            
 
 
-def make_keys(views:list[ViewInfo_base]):
-    key_fig = KeyCanvas.get_figure()
-    key_fig.clear()
-    if not isinstance(key_fig, Figure): return
+#def make_keys(views:list[ViewInfo_base]):
+    # key_fig = KeyCanvas.get_figure()
+    # key_fig.clear()
+    # if not isinstance(key_fig, Figure): return
     
-    # Find the number keys that need to be plotted
-    key_views = [view for view in views if view.has_key()]
-    key_count = len(key_views)
-    if key_count == 0:
-        KeyCanvas.hide_canvas()
-        return
+    # # Find the number keys that need to be plotted
+    # key_views = [view for view in views if view.has_key()]
+    # key_count = len(key_views)
+    # if key_count == 0:
+    #     KeyCanvas.hide_canvas()
+    #     return
 
-    h = KeyCanvas.get_height()/key_count
-    # Make a gridspec for all keys
-    gs = GridSpec(nrows=key_count, ncols=1)
-    for i, view in enumerate(key_views):
-        ax = key_fig.add_subplot(gs[i])
-        view.make_key(ax,(0,h))
+    # h = KeyCanvas.get_height()/key_count
+    # # Make a gridspec for all keys
+    # gs = GridSpec(nrows=key_count, ncols=1)
+    # for i, view in enumerate(key_views):
+    #     ax = key_fig.add_subplot(gs[i])
+    #     view.make_key(ax,(0,h))
 
-    KeyCanvas.show_canvas()
+    # KeyCanvas.show_canvas()
 
 

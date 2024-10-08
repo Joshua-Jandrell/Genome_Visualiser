@@ -16,6 +16,7 @@ from matplotlib.figure import Figure as Figure
 from matplotlib.axes import Axes as Axes
 from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
+import matplotlib.patches as mpatches
 
 from .viewInfo import ViewInfo_base
 from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK, X_STACK
@@ -37,6 +38,8 @@ class ZygoteView(VariantGridView):
         self._can_compress = True
 
         self._has_key = True
+
+        self._key_rows = 3
 
     # def get_samples_size(self) -> list[int]:
     #     wrapped_data = self.dataset_info.get_data_wrapper()
@@ -68,29 +71,10 @@ class ZygoteView(VariantGridView):
         return True
     
     def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
-
-        # fig = key_ax.figure
-        # key_txt = ["Holo. Ref.","Hetro.","Homo. alt.","No Data"]
-        # sm = ScalarMappable(cmap=colors.ListedColormap([CASE_COLORS[1],CASE_COLORS[2], CASE_COLORS[3],'#FFFFFF']))
-        # cbar = fig.colorbar(sm,cax=key_ax, orientation="horizontal")
-        # l = len(key_txt)
-        # cbar.set_ticks(ticks=((np.arange(l)/l)+(1/(2*l))), labels=key_txt)
-        _blank = "   "         
-        key_txt = [
-            ["Ctrl/Case", _blank, _blank],
-            ["Homo. Ref",_blank, _blank],
-            ["Hetrozygos", _blank,_blank],
-            ["Homo. Alt.", _blank, _blank],
-            ["No Data", _blank, _blank]]
-        key_colors = [
-                        ["#00000000", CTRL_COLORS[0], CASE_COLORS[0]],
-                        ["#00000000", self.MUTATION_COLORS[5], self.MUTATION_COLORS[1]],
-                        ["#00000000", self.MUTATION_COLORS[6], self.MUTATION_COLORS[2]],
-                        ["#00000000", self.MUTATION_COLORS[7], self.MUTATION_COLORS[3]],
-                        ["#00000000", self.MUTATION_COLORS[4], self.MUTATION_COLORS[0]]]
-        tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_column_width, self.key_row_hight,self.key_row_hight])
-        tab.auto_set_font_size([False, False, False])
-        tab.auto_set_column_width([1,0,0])
+        homor = mpatches.Patch(color=CASE_COLORS[2], label='Homozygous Ref.')
+        hetro = mpatches.Patch(color=CASE_COLORS[3], label='Heterozygous')
+        homoa = mpatches.Patch(color=CASE_COLORS[4], label='Homozygous Alt')
+        key_ax.legend(handles=[homor, hetro, homoa])
         key_ax.axis('off')
 
     def get_plot_names(self) -> list[str]:

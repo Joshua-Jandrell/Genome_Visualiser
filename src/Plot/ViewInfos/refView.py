@@ -17,6 +17,7 @@ from matplotlib import colors
 from matplotlib.gridspec import GridSpec as GridSpec
 from matplotlib.widgets import Slider
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.patches as mpatches
 
 from .viewInfo import ViewInfo_base, ViewPos
 from .variantGridType import GRID_TYPE_KEY, VariantGridView, Y_STACK
@@ -43,7 +44,10 @@ class RefView(VariantGridView):
         self._view_type = GRID_TYPE_KEY
         self._pos = ViewPos.LEFT
 
+        self._key_rows = 3
+
         self.mat = None
+        
 
     def _get_samples_size(self) -> list[int]:
         l = [self.ideal_block_size]
@@ -86,44 +90,13 @@ class RefView(VariantGridView):
     
     def make_key(self,key_ax:Axes, size:tuple[int,int]):
 
-        # fig = key_ax.figure
-        # key_txt = ["A","C","G","T","Other","None"]
-        # sm = ScalarMappable(cmap=colors.ListedColormap([self.ALLELE_COLORS[2],self.ALLELE_COLORS[3], self.ALLELE_COLORS[4], self.ALLELE_COLORS[5],self.ALLELE_COLORS[1],'#FFFFFF']))
-        # cbar = fig.colorbar(sm,cax=key_ax, orientation="horizontal")
-        # cbar.set_ticks(ticks=((np.arange(5)/5)+0.1), labels=['A', 'C', 'G', 'Other', 'None'])
-
-        # key_txt = [["A","C","G","T","Other","None"]]
-        # key_colors = [[self.ALLELE_COLORS[2],self.ALLELE_COLORS[3], self.ALLELE_COLORS[4], self.ALLELE_COLORS[5],self.ALLELE_COLORS[1],self.ALLELE_COLORS[0]]]
-        # tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center")
-        # tab.auto_set_font_size(False)
-        # tab.set_fontsize(20) 
-        # key_ax.set_xticklabels([])
-        # key_ax.set_yticklabels([])
-        # key_ax.set_xlabel("")
-        # key_ax.set_ylabel("")
-        # key_ax.axis('off')
-            
-        key_txt = [["   ","A"],
-            ["   ", "C"],
-            ["   ", "G"],
-            ["   ", "T"],
-            ["   ", "Multiple"],
-            ["   ", "Deletion"],
-            ["   ", "None"]]
-        key_colors = [[self.ALLELE_COLORS[2], "#00000000"],
-                        [self.ALLELE_COLORS[3], "#00000000"],
-                        [self.ALLELE_COLORS[4], "#00000000"],
-                        [self.ALLELE_COLORS[5], "#00000000"],
-                        [self.ALLELE_COLORS[1], "#00000000"],
-                        [self.ALLELE_COLORS[1], "#00000000"],
-                        [self.ALLELE_COLORS[0], "#00000000"]]
-        tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_row_hight, self.key_column_width])
-
-        tab.auto_set_column_width([0, 1])
-        key_ax.set_xticklabels([])
-        key_ax.set_yticklabels([])
-        key_ax.set_xlabel("")
-        key_ax.set_ylabel("")
+        _a = mpatches.Patch(color=self.ALLELE_COLORS[2], label='A')
+        _c = mpatches.Patch(color=self.ALLELE_COLORS[3], label='C')
+        _g = mpatches.Patch(color=self.ALLELE_COLORS[4], label='G')
+        _t = mpatches.Patch(color=self.ALLELE_COLORS[5], label='T')
+        _other = mpatches.Patch(color=self.ALLELE_COLORS[1], label='Other')
+        _none = mpatches.Patch(color=self.ALLELE_COLORS[0], label='None')
+        key_ax.legend(handles=[_a,_c,_g,_t,_other,_none],ncol=2)
         key_ax.axis('off')
 
     def get_plot_names(self) -> list[str]:

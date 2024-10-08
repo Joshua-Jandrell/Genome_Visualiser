@@ -28,7 +28,7 @@ class FrequencyView(ViewInfo_base):
     
     def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         axis = axs[0]
-        
+    
         
         wrapped_data = self.dataset_info.get_data()
         pos = wrapped_data.get_pos()

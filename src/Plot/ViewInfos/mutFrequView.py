@@ -20,9 +20,10 @@ class MutFreqView(VariantGridView):
         super().__init__()
         self._pos = ViewPos.LEFT
         self.img = None
+        self._key_rows = 2
     
     def _get_samples_size(self) -> list[int]:
-        return [self.ideal_block_size]
+        return [2*self.ideal_block_size]
 
     def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:
         self.active_axis = ax = axs[0]
@@ -30,9 +31,13 @@ class MutFreqView(VariantGridView):
         all_prob_mat = np.matrix(wrapped_data.get_mutation_probability())
 
         if self.stack_mode != Y_STACK:
-            all_prob_mat = np.transpose(all_prob_mat)       
+            all_prob_mat = np.transpose(all_prob_mat)      
 
-        ax.imshow(all_prob_mat, cmap=colors.ListedColormap(MUTATION_FREQ_SPECTRUM), vmin=0, vmax=100)
+        _cmap = colors.ListedColormap(MUTATION_FREQ_SPECTRUM)
+        ax.imshow(all_prob_mat, cmap=_cmap, vmin=0, vmax=1, aspect='auto')
+        # ax.barh(np.arange(len(wrapped_data.get_mutation_probability())),
+        #         wrapped_data.get_mutation_probability(),
+        #         color=_cmap(wrapped_data.get_mutation_probability()))
         
         self._do_base_config(axs)
         return super().make_plots(axs, size) 
@@ -45,35 +50,13 @@ class MutFreqView(VariantGridView):
         fig = key_ax.figure
         cmap = colors.LinearSegmentedColormap.from_list('custom_cmap', MUTATION_FREQ_SPECTRUM)
         norm = colors.Normalize(vmin=0, vmax=100)
-        prop_size = 2*self.ideal_block_size/size[1]
-        cax = inset_axes(key_ax,width="100%",height=f"{prop_size*100}%")
-        cbar = fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), cax=cax, orientation='horizontal', fraction=prop_size, label="Mutation Frequency")
+        prop_size = size[1]
+        cax = inset_axes(key_ax,width="90%",height=f"{prop_size*100}%")
+        cbar = fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), cax=cax, orientation='horizontal', label="Mutation Frequency")
         key_ticks = [0, 50, 100]
         cbar.set_ticks(key_ticks)
         cbar.set_ticklabels([f'{tick}%' for tick in key_ticks])
         key_ax.axis('off')
 
-
-           
-    # #     fig_mut_freq_key, ax = plt.subplots(layout='constrained')
-    # #     # Create a continuous colormap
-    # #     cmap = colors.LinearSegmentedColormap.from_list('custom_cmap', MUTATION_FREQ_SPECTRUM)
-    # #     # Normalize the color scale
-    # #     norm = colors.Normalize(vmin=0, vmax=100)
-    # #     # Create the colorbar
-    # #     cbar = fig_mut_freq_key.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=ax, orientation='vertical', label="Zygosity Frequency key")
-    # #     # Set custom ticks and labels
-    # #     key_ticks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    # #     cbar.set_ticks(key_ticks)
-    # #     cbar.set_ticklabels([f'{tick}%' for tick in key_ticks])
-    # #     key_ax = ax
-    #### Added this stuff
-    # #     tab = key_ax.table(cellText=key_ticks,cellColours=cbar, loc="center", colLoc="center", colWidths=[self.key_row_hight, self.key_column_width])
-    # #     key_ax.axis('off')
-    #######
-    # #     ##### Transfer colorbar to a linspace
-    # #     # fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),cax=ax, orientation='vertical', label="Zygosity Frequency key")
-
-
-def get_plot_names(self) -> list[str]:
-        return ['mut. freq.']
+    def get_plot_names(self) -> list[str]:
+            return ['Mut-\n Freq.']

@@ -88,6 +88,8 @@ class ViewInfo_base:
 
         self._group_title = "Plot group"
 
+        self._key_rows = 1
+
         self._is_plotted = False
 
     def get_priority(self)->int:
@@ -177,6 +179,8 @@ class ViewInfo_base:
         return self._view_type == other._view_type
     def has_key(self)->bool:
         return self._has_key
+    def get_key_rows(self)->int:
+        return self._key_rows
     
     # === Group/set type information ===
     def is_compressible(self)->bool:
@@ -241,9 +245,10 @@ TOP_PADDING = 60
 BOTTOM_PADDING = 60
 LEFT_PADDING = 100
 RIGHT_PADDING = 40
-KEY_WIDTH = 300
+KEY_WIDTH = 200
 KEY_HEIGHT = 40
-REL_KEY_WIDTH = "80%"
+KEY_PAD = 20
+KEY_SIDE_PAD = 30
 
 class ViewSetManager:
     """Class used to store information about a group of linked (or similar) views."""
@@ -363,15 +368,14 @@ class ViewSetManager:
         top_hight = sum(top_hights)
         
 
-        # Find width of key
-        # Plot keys on same figure
-        # full_view_list = [view for view in self.top_views if not view.get_main()] + [self.main_view] + [view for view in self.left_views if not view.get_main()]
-        # has_key = any([view.has_key() for view in full_view_list])
-        # if has_key:
-        #     _key_w = KEY_WIDTH
-        #     pad_r += _key_w
-        # else:
-        #     _key_w = 0
+        # Adjust width if keys will be plotted.
+        full_view_list = [view for view in self.left_views if not view.get_main()]+[view for view in self.top_views if not view.get_main()]+[self.main_view]
+        has_key = any([view.has_key() for view in full_view_list])
+        if has_key:
+            _key_w = KEY_WIDTH
+            pad_r += _key_w
+        else:
+            _key_w = 0
 
         # Find dimensions of main view 
         desired_main_width = sum(self.main_view.get_desired_width())
@@ -388,8 +392,8 @@ class ViewSetManager:
         h, h_ratios = length_and_ratios([pad_t]+top_hights+[main_h, pad_b])
 
         # Scale figure padding
-        #fig.subplots_adjust(left=pad_l/w, right=1-(pad_r-_key_w)/w, top=1-pad_t/h, bottom=pad_b/h)
-        fig.subplots_adjust(left=pad_l/w, right=1-(pad_r)/w, top=1-pad_t/h, bottom=pad_b/h)
+        fig.subplots_adjust(left=pad_l/w, right=1-(pad_r-_key_w)/w, top=1-pad_t/h, bottom=pad_b/h)
+        #fig.subplots_adjust(left=pad_l/w, right=1-(pad_r)/w, top=1-pad_t/h, bottom=pad_b/h)
        
         # Make the main plot
         self.main_view.make_plots([ax],(main_w, main_h))    
@@ -428,17 +432,26 @@ class ViewSetManager:
                     _axes.reverse()
                 view.make_plots(_axes, size=(main_w, _y_size))
 
-        # if has_key:
-        #     pass
-        #     # Make key axs
-        #     rel_w = _key_w/main_w
-        #     key_ax:Axes = divider.append_axes('right', size=f"{rel_w*100}%", pad=0)
-        #     key_ax.axes.set_visible(False)
-        #     for view in [view for view in full_view_list if view.has_key()]:
-        #         # Make new axes for key 
-        #         rel_h = KEY_HEIGHT/main_h
-        #         _ax = inset_axes(key_ax,width=REL_KEY_WIDTH, height="20%")
-        #         view.make_key(key_ax=_ax)
+        # Plot key on key axis
+        if has_key:
+
+            # Make key axs
+            rel_w = _key_w/main_w
+            key_ax:Axes = divider.append_axes('right', size=f"{rel_w*100}%", pad=0)
+            key_ax.axis('off')
+            key_views = [view for view in full_view_list if view.has_key()]
+            key_sizes = [view.get_key_rows() * KEY_HEIGHT for view in key_views]
+            key_h = sum(key_sizes) + (len(key_sizes)-1)*KEY_PAD
+            x_spacing = KEY_SIDE_PAD/_key_w
+            
+
+            for _i, view in enumerate(key_views):
+                rel_h = (view.get_key_rows() * KEY_HEIGHT)/main_h
+                ax = key_ax.inset_axes([x_spacing,1-sum(key_sizes[:(_i+1)])/main_h,1-x_spacing,rel_h])
+                # Make new axes for key 
+                rel_h = (view.get_key_rows() * KEY_HEIGHT)/main_h
+                view.make_key(key_ax=ax, size=(rel_w, rel_h))
+
 
 
         # Check if main view needs scroll bars

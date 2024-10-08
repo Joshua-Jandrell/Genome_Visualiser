@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import matplotlib as mpl
 from matplotlib.axes import Axes as Axes
+import matplotlib.patches as mpatches
 from .variantGridType import VariantGridView, DataWrapper, ViewPos, Y_STACK
 
 from ._plot_config_ import CASE_COLORS, CTRL_COLORS
@@ -69,28 +70,10 @@ class MutationBarView(VariantGridView):
     
     def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
 
-        # fig = key_ax.figure
-        # key_txt = ["Holo. Ref.","Hetro.","Homo. alt.","No Data"]
-        # sm = ScalarMappable(cmap=colors.ListedColormap([CASE_COLORS[1],CASE_COLORS[2], CASE_COLORS[3],'#FFFFFF']))
-        # cbar = fig.colorbar(sm,cax=key_ax, orientation="horizontal")
-        # l = len(key_txt)
-        # cbar.set_ticks(ticks=((np.arange(l)/l)+(1/(2*l))), labels=key_txt)
-        _blank = "   "         
-        key_txt = [
-            ["Ctrl/Case", _blank, _blank],
-            ["Homo. Ref",_blank, _blank],
-            ["Hetrozygos", _blank,_blank],
-            ["Homo. Alt.", _blank, _blank],
-            ["No Data", _blank, _blank]]
-        key_colors = [
-                        ["#00000000", "#00000000", "#00000000"],
-                        ["#00000000", CTRL_COLORS[2], CASE_COLORS[2]],
-                        ["#00000000", CTRL_COLORS[3], CASE_COLORS[3]],
-                        ["#00000000", CTRL_COLORS[4], CASE_COLORS[4]],
-                        ["#00000000", CTRL_COLORS[1], CASE_COLORS[1]]]
-        tab = key_ax.table(cellText=key_txt,cellColours=key_colors, loc="center", colLoc="center", colWidths=[self.key_column_width, self.key_row_hight,self.key_row_hight])
-        tab.auto_set_font_size([False, False, False])
-        tab.auto_set_column_width([1, 0,0])
+        homor = mpatches.Patch(color=CASE_COLORS[2], label='Homozygous Ref.')
+        hetro = mpatches.Patch(color=CASE_COLORS[3], label='Heterozygous')
+        homoa = mpatches.Patch(color=CASE_COLORS[4], label='Homozygous Alt')
+        key_ax.legend(handles=[homor, hetro, homoa])
         key_ax.axis('off')
     
 
@@ -102,6 +85,6 @@ class MutationBarView(VariantGridView):
     
     def get_plot_names(self) -> list[str]:
         if self._is_main:
-            return ["Mutation Frequency"]
+            return ["Zygosity Proportion"]
         else:
-            return ["Mut\nFreq."]
+            return ["Zygo-\nProp."]

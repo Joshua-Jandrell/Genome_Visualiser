@@ -135,12 +135,12 @@ class VcfDataWrapper:
             return _zygos   #.transpose()[::-1,:] # Flip order so that first entry is on the top
     
     def get_mutation_probability(self):
-        """ Returns an array of probabilities (0 - 100 %) for any mutation (homo or hetero) occuring in a position, based on the queried data displayed.\\        
+        """ Returns an array of probabilities (0 - 1) for any mutation (homo or hetero) occuring in a position, based on the queried data displayed.\\        
         """
         gt_data = self.__get_filtered_genotype_array()
         # Frequency of homzygos per position
         zygo_total_probability = (((gt_data.is_hom_alt()*2).sum(axis=1)
-                                +(gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()*2))*100
+                                +(gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()*2))
         return zygo_total_probability
     
     def get_homozygous_probability(self, split:bool = False, format:Literal['percentage', 'fraction']='percentage'):
