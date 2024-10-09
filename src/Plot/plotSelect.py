@@ -12,12 +12,12 @@ from Plot.OptionCards import PlotOptionCard, RefOptionCard, MutFreqOptionCard, F
 
 REF_OPT = "Ref/Alt Sequence"
 ZYGOSITY_OPT = "Sample Zygosity Map"
-MUTATION_FREQUENCY_OPT = "Mutation Frequency Heatmap"
+MUTATION_FREQUENCY_OPT = "Variant Frequency Heatmap"
 FREQ_BAR_OPT = "Proportional Zygosity Bar Graph"
 CASE_CTRL_OPT = "Case/Control View"
 
 POS_OPT = "Position Heatmap"
-FREQUENCY_OPT = "Population Mutation Density Histograms"
+FREQUENCY_OPT = "Population Variant Density Histograms"
 
 class PlotOptionPanel(OptionPanel):
     __instance = None

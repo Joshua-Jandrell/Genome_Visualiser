@@ -16,7 +16,7 @@ class FreqOptionCard(PlotOptionCard):
     def __init__(self, master, option_ctrl, option_key: str, option_value=None, width: int = 200, height: int = 100, corner_radius: int | str | None = 9, border_width: int | str | None = 1, bg_color: str | Tuple[str] = "transparent", fg_color: str | Tuple[str] | None = "#FFF8DC", border_color: str | Tuple[str] | None = "#666666", background_corner_colors: Tuple[str | Tuple[str]] | None = ("#3DA13F", "#CC6677", "#6495ED", "#F6C141"), overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
-        self.t = ctk.CTkLabel(self.content ,text= "This displays the density distribution of mutations across the selected set.", wraplength= 150)
+        self.t = ctk.CTkLabel(self.content ,text= "This displays the density and distribution of variants for the selected samples.", wraplength= 160)
         self.t.grid(row=1, column=1, padx=7, pady=5)
         
         # Add a segmented to help pick between plotting counts or density 

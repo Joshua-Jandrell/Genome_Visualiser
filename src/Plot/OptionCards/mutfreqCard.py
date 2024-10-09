@@ -11,5 +11,5 @@ class MutFreqOptionCard(PlotOptionCard):
         # Stupidly long list of constructor arguments (may be shortened in future)
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
-        self.t = ctk.CTkLabel(self.content ,text= "This indicates the probability that a mutation has occured at that position across the selected set.", wraplength= 280)
+        self.t = ctk.CTkLabel(self.content ,text= "This indicates the probability that a variation has occured at a position across the selected sample set.", wraplength= 275)
         self.t.pack()

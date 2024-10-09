@@ -15,7 +15,7 @@ class ZygoOptionCard(PlotOptionCard):
         # Stupidly long list of constructor arguments (may be shortened in future)
         super().__init__(master, option_ctrl, option_key, option_value, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
-        self.t = ctk.CTkLabel(self.content ,text= "This view displays the zygosity of a mutation for each sample across the selected set.", wraplength= 290)
+        self.t = ctk.CTkLabel(self.content ,text= "This view displays the zygosity of a sample's variant, for each sample of the selected set.", wraplength= 290)
         self.t.pack()
         # # Add a segmented to help pick between plotting counts or density 
         # counts_toggle = ctk.CTkSegmentedButton(master=self.content, #NB add all new elements to the content of the panel (not the panel itself)
