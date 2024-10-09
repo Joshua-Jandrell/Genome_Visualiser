@@ -18,13 +18,15 @@ from Util.box import Box
 
 class FrequencyView(ViewInfo_base):
     def __init__(self) -> None:
+        super().__init__()
         self.min_window = 400
         self.plot_density = False
         self.n_bins = 50
-        super().__init__()
 
     def get_desired_hight(self) -> list[int]:
         return [self.min_window]
+    def get_desired_width(self) -> list[int]:
+        return [100000]
     
     def make_plots(self,axs:list[Axes],size:tuple[int,int])->str:
         axis = axs[0]
