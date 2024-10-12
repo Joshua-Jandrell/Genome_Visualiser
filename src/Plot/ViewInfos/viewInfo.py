@@ -353,7 +353,7 @@ class ViewSetManager:
         left_width = sum(left_widths)
 
         
-        plot_top = self.main_view is not None and self.main_view.get_view_pos() == ViewPos.MAIN
+        plot_top = STACK_MODE == Y_STACK or self.main_view is not None and self.main_view.get_view_pos() == ViewPos.MAIN
 
         top_hights = []
         top_set = False # Latch to see if view is on top

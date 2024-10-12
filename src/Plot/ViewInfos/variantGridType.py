@@ -106,7 +106,6 @@ class VariantGridView(ViewInfo_base):
 
 
     def make_var_labels(self, ax:Axes):
-        print("lll")
         dw = self.dataset_info.get_data()
         assert(dw is not None)
         _labels = dw.get_pos()
@@ -137,11 +136,11 @@ class VariantGridView(ViewInfo_base):
     def fit_to_size(self, size:tuple[int,int]):
         if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:
-        if self.get_main() or pos_is_on_x(self._pos):
+        if pos_is_on_x(self._pos):
             self._blocks_per_window_x = float(size[0])/float(self.ideal_block_size)
             self._move_x(0)
 
-        if self.get_main() or pos_is_on_y(self._pos):
+        if pos_is_on_y(self._pos):
             self._blocks_per_window_y = float(size[1])/float(self.ideal_block_size)
             self._move_y(0)
 

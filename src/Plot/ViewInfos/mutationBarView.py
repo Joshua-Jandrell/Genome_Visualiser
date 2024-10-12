@@ -36,7 +36,18 @@ class MutationBarView(VariantGridView):
         hetro_i = 3
         if self._is_main:
             if self.stack_mode == Y_STACK:
-                print("yyyy")
+                # Plot cases 
+                ax.bar(_y_pts, homo_z[1], color=CASE_COLORS[homo_i])
+                ax.bar(_y_pts, hetro_z[case_i], bottom=homo_z[case_i], color=CASE_COLORS[hetro_i])
+                #ax.grid()
+                if dw.get_n_ctrls() > 0:
+                    ax.bar(_y_pts, -homo_z[ctrl_i], color=CTRL_COLORS[homo_i])
+                    ax.bar(_y_pts, -hetro_z[ctrl_i], bottom=-homo_z[ctrl_i], color=CTRL_COLORS[hetro_i])
+                    ax.hlines([0],xmin=_y_pts[0],xmax=_y_pts[-1], colors=['black'])
+
+                    ax.set_ylim([-1,1])
+                else:
+                    ax.set_ylim([0,1])
             else:
                 # Plot cases 
                 ax.barh(_y_pts, homo_z[1], color=CASE_COLORS[homo_i])
@@ -51,14 +62,24 @@ class MutationBarView(VariantGridView):
                     ax.set_xlim([0,1])
 
         else:
-            if dw.get_n_ctrls() > 0:
-                ax.barh(_y_pts+0.25, homo_z[case_i], 0.4, align='center', color=CASE_COLORS[homo_i])
-                ax.barh(_y_pts+0.25, hetro_z[case_i], 0.4, left=homo_z[case_i], align='center', color=CASE_COLORS[hetro_i])
-                ax.barh(_y_pts-0.25, homo_z[ctrl_i], 0.4, color=CTRL_COLORS[homo_i])
-                ax.barh(_y_pts-0.25, hetro_z[ctrl_i], 0.4, left=homo_z[ctrl_i], color=CTRL_COLORS[hetro_i])
+            if self.stack_mode == Y_STACK:
+                if dw.get_n_ctrls() > 0:
+                    ax.bar(_y_pts+0.25, homo_z[case_i], 0.4, align='center', color=CASE_COLORS[homo_i])
+                    ax.bar(_y_pts+0.25, hetro_z[case_i], 0.4, bottom=homo_z[case_i], align='center', color=CASE_COLORS[hetro_i])
+                    ax.bar(_y_pts-0.25, homo_z[ctrl_i], 0.4, color=CTRL_COLORS[homo_i])
+                    ax.bar(_y_pts-0.25, hetro_z[ctrl_i], 0.4, bottom=homo_z[ctrl_i], color=CTRL_COLORS[hetro_i])
+                else:
+                    ax.bar(_y_pts, homo_z[case_i], color=CASE_COLORS[homo_i])
+                    ax.bar(_y_pts, hetro_z[case_i], bottom=homo_z[case_i], color=CASE_COLORS[hetro_i])
             else:
-                ax.barh(_y_pts, homo_z[case_i], color=CASE_COLORS[homo_i])
-                ax.barh(_y_pts, hetro_z[case_i], left=homo_z[case_i], color=CASE_COLORS[hetro_i])
+                if dw.get_n_ctrls() > 0:
+                    ax.barh(_y_pts+0.25, homo_z[case_i], 0.4, align='center', color=CASE_COLORS[homo_i])
+                    ax.barh(_y_pts+0.25, hetro_z[case_i], 0.4, left=homo_z[case_i], align='center', color=CASE_COLORS[hetro_i])
+                    ax.barh(_y_pts-0.25, homo_z[ctrl_i], 0.4, color=CTRL_COLORS[homo_i])
+                    ax.barh(_y_pts-0.25, hetro_z[ctrl_i], 0.4, left=homo_z[ctrl_i], color=CTRL_COLORS[hetro_i])
+                else:
+                    ax.barh(_y_pts, homo_z[case_i], color=CASE_COLORS[homo_i])
+                    ax.barh(_y_pts, hetro_z[case_i], left=homo_z[case_i], color=CASE_COLORS[hetro_i])
 
                 
 
@@ -82,6 +103,11 @@ class MutationBarView(VariantGridView):
         if self.stack_mode != Y_STACK:
             return False
         return super().should_add_x_scroll()
+    
+    def should_add_y_scroll(self) -> bool:
+        if self.stack_mode == Y_STACK:
+            return False
+        return super().should_add_y_scroll()
     
     def get_plot_names(self) -> list[str]:
         if self._is_main:
