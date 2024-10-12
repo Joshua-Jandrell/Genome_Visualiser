@@ -42,7 +42,7 @@ class RefView(VariantGridView):
 
         self._has_key = True
         self._view_type = GRID_TYPE_KEY
-        self._pos = ViewPos.LEFT
+        self._pos = ViewPos.VAR
 
         self._key_rows = 3
 

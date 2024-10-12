@@ -9,7 +9,7 @@ from VCF.dataWrapper import VcfDataWrapper, vars_to_numbers
 class SampleVarView(VariantGridView):
     def __init__(self) -> None:
         super().__init__()
-        self._pos = ViewPos.LEFT_STAND_IN
+        self._pos = ViewPos.VAR_STAND_IN
         self._priority = 5
 
     def make_plots(self, axs: list[Axes], size: tuple[int, int]) -> str:

@@ -12,7 +12,7 @@ from matplotlib.figure import Figure as Figure
 from matplotlib.axes import Axes as Axes
 from matplotlib.gridspec import GridSpec as GridSpec
 
-from .viewInfo import ViewInfo_base, ViewPos, X_STACK, Y_STACK, STACK_MODE
+from .viewInfo import ViewInfo_base, ViewPos, X_STACK, Y_STACK, STACK_MODE, pos_is_on_x, pos_is_on_y
 from Util.box import Box
 
 import numpy as np
@@ -64,38 +64,60 @@ class VariantGridView(ViewInfo_base):
             _ax.yaxis.set_tick_params(labelleft=False, left=False)
             _ax.xaxis.set_tick_params(labeltop=False, labelbottom=False, top=False, bottom=False)
 
-        # Configure y axis labels 
-        if self.is_fist_in_set() and self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
+        # Configure axis labels 
+        if self.stack_mode == Y_STACK:
+            if self.is_fist_in_set() and pos_is_on_x(self._pos):
             # Set axis title
-            axs[0].set_ylabel("Variant Position", ha='left')
-            self.make_y_labels(axs[0],)
+                axs[0].set_xlabel("Variant Position")
+                self.make_var_labels(axs[0])
+                axs[0].xaxis.set_label_position('top')
+        else:
+            if self.is_fist_in_set() and pos_is_on_y(self._pos):
+            # Set axis title
+                axs[0].set_ylabel("Variant Position", ha='left')
+                self.make_var_labels(axs[0])
 
         if self.is_on_top():
             axs[0].set_title(self.get_group_title())
-            data = self.get_data().get_data()
-            if data is not None and self._pos in [ViewPos.TOP, ViewPos.MAIN, ViewPos.TOP_STAND_IN]:
-                labels = data.get_samples()
-                axs[0].xaxis.set_ticks(np.arange(len(labels)),data.get_samples(), rotation=90)
-                axs[0].xaxis.set_tick_params(labeltop=True, labelsize=8)
 
         # Configure plot labels
         _ax_names = self.get_plot_names()
 
-        if not self._is_main and (self.stack_mode != Y_STACK and self._pos and self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]):
+        if not self._is_main and (self.stack_mode != Y_STACK and self._pos and self._pos in [ViewPos.VAR, ViewPos.VAR_STAND_IN]):
             for _i, _ax in enumerate(axs):
                 if len(_ax_names) > _i:
                     _ax.set_xlabel(_ax_names[_i], va='top', rotation=90)
                     _ax.xaxis.set_label_position('top')
             
 
-
-    def make_y_labels(self, ax:Axes):
-        ax.yaxis.set_tick_params(labelleft=True)
+    def make_sample_labels(self, ax:Axes):
         dw = self.dataset_info.get_data()
         assert(dw is not None)
-        y_labels = dw.get_pos()
-        ax.set_yticks(ticks=range(len(y_labels)), labels=y_labels)
-        ax.yaxis.set_tick_params(labelsize=8)
+        
+        _labels = dw.get_samples()
+        if self.stack_mode != Y_STACK:
+            ax.xaxis.set_tick_params(labeltop=True)
+            ax.set_xticks(ticks=range(len(_labels)), labels=_labels, rotation=90)
+            ax.xaxis.set_tick_params(labelsize=8)
+        else:
+            ax.yaxis.set_tick_params(labelleft=True)
+            ax.set_yticks(ticks=range(len(_labels)), labels=_labels)
+            ax.yaxis.set_tick_params(labelsize=8)
+
+
+    def make_var_labels(self, ax:Axes):
+        print("lll")
+        dw = self.dataset_info.get_data()
+        assert(dw is not None)
+        _labels = dw.get_pos()
+        if self.stack_mode == Y_STACK:
+            ax.xaxis.set_tick_params(labeltop=True)
+            ax.set_xticks(ticks=range(len(_labels)), labels=_labels, rotation=90)
+            ax.xaxis.set_tick_params(labelsize=8)
+        else:
+            ax.yaxis.set_tick_params(labelleft=True)
+            ax.set_yticks(ticks=range(len(_labels)), labels=_labels)
+            ax.yaxis.set_tick_params(labelsize=8)
 
     def get_desired_hight(self) -> list[int]:
         if self.stack_mode == Y_STACK: return self._get_samples_size()
@@ -115,11 +137,11 @@ class VariantGridView(ViewInfo_base):
     def fit_to_size(self, size:tuple[int,int]):
         if not isinstance(self.active_axis, Axes): return 
         # Find x limit based on block size:
-        if self._pos in [ViewPos.TOP, ViewPos.MAIN]:
-            x_lim = float(size[0])/float(self.ideal_block_size)
-            self._blocks_per_window_x = x_lim
+        if self.get_main() or pos_is_on_x(self._pos):
+            self._blocks_per_window_x = float(size[0])/float(self.ideal_block_size)
             self._move_x(0)
-        if self._pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN, ViewPos.MAIN]:
+
+        if self.get_main() or pos_is_on_y(self._pos):
             self._blocks_per_window_y = float(size[1])/float(self.ideal_block_size)
             self._move_y(0)
 

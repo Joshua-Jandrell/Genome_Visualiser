@@ -13,7 +13,7 @@ class VarPosView(VariantGridView):
     """
     def __init__(self) -> None:
         super().__init__()
-        self._pos = ViewPos.LEFT
+        self._pos = ViewPos.VAR
     def _get_samples_size(self) -> list[int]:
         return [self.ideal_block_size]
 

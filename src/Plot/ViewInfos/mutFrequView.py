@@ -18,7 +18,7 @@ class MutFreqView(VariantGridView):
 
     def __init__(self) -> None:
         super().__init__()
-        self._pos = ViewPos.LEFT
+        self._pos = ViewPos.VAR
         self.img = None
         self._key_rows = 2
     

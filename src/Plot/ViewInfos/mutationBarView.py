@@ -10,7 +10,7 @@ from ._plot_config_ import CASE_COLORS, CTRL_COLORS
 class MutationBarView(VariantGridView):
     def __init__(self) -> None:
         super().__init__()
-        self._pos = ViewPos.LEFT_STAND_IN
+        self._pos = ViewPos.VAR_STAND_IN
         self._priority = 100
         self._group_title = "Zygosity Frequency"
 

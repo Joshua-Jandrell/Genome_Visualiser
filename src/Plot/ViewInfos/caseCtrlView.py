@@ -14,7 +14,7 @@ class CaseCtrlView(VariantGridView):
     def __init__(self) -> None:
         super().__init__()
 
-        self._pos = ViewPos.TOP
+        self._pos = ViewPos.SAMPLE
         self._colors = colors.ListedColormap(self.CASE_CTRL_COLORS)
 
     def _get_variants_size(self) -> list[int]:

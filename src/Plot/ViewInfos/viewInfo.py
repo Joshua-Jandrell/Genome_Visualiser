@@ -24,21 +24,28 @@ def inch_to_cm(inches:float)->float:
 class ViewPos(Enum):
     MAIN=1,
     """The main central plot of the view group."""
-    LEFT=2,
+    VAR=2,
     """Plotted to the left of the main plot."""
-    TOP=3,
+    SAMPLE=3,
     """Plotted above the main plot"""
-    LEFT_STAND_IN=4,
+    VAR_STAND_IN=4,
     """Plotted on left, but promoted to main view if no main view is present""" 
-    TOP_STAND_IN=5
+    SAMPLE_STAND_IN=5
     """Plotted on top, but promoted to main view if no main view is present""" 
-
-
 
 BASE_TYPE_KEY = "BASE"
 X_STACK = 0
 Y_STACK =1
-STACK_MODE = X_STACK
+STACK_MODE = Y_STACK
+
+def pos_is_on_x(pos:ViewPos)->bool:
+    """
+    Returns true if the given view position runs long the x-axis using the current axes configuration.
+    """
+    return pos == ViewPos.MAIN or (STACK_MODE == Y_STACK and pos in [ViewPos.VAR, ViewPos.VAR_STAND_IN]) or (STACK_MODE == X_STACK and pos in [ViewPos.SAMPLE, ViewPos.SAMPLE_STAND_IN])
+
+def pos_is_on_y(pos:ViewPos)->bool:
+        return pos == ViewPos.MAIN or (STACK_MODE == X_STACK and pos in [ViewPos.VAR, ViewPos.VAR_STAND_IN]) or (STACK_MODE == Y_STACK and pos in [ViewPos.SAMPLE, ViewPos.SAMPLE_STAND_IN])
 
 class ViewInfo_base:
     """
@@ -293,13 +300,13 @@ class ViewSetManager:
         # Add view to correct list depending on intended position
         _pos = view_info.get_view_pos()
         _view_list = self.top_views
-        if _pos in [ViewPos.LEFT, ViewPos.LEFT_STAND_IN]:
+        if (_pos in [ViewPos.VAR, ViewPos.VAR_STAND_IN] and STACK_MODE==X_STACK) or (_pos in [ViewPos.SAMPLE, ViewPos.SAMPLE_STAND_IN] and STACK_MODE==Y_STACK):
             _view_list = self.left_views
 
         if _pos == ViewPos.MAIN:
             if self._has_main():
                 # Check to see if current main is a stand-in
-                if self.main_view.get_view_pos() in [ViewPos.LEFT_STAND_IN, ViewPos.TOP_STAND_IN]:
+                if self.main_view.get_view_pos() in [ViewPos.VAR_STAND_IN, ViewPos.SAMPLE_STAND_IN]:
                     self.main_view.set_main(False)
                 else: raise Exception("Double main view")
             self.main_view = view_info
@@ -329,7 +336,7 @@ class ViewSetManager:
         # Find main view 
         if not self._has_main():
             for view in self.left_views + self.top_views:
-                if view.get_view_pos() in [ViewPos.LEFT_STAND_IN, ViewPos.TOP_STAND_IN, ViewPos.MAIN]:
+                if view.get_view_pos() in [ViewPos.VAR_STAND_IN, ViewPos.SAMPLE_STAND_IN, ViewPos.MAIN]:
                     if self.main_view is None or self.main_view.get_priority() < view.get_priority():
                         # If there are multiple candidates main views, select the one with the highest priority
                         if self.main_view is not None:
