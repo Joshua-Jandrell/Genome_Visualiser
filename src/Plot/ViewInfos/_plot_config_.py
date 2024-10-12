@@ -15,8 +15,9 @@ CASE_COLORS = ["#DF4D55", "#00000000", "#8AB8E2", "#A3EA4C", "#FEF65B"]
 CTRL_COLORS = ["#A80003", "#00000000", "#2166AC", "#3DA13F", "#FFD700", ]
 """Format is [Base, not data, no mutation, heterozygous, homozygous]"""
 
-ALLELE_COLORS = ["#00000000","grey", "#29E838", "#E829D8", "#E89829", "#2979E8"]
-"""Format is [Base, not data, other, A, C, G, T]"""
+ALLELE_COLORS = ["#00000000","grey", "#29E838", "#E829D8", "#E89829", "#2979E8","#12A66A","#EBE600","#E60000"]
+"""Format is [Base, not data, other, A, C, G, T, insert, mutate, delete]"""
 
 # === Layout ===
 VERT_LABEL_POS = 'top'
+

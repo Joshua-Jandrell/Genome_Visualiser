@@ -44,7 +44,8 @@ NUCLEOTIDE_DICT = {
     "A":1,
     "C":2,
     "G":3,
-    "T":4
+    "T":4,
+    "":7
 }
 
 # Conatins vcf query data and returns it in various formats
@@ -211,6 +212,26 @@ class VcfDataWrapper:
     def get_n_ctrls(self):
         return sum(self.__get_filtered_data()[CTRLS])
     
+
+
+    def _get_mut_int_row(ref:str, alt:list[str], zygo:GTArr):
+        pass
+        
+
+    def get_mut_ints(self):
+        """
+        Return a mapping of individual variants with mutations highlighted in a specific color (relating to mutation type)
+        """    
+        _refs = self.get_ref()
+        _alts = self.get_alts()
+        _zygo = self.__get_filtered_genotype_array()
+
+        return [self._get_mut_int_row() for r,a,z in zip(_refs, _alts, _zygo)]
+
+
+
+
+    
     def get_ref_ints(self):
         """Returns a `list` indicating the nucleotide type of the reference (`REF`) sequence.\\
         0 = multiple-nucleotides\\
@@ -228,9 +249,15 @@ class VcfDataWrapper:
         mask = [any(col != "") for col in alts.T]
         return alts[:,mask]
     
-    def get_alt_int(self):
-        _alts = np.array([alleles_to_numbs(alts) for alts in self.get_alts()])
-        return _alts
+    def get_alt_int(self)->np.ndarray:
+        _refs = self.get_ref()
+        _alts = self.get_alts()
+        return np.array([vars_to_numbers(ref, alts) for ref,alts in zip(_refs,_alts)])
+
+
+        #_alts = np.array([vars_to_numbers(self.get_ref(), self.get_alts())])
+        #_alts = np.array([alleles_to_numbs(alts) for alts in self.get_alts()])
+ 
 
     def get_pos(self):
         """Returns an array of chromosome positions, for plotting."""
@@ -418,8 +445,33 @@ def allele_to_numb(a:str):
         return -1
 
 # Converts an array of alleles to numbers
-def alleles_to_numbs(alleles:np.array):
+def alleles_to_numbs(alleles:np.ndarray):
     return [allele_to_numb(a) for a in alleles]
+
+def var_to_number(ref:str, alt:str):
+    if len(alt) == 0:
+        return -1
+    elif len(ref) == 1 and len(alt) == 1:
+        return allele_to_numb(alt)
+    elif len(ref) < len(alt): # Insertion 
+        return 5
+    elif len(ref) == len(alt): # Mutation
+        return 6
+    elif len(ref) > len(alt) or alt == ".": # Deletion
+        return 7
+    
+def vars_to_numbers(ref:np.ndarray, alts:np.ndarray):
+    """
+    Coverts reference and alternate allele to a set of numerical indicators. \\
+    - -1 = No data
+    - 0 = Not used
+    - 1-4 = A, C, G, T
+    - 5-7 = Insert, Mutate, Delete
+    """    
+    return [var_to_number(ref,alt) for alt in alts]
+
+    
+    
 
 def select_by_pos(df: DataFrame, first, last)-> DataFrame:
     return df[df["POS"].between(first, last, inclusive = 'both')]

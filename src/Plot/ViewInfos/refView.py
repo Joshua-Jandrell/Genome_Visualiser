@@ -30,7 +30,7 @@ class RefView(VariantGridView):
     ALLELE_COLORS = ALLELE_COLORS
     REF_LABEL = "Ref."
     ALT_LABEL = "Alt."
-    VAR_MAX = 4
+    VAR_MAX = 7
     VAR_MIN = -1
     # Annotation limits 
     ANNOTATION_MAX = 500
@@ -95,8 +95,10 @@ class RefView(VariantGridView):
         _g = mpatches.Patch(color=self.ALLELE_COLORS[4], label='G')
         _t = mpatches.Patch(color=self.ALLELE_COLORS[5], label='T')
         _other = mpatches.Patch(color=self.ALLELE_COLORS[1], label='Other')
+        _in = mpatches.Patch(color=self.ALLELE_COLORS[6], label='Insertion')
+        _del = mpatches.Patch(color=self.ALLELE_COLORS[8], label='Deletion')
         _none = mpatches.Patch(color=self.ALLELE_COLORS[0], label='None')
-        key_ax.legend(handles=[_a,_c,_g,_t,_other,_none],ncol=2)
+        key_ax.legend(handles=[_a,_c,_g,_t,_other,_in,_del,_none],ncol=2)
         key_ax.axis('off')
 
     def get_plot_names(self) -> list[str]:
