@@ -53,14 +53,14 @@ class RefView(VariantGridView):
         l = [self.ideal_block_size]
         if self.plot_alt:
             wrapped_data = self.dataset_info.get_data()
-            l += [wrapped_data.get_alt_int().shape[1] * self.ideal_block_size]
+            l += [wrapped_data.get_alt_ints().shape[1] * self.ideal_block_size]
         return l
 
     def get_height_weights(self) -> list[int]:
         weight = [1]
         if self.plot_alt:
             wrapped_data = self.dataset_info.get_data()
-            weight += [wrapped_data.get_alt_int().shape[0]]
+            weight += [wrapped_data.get_alt_ints().shape[0]]
         return weight
     def get_plot_count(self) -> int:
         if self.plot_alt: return 2
@@ -74,7 +74,7 @@ class RefView(VariantGridView):
         self.mat = self.make_allele_plot(axs[0], data_matrix)
         
         if self.plot_alt:
-            data_matrix = np.matrix(wrapped_data.get_alt_int())
+            data_matrix = np.matrix(wrapped_data.get_alt_ints())
             if self.stack_mode == Y_STACK:
                 data_matrix = np.transpose(data_matrix)
             self.make_allele_plot(axs[1], data_matrix)

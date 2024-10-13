@@ -43,7 +43,7 @@ class MutationBarView(VariantGridView):
                 if dw.get_n_ctrls() > 0:
                     ax.bar(_y_pts, -homo_z[ctrl_i], color=CTRL_COLORS[homo_i])
                     ax.bar(_y_pts, -hetro_z[ctrl_i], bottom=-homo_z[ctrl_i], color=CTRL_COLORS[hetro_i])
-                    ax.hlines([0],xmin=_y_pts[0],xmax=_y_pts[-1], colors=['black'])
+                    ax.hlines([0],xmin=_y_pts[0]-1,xmax=_y_pts[-1]+1, colors=['black'])
 
                     ax.set_ylim([-1,1])
                 else:
@@ -52,7 +52,7 @@ class MutationBarView(VariantGridView):
                 # Plot cases 
                 ax.barh(_y_pts, homo_z[1], color=CASE_COLORS[homo_i])
                 ax.barh(_y_pts, hetro_z[case_i], left=homo_z[case_i], color=CASE_COLORS[hetro_i])
-                ax.grid()
+                #ax.grid()
                 if dw.get_n_ctrls() > 0:
                     ax.barh(_y_pts, -homo_z[ctrl_i], color=CTRL_COLORS[homo_i])
                     ax.barh(_y_pts, -hetro_z[ctrl_i], left=-homo_z[ctrl_i], color=CTRL_COLORS[hetro_i])

@@ -9,7 +9,8 @@ mplstyle.use('fast')
 
 
 # === Color ===
-CASE_COLORS = ["#DF4D55", "#00000000", "#8AB8E2", "#A3EA4C", "#FEF65B"]
+NO_DATA = "#220000"
+CASE_COLORS = ["#DF4D55", NO_DATA, "#8AB8E2", "#A3EA4C", "#FEF65B"]
 """Format is [Base, no data,  no mutation, heterozygous, homozygous]"""
 
 CTRL_COLORS = ["#A80003", "#00000000", "#2166AC", "#3DA13F", "#FFD700", ]

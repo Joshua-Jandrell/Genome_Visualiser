@@ -4,7 +4,7 @@ from typing import Tuple
 import customtkinter as ctk
 
 from UI.optionPanel import OptionCtrl, OptionCard, OptionPanel
-from Plot.ViewInfos import DataSetInfo, ViewInfo_base, ZygoteView, RefView, VarPosView, FrequencyView, MutFreqView, CaseCtrlView, MutationBarView
+from Plot.ViewInfos import DataSetInfo, ViewInfo_base, ZygoteView, RefView, VarPosView, FrequencyView, MutFreqView, CaseCtrlView, MutationBarView, SampleVarView
 
 from VCF.datasetDropDown import DatasetMenu
 
@@ -15,6 +15,7 @@ ZYGOSITY_OPT = "Sample Zygosity Map"
 MUTATION_FREQUENCY_OPT = "Variant Frequency Heatmap"
 FREQ_BAR_OPT = "Proportional Zygosity Bar Graph"
 CASE_CTRL_OPT = "Case/Control View"
+SAMPLE_VAR_OPT = "Sample Variations"
 
 POS_OPT = "Position Heatmap"
 FREQUENCY_OPT = "Population Variant Density Histograms"
@@ -87,6 +88,7 @@ class PlotOptionPanel(OptionPanel):
         self.content.register_option(OptionCtrl(self.content,FREQ_BAR_OPT, option_class=MutationBarOptionCard,option_value=MutationBarView))
         
         self.content.register_option(OptionCtrl(self.content,ZYGOSITY_OPT, option_class=ZygoOptionCard, option_value=ZygoteView))
+        self.content.register_option(OptionCtrl(self.content,SAMPLE_VAR_OPT, option_class=PlotOptionCard, option_value=SampleVarView))
         self.content.register_option(OptionCtrl(self.content,CASE_CTRL_OPT,option_class=CasecntrlOptionCard, option_value=CaseCtrlView))
         
         self.content.register_option(OptionCtrl(self.content,FREQUENCY_OPT, option_class= FreqOptionCard, option_value=FrequencyView))

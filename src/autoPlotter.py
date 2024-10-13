@@ -3,7 +3,7 @@
 from VCF.globalDatasetManger import GlobalDatasetManager
 from viewPanel import ViewPanel
 from Plot.ViewInfos import DataSetInfo, ViewInfo_base, ZygoteView, RefView
-from Plot.plotSelect import PlotOptionPanel, PlotOptionCard, ZYGOSITY_OPT, REF_OPT, FREQ_BAR_OPT
+from Plot.plotSelect import PlotOptionPanel, PlotOptionCard, ZYGOSITY_OPT, REF_OPT, FREQ_BAR_OPT, SAMPLE_VAR_OPT
 
 CLEAR_ON_DATASET_DELETE = True # If set to true the figure will be completely cleared if no datasets are available 
 class AutoPlotter():
@@ -62,7 +62,9 @@ def select_views(data:DataSetInfo)->list[ViewInfo_base]:
     # get a reference to the view options panel
     PlotOptionPanel.select_instance_option(REF_OPT)
     PlotOptionPanel.select_instance_option(FREQ_BAR_OPT)
-    PlotOptionPanel.select_instance_option(ZYGOSITY_OPT)
+    #PlotOptionPanel.select_instance_option(ZYGOSITY_OPT)
+    PlotOptionPanel.select_instance_option(SAMPLE_VAR_OPT)
+
 
     views = PlotOptionPanel.get_view_list()
     return views

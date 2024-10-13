@@ -118,6 +118,37 @@ class VcfDataWrapper:
         new_data[DATA] = self._data[DATA][mask,:]
 
         return new_data
+    
+    def get_pos_var_ints(self, split=False):
+        """
+        Returns and `int` matrix of variation alleles for each sample variant.
+        """
+        _alts = self.get_alt_ints()
+        _zygo = self.__get_filtered_genotype_array()
+        _zygo_ints = np.zeros((_zygo.shape[0:2]))
+        for _i in range(_alts.shape[1]):
+            _zygo_ints += ((_zygo.is_hom(_i+1)) * (_i + 1))
+        if split:
+            zygo_ctrl, zygo_case = self._split_mat_by_cases(_zygo_ints)
+            for _i,row in enumerate(zygo_ctrl):
+                alt_row = _alts[_i]
+                zygo_ctrl[_i] = np.array([self._map_to_var_int(n,alt_row) for n in row])
+            for _i,row in enumerate(zygo_case):
+                alt_row = _alts[_i]
+                zygo_case[_i] = np.array([self._map_to_var_int(n,alt_row) for n in row])
+        
+            return zygo_ctrl, zygo_case
+    def _map_to_var_int(self, n:int, alt_row:list[int])->int:
+        """
+        Maps the give variant integer value to a zygosity.
+        """
+        if n == 0:
+            return -1
+        if n == -1:
+            return -2
+        return alt_row[int(n-1)]
+
+
         
     def get_zygosity(self, split=False, val_offset = 4):
         """Returns an _`int`_ matrix of zygosities for each sample variant.\\
@@ -249,7 +280,7 @@ class VcfDataWrapper:
         mask = [any(col != "") for col in alts.T]
         return alts[:,mask]
     
-    def get_alt_int(self)->np.ndarray:
+    def get_alt_ints(self)->np.ndarray:
         _refs = self.get_ref()
         _alts = self.get_alts()
         return np.array([vars_to_numbers(ref, alts) for ref,alts in zip(_refs,_alts)])
