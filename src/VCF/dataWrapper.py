@@ -26,6 +26,9 @@ QUAL = 'variants/QUAL'
 CASES = 'samples/cases'
 CTRLS = 'samples/ctrls'
 
+FREQ = 'FREQ'
+"""Special key used only in dataframe"""
+
 
 S_KEYS = [SAMPLES, CASES, CTRLS]
 """Data dict fields which run along the s direction."""
@@ -57,8 +60,16 @@ class VcfDataWrapper:
         self._data = {key:vcf_data[key] for key in DW_S_KEYS+DW_V_KEYS+[DATA] if key in vcf_data.keys()}
         self.set_case_ctrl(cases=cases, ctrls=ctrls)
 
+        # Find mutation frequencies
+        gt_data = GTArr(vcf_data[DATA])
+        _freq = (((gt_data.is_hom_alt()*2).sum(axis=1)
+                +(gt_data.is_het()*1).sum(axis=1))/(gt_data.shape[1]*2))
+                
+
         # Make pandas data frame
         df_dict = {key.strip('variants/'):vcf_data[key] for key in DW_DF_KEYS if key in vcf_data.keys() and key != ALT}
+        df_dict[FREQ] = _freq
+
         self._df = DataFrame(df_dict)
             
               
@@ -73,6 +84,9 @@ class VcfDataWrapper:
         self.last_qual=100        
         #Default setting: don't sort by quality
         self.sort_mode:SortMode = SortMode.BY_POSITION
+
+        self.min_freq=0
+        self.max_freq=100
 
         self._df_filtered = False
         self._dict_filtered = False      
@@ -312,14 +326,24 @@ class VcfDataWrapper:
         self._dict_filtered = filt and self._dict_filtered
         self._df_filtered = filt and self._dict_filtered
     
-    def set_qual_range(self, min_qual:int, max_qual:int):
+    def set_qual_range(self, min_qual:float, max_qual:float):
         """Sets the range of nucleotide positions on the reference genome the user wants to view."""
         filt = self.first_qual == min_qual and  self.last_qual == max_qual
         self._dict_filtered = filt and self._dict_filtered
         self._df_filtered = filt and self._dict_filtered
         self.first_qual = min_qual
         self.last_qual = max_qual
-        
+
+    def set_freq_range(self, min:float, max:float):
+        """
+        Sets the range of variant frequencies to be viewed.
+        """
+        filt = self.min_freq == min and  self.max_freq == max
+        self._dict_filtered = filt and self._dict_filtered
+        self._df_filtered = filt and self._dict_filtered
+        self.min_freq = min
+        self.max_freq = max
+
     def set_population_tag(self, pop_target:str):
         """Sets the the tag to look for in the variant samples the user wants to view. """
         self._pop_tag = pop_target
@@ -394,6 +418,10 @@ class VcfDataWrapper:
         #select by quality range:
         if self.first_qual > 0 or self.last_qual < 100:
             new_df = select_by_qual(new_df,self.first_qual, self.last_qual)
+
+        # select by frequency range:
+        if self.min_freq > 0 or self.max_freq < 100:
+            new_df = new_df[new_df[FREQ].between(self.min_freq, self.max_freq, inclusive = 'both')]
         
         #sort by quality
         if self.sort_mode is SortMode.BY_QUALITY:

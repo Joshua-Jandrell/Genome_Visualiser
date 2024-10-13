@@ -32,6 +32,8 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.pos_max = ctk.IntVar()
         self.qual_min = ctk.DoubleVar(value=0)
         self.qual_max = ctk.DoubleVar(value=100)
+        self.freq_min = ctk.DoubleVar(value=0)
+        self.freq_max = ctk.DoubleVar(value=1)
         self.case_path = ctk.StringVar(value="")
 
         # NOTE dataset should only be set after variable have been constructed
@@ -43,6 +45,8 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.__max_pos_call__ = self.pos_max.trace_add('write', self.__on_max_pos_change)
         self.__qual_min_call__ = self.qual_min.trace_add('write', self.__on_qual_change)
         self.__qual_max_call__ = self.qual_max.trace_add('write', self.__on_qual_change)
+        self.__freq_min_call__ = self.freq_min.trace_add('write', self.__on_freq_change)
+        self.__freq_max_call__ = self.freq_max.trace_add('write', self.__on_freq_change)
         self.__case_call__ = self.case_path.trace_add('write', self.__on_case_ctrl_change)
         
         # ==== Regional UI elements ====
@@ -84,8 +88,22 @@ class DatasetFilterFrame(ctk.CTkFrame):
         qual_max_label.grid(row=_qual_row, column=2, padx=0)
         self.qual_max_entry.grid(row=_qual_row, column=3, padx=_padx)
 
+        # ==== Frequency UI elements ====
+        freq_label = qual_label = ctk.CTkLabel(self, text="Frequency:")
+        freq_label._font.configure(weight="bold")
+        self.freq_min_entry = NumberEntry(self, width=75, value_range=(0,1), number_variable=self.freq_min)
+        freq_max_label = ctk.CTkLabel(self, text="to")
+        self.freq_max_entry = NumberEntry(self, width=75, value_range=(0,1), number_variable=self.freq_max)
+        self.freq_max_entry.set_as_above(self.qual_min_entry)
+
+        _freq_row = 3
+        freq_label.grid(row=_freq_row, column=0)
+        self.freq_min_entry.grid(row=_freq_row, column=1, padx=_padx)
+        freq_max_label.grid(row=_freq_row, column=2, padx=0)
+        self.freq_max_entry.grid(row=_freq_row, column=3, padx=_padx)
+
         # ==== case control elements ====
-        _case_row = 3
+        _case_row = 4
         case_label = ctk.CTkLabel(self, text="Case/Ctrl file:")
         case_label._font.configure(weight="bold")
         case_label.grid(row=_case_row, column=0, columnspan=1, padx=_padx, pady=_pady)
@@ -105,6 +123,8 @@ class DatasetFilterFrame(ctk.CTkFrame):
         self.pos_max.trace_remove('write', self.__max_pos_call__)
         self.qual_min.trace_remove('write', self.__qual_min_call__)
         self.qual_max.trace_remove('write', self.__qual_max_call__)
+        self.freq_min.trace_remove('write', self.__freq_min_call__)
+        self.freq_max.trace_remove('write', self.__freq_max_call__)
         self.case_path.trace_remove('write', self.__case_call__)
         return super().destroy()
     
@@ -120,6 +140,9 @@ class DatasetFilterFrame(ctk.CTkFrame):
         _min, _max = dataset.get_quality()
         self.qual_min.set(_min)
         self.qual_max.set(_max)
+        _min, _max = dataset.get_frequency()
+        self.freq_min.set(_min)
+        self.freq_max.set(_max)
 
         _case_path = dataset.get_case_path()
         if _case_path is not None:
@@ -147,6 +170,12 @@ class DatasetFilterFrame(ctk.CTkFrame):
         if self.dataset is not None:
             try:
                 self.dataset.set_quality(min=self.qual_min.get(), max=self.qual_max.get())
+            except FilterError:
+                self.on_filter_error.invoke("No data in the given quality range.")
+    def __on_freq_change(self, *args):
+        if self.dataset is not None:
+            try:
+                self.dataset.set_frequency(min=self.freq_min.get(), max=self.freq_max.get())
             except FilterError:
                 self.on_filter_error.invoke("No data in the given quality range.")
     def __on_case_ctrl_change(self, *args):

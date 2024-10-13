@@ -44,18 +44,21 @@ class ParamRangeFilter(DataFilter_base):
     """
     Filter used to set the range of a given column parameter.
     """
-    def __init__(self, column:str, min:float|int, max:float|int) -> None:
+    def __init__(self, column:str, min:float|int, max:float|int, make_bcftools_query = True) -> None:
         super().__init__()
         assert(min <= max)
         self.column_name = column
         self.min = min
         self.max = max
+        self._bcftools_query = make_bcftools_query
     def set_range(self, min:float|int|None=None, max:float|int|None=None):
         if min is not None: self.min = min
         if max is not None: self.max = max
     def get_range(self):
         return self.min, self.max
     def get_query_str(self, opt: str) -> str:
+        if not self._bcftools_query:
+            return ""
         if opt == INCLUDE_CMD:
             return f"{self.column_name}<={self.max} && {self.column_name}>={self.min}"
         return super().get_query_str(opt)
@@ -87,6 +90,12 @@ class QualityFilter(ParamRangeFilter):
         super().__init__(column='QUAL', min=min, max=max)
     def apply_to_wrapper(self,dw: DataWrapper):
         dw.set_qual_range(min_qual=self.min, max_qual=self.max)
+
+class FrequencyFilter(ParamRangeFilter):
+    def __init__(self, min:float=0, max:float=100):
+        super().__init__(column='FREQ', min=min, max=max, make_bcftools_query=False)
+    def apply_to_wrapper(self,dw: DataWrapper):
+        dw.set_freq_range(min=self.min, max=self.max)
 
 def get_filter_query_str(filters:list[DataFilter_base],cmds:list[str], chr_prefix = "")->str:
     """
@@ -158,6 +167,7 @@ class DataSetInfo:
         # NOTE this must be done before configuration
         self.__range_filter = RegionFiler()
         self.__quality_filter = QualityFilter()
+        self.__freq_filter = FrequencyFilter()
 
 
 
@@ -194,6 +204,7 @@ class DataSetInfo:
         # Add required filters to filter stack
         self.add_filter(self.__range_filter)
         self.add_filter(self.__quality_filter)
+        self.add_filter(self.__freq_filter)
 
 
     def __del__(self):
@@ -419,6 +430,21 @@ class DataSetInfo:
         Get the quality range of the dataset
         """
         return self.__quality_filter.get_range()
+    
+    def set_frequency(self, min:float|None=None, max:float|None=None):
+        if (min is not None and min < self.__freq_filter.min) or (max is not None and max > self.__freq_filter.max):
+            self.__reload_flag = True
+
+        self.__freq_filter.set_range(min,max)
+
+        if self.dw is not None:
+            self.__freq_filter.apply_to_wrapper(self.dw)
+
+        self._update_event.invoke(self, 'variants')
+
+    def get_frequency(self)->tuple[float,float]:
+        return self.__freq_filter.get_range()
+
     
     def set_case_path(self,case_path:str):
         self._case_path = case_path
