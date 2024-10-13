@@ -104,7 +104,7 @@ class ViewInfo_base:
 
     def set_main(self, is_main:bool):
         self._is_main = is_main
-    def get_main(self)->bool:
+    def is_main(self)->bool:
         return self._is_main
         
     def get_view_pos(self)->ViewPos:
@@ -188,6 +188,15 @@ class ViewInfo_base:
         return self._has_key
     def get_key_rows(self)->int:
         return self._key_rows
+    
+    def get_inspector_info(self, event, info={})->dict|None:
+        """
+        Returns a dictionary of info do be displayed on inspector panel.
+        """
+        if event.inaxes in self._axs:
+            return info
+        else: return None
+
     
     # === Group/set type information ===
     def is_compressible(self)->bool:
@@ -282,6 +291,12 @@ class ViewSetManager:
         """Returns true is the given viewset has a main view."""
         return self.main_view is not None
     
+    def get_all_views(self)->list[ViewInfo_base]:
+        """
+        Returns a list of all views contained in a view set.
+        """
+        return [view for view in self.left_views if not view.is_main()]+[view for view in self.top_views if not view.is_main()]+[self.main_view]
+    
     def link(self,view_info:ViewInfo_base)->bool:
         """
         Link a new set of axes to the view set manger if type keys are compatible.\n
@@ -347,7 +362,7 @@ class ViewSetManager:
         # Find width of left views
         left_widths = []
         for v in self.left_views:
-            if not v.get_main():
+            if not v.is_main():
                 v.set_on_top(False)
                 left_widths += v.get_desired_width()
         left_width = sum(left_widths)
@@ -361,7 +376,7 @@ class ViewSetManager:
         # Find hight of top views
 
             for v in self.top_views:
-                if not v.get_main():
+                if not v.is_main():
                     
                     v.set_on_top(not top_set)
                     # Set top view latch
@@ -376,7 +391,7 @@ class ViewSetManager:
         
 
         # Adjust width if keys will be plotted.
-        full_view_list = [view for view in self.left_views if not view.get_main()]+[view for view in self.top_views if not view.get_main()]+[self.main_view]
+        full_view_list = self.get_all_views()
         has_key = any([view.has_key() for view in full_view_list])
         if has_key:
             _key_w = KEY_WIDTH
@@ -410,7 +425,7 @@ class ViewSetManager:
 
         plot_i = 0
         _axs:list[Axes] = []
-        for view in reversed([view for view in self.left_views if not view.get_main()]):
+        for view in reversed([view for view in self.left_views if not view.is_main()]):
             _axes:list[Axes] = []
             _x_size = 0
             for _ in range(view.get_plot_count()):
@@ -428,7 +443,7 @@ class ViewSetManager:
 
         if plot_top:
             plot_i = 0
-            for view in reversed([view for view in self.top_views if not view.get_main()]):
+            for view in reversed([view for view in self.top_views if not view.is_main()]):
                 _axes:list[Axes] = []
                 _y_size = 0
                 for _ in range(view.get_plot_count()):
@@ -482,6 +497,28 @@ class ViewSetManager:
             y_scroll_box = Box(left, top, scroll_w, scroll_h)
             
         return w,h, x_scroll_box, y_scroll_box
+    
+    def get_view_info(self,event)->dict:
+        """
+        Returns a dictionary of view info to be displayed by the inspector panel.
+        """
+        info = None
+        main_flag = False
+        for _view in self.get_all_views():
+            info = _view.get_inspector_info(event)
+            main_flag = _view.is_main() or main_flag
+            if info is not None:
+
+                # Always allow main view to add any extra info
+                if not main_flag:
+                    main_info = self.main_view.get_inspector_info(event=event, info=info)
+                    if main_info is not None: info.update(main_info)
+
+                return info
+            
+        # No info found: return and empty dictionary:
+        return {}
+
 
 
 def get_view_sets(view_infos:ViewInfo_base)->list[ViewSetManager]:

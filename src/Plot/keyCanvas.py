@@ -3,9 +3,7 @@ from typing import Tuple
 import customtkinter as ctk
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
-from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavToolbar
-
-from UI.deafultSettings import Dimenations
+# from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavToolbar
 
 from matplotlib.figure import Figure 
 

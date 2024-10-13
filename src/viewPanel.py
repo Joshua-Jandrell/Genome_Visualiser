@@ -13,6 +13,7 @@ from Plot.ViewInfos.viewInfo import get_view_sets, ViewSetManager, ViewInfo_base
 from VCF.dataSetConfig import DataSetConfig, GlobalDatasetManager
 
 from Plot.keyCanvas import KeyCanvas
+from Plot.inspector import InspectorPanel
 from Plot.scrollWidget import ScrollWidget
 
 from Util.box import Box
@@ -59,10 +60,17 @@ class FigureMount(ctk.CTkFrame):
         self._viewset:ViewSetManager|None = None
 
         # subscribe to canvas mouse/over event 
-        #self.fig.canvas.mpl_connect('motion_notify_event', self.__on_mouse_move)
+        self.fig.canvas.mpl_connect('motion_notify_event', self.__on_mouse_move)
 
-    def __on_mouse_move(self, pos):
-        print(f"yeee {pos}")
+    def __on_mouse_move(self, event):
+        
+        # Get viewinfo display data
+        info = self._viewset.get_view_info(event=event)
+        print(info)
+        InspectorPanel.display_info(info)
+        
+        #self.canvas.draw_idle()
+
 
     @classmethod
     def _place_scroll(cls, scroll:ScrollWidget, scroll_box:Box):

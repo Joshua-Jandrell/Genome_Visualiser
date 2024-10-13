@@ -21,6 +21,7 @@ from UI.searchPanel import SearchPanel
 from Plot.ViewInfos import ViewInfo_base
 from autoPlotter import AutoPlotter
 from Plot.keyCanvas import KeyCanvas
+from Plot.inspector import InspectorPanel
 
 import pandas as pd # For set to stop deprecation 
 pd.set_option('future.no_silent_downcasting', True)
@@ -79,8 +80,12 @@ class App(ctk.CTk):
         self.search_panel.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Put key key canvas on the right panel 
-        self.key_canvas = KeyCanvas(self.right.content, width=RIGHT_PANEL_WIDTH)
-        self.key_canvas.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
+        # self.key_canvas = KeyCanvas(self.right.content, width=RIGHT_PANEL_WIDTH)
+        # self.key_canvas.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
+
+        # Put the inspector on the right canvas
+        self.inspector = InspectorPanel(self.right.content, width=RIGHT_PANEL_WIDTH)
+        self.inspector.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
 
         # Makes plot button -- might get depricated
         self.left.plot_button = ctk.CTkButton(self.search_panel.button_panel,text="Plot",command=self.makePlot)

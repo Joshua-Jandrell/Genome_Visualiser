@@ -309,6 +309,11 @@ class VcfDataWrapper:
         df = self.__get_filtered_df()
         return df["POS"].to_numpy()
     
+    def get_id(self)->np.ndarray:
+        """Returns a list of variant IDs"""
+        df = self.__get_filtered_df()
+        return df['ID'].to_numpy()
+    
     def get_file_pos_range(self):
         """Returns (min, max) possible range of genome sequence positons."""
         self._df = self._df.sort_values(by=["POS"], ascending=True)   ### All the 'by=...' stuff needs: ""

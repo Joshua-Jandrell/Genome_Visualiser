@@ -87,7 +87,7 @@ class MutationBarView(VariantGridView):
         return super().make_plots(axs, size)
     
     def has_key(self) -> bool:
-        return self.get_main()
+        return self.is_main()
     
     def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
 

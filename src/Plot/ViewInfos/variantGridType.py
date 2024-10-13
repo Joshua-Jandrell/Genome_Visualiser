@@ -56,6 +56,11 @@ class VariantGridView(ViewInfo_base):
 
         self._lim_offset=-0.5
 
+        self._annot = None
+        """
+        Tooltip annotation
+        """
+
     def _do_base_config(self,axs:list[Axes]):
         """
         Simple method to re-used common configuration settings.
@@ -250,5 +255,60 @@ class VariantGridView(ViewInfo_base):
         if self._n_samps == 0 or self._n_vars == 0:
             return False
         return super().can_plot()
+    
+    # Inspector info 
+    def get_inspector_info(self, event, info={}) -> dict | None:
+        if event.inaxes in self._axs:
+            info = {}
+            var_i = event.xdata
+            sample_i = event.ydata
+
+            if self.stack_mode != Y_STACK:
+                var_i = event.ydata
+                sample_i = event.xdata
+
+            if self._pos in [ViewPos.VAR, ViewPos.VAR_STAND_IN, ViewPos.MAIN]:
+                info.update(self._get_var_info(var_i))
+
+            if self._pos in [ViewPos.SAMPLE, ViewPos.SAMPLE_STAND_IN, ViewPos.MAIN]:
+                info.update(self._get_sample_info(var_i))
+
+            #_ax:Axes = event.inaxes
+            #self._annot = _ax.annotate("Cool",(event.xdata,event.ydata))
+
+            return info
+        return super().get_inspector_info(event, info)
+    
+    def _get_var_info(self,var_row:int)->dict:
+        try:
+            dw = self.get_data().get_data()
+            if dw is None: raise(ValueError())
+
+            i = int(var_row - self._lim_offset)
+            return {
+                'Position':dw.get_pos()[i],
+                'ID':dw.get_id()[i]
+            }
+        except:
+            return {}
+
+    def _get_sample_info(self,sample_row:int)->dict:
+        try:
+            dw = self.get_data().get_data()
+            if dw is None: raise(ValueError())
+
+            i = int(sample_row - self._lim_offset)
+            return {
+                'Sample':dw.get_samples()[i]
+                #'Group':dw.get_id()[i]
+            }
+        except:
+            return {}
+        
+    def _get_value_info(self,var,sample,event)->dict:
+        """
+        Return event value information: This is intended to be overridden.
+        """
+        return {}
 
         
