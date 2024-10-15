@@ -28,7 +28,7 @@ class SearchOptions(ctk.CTkTabview):
 
         ## Adds tabs at the top of the Search Panel
         self.data = self.add("Datasets")
-        self.plots = self.add("Plot")
+        self.plots = self.add("Views")
         self.set("Datasets") #Selects which tab is active by default when Search Panel initially opens.
 
         # Create dataset panel 

@@ -51,7 +51,9 @@ class InspectorPanel(ctk.CTkFrame):
         instance._used_labels.append(label)
 
         return label
-        
+       
+    ### Can make them different values & pack them with a grid similar to the option panel
+    ## Add them to labels in use so we can call forget label when done    
         
 
     def __init__(self, master: Any, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
