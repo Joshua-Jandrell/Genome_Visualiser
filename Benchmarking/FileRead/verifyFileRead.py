@@ -3,7 +3,10 @@ Script used to verify that file reading occurs correctly
 """
 import os, unittest
 import allel as al
-from FileRead import run_al_speedtests, run_bcftools_speedtests
+from readMethods import run_al_speedtests, run_bcftools_speedtests
+
+data_path = os.path.relpath('Data/med.vcf.gz')
+case_file = 'Data/med_tmp.case.tsv'
 
 class TestBcftoolsRead(unittest.TestCase):
     def test_case_samples_selected(self):
@@ -34,6 +37,17 @@ class TestBcftoolsRead(unittest.TestCase):
         
         self.assertTrue(all(case_data['variants/QUAL'] == ctrl_data['variants/QUAL']))
         self.assertTrue(all(case_data['variants/QUAL'] == [28, 28]))
+
+    @classmethod
+    def setUpClass(cls):
+        # Make useful file for testing
+        with open(case_file, mode="w") as f:
+            f.write("NA19321\nNA19323")
+            f.close()
+
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(case_file)
         
         
 class TestAllelRead(unittest.TestCase):
@@ -64,16 +78,18 @@ class TestAllelRead(unittest.TestCase):
         self.assertTrue(all(case_data['variants/QUAL'] == ctrl_data['variants/QUAL']))
         self.assertTrue(all(case_data['variants/QUAL'] == [28, 28]))
 
+
+    @classmethod
+    def setUpClass(cls):
+        # Make useful file for testing
+        with open(case_file, mode="w") as f:
+            f.write("NA19321\nNA19323")
+            f.close()
+
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(case_file)
+
 if __name__ == "__main__":
-    data_path = os.path.relpath('Data/med.vcf.gz')
-    case_file = 'Data/med_tmp.case.tsv'
-
-    # Make useful file for testing
-    with open(case_file, mode="w") as f:
-        f.write("NA19321\nNA19323")
-        f.close
-
+    
     unittest.main()
-
-    os.remove(case_file)
-

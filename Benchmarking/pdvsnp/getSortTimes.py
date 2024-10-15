@@ -51,9 +51,9 @@ if __name__ == "__main__":
                 np_time += time.time()-_t
 
                 # Time df filtering 
-                _t = time.time()
+                _t = time.time_ns()
                 df = df[df['col_0'].between(FILTER_MIN, FILTER_MAX, inclusive='both')]
-                df_time += time.time()-_t
+                df_time += (time.time_ns()-_t)/(10**9)
 
                 # Ensure dict and df remain equivalent after filtering 
                 assert(are_equiv(df,np_dict))

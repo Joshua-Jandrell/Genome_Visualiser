@@ -31,30 +31,30 @@ def run_hybrid_speedtests(data_file:str, case_file:str, save_file:str|None = os.
         clear_file(OUT_FILE)
 
         # Time index making
-        _t = time.time()
+        _t = time.time_ns()
         make_index(data_file)
-        index_times.append(time.time()-_t)
+        index_times.append((time.time_ns()-_t)/(10**9))
 
         # Time pos and quality filtering
-        _t = time.time()
+        _t = time.time_ns()
         out_file = filter_file(data_file,chr,start,stop,min_qual,max_qual)
-        pos_and_qual_filter_times.append(time.time()-_t)
+        pos_and_qual_filter_times.append((time.time_ns()-_t)/(10**9))
         assert(OUT_FILE == out_file)
 
         # Time data reading
-        _t = time.time()
+        _t = time.time_ns()
         data = al.read_vcf(out_file)
-        read_times.append(time.time()-_t)
+        read_times.append((time.time_ns()-_t)/(10**9))
 
         # Time case/control reading 
-        _t = time.time()
+        _t = time.time_ns()
         cases = get_case_list(case_file=case_file)
-        case_file_read_times.append(time.time()-_t)
+        case_file_read_times.append((time.time_ns()-_t)/(10**9))
 
         # Time case/control selection
-        _t = time.time()
+        _t = time.time_ns()
         case_data, ctrl_data = select_case_ctrl(data, cases)
-        case_ctrl_times.append(time.time()-_t)
+        case_ctrl_times.append((time.time_ns()-_t)/(10**9))
 
         total_times.append(index_times[_]+pos_and_qual_filter_times[_]+read_times[_]+case_file_read_times[_]+case_ctrl_times[_])
 
@@ -71,4 +71,10 @@ def run_hybrid_speedtests(data_file:str, case_file:str, save_file:str|None = os.
             writer.writerow(["Read in to memory", sum(read_times)/n_iters] + read_times)
             writer.writerow(["Total", sum(total_times)/n_iters] + total_times)
             f.close()
+
+
+    # Clear all files
+    clear_index(data_file)
+    clear_file(OUT_FILE)
+
     return case_data, ctrl_data 

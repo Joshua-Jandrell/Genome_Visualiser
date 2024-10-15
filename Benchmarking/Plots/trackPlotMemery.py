@@ -3,14 +3,14 @@ Track the memory used by various plotting functions.
 """
 
 """Used find the plotting time of various plotting methods"""
-# For time keeping
-import os, gc
-import csv
+
+import os, gc, csv
 
 import matplotlib as mpl
 
-from Plots import get_random_zygoisty, get_plot_figure
-from Plots.plotMethods import * 
+from  makeRandomData import get_random_zygoisty
+from plotSetup import get_plot_figure
+from plotMethods import * 
 from trackTimeMem import monitor_memory
 from config import *
 

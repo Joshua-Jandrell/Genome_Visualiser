@@ -82,36 +82,36 @@ def run_bcftools_speedtests(data_file:str, case_file:str, save_file:str|None = o
         clear_file(ctrl_data_path)
 
         # Time index making
-        _t = time.time()
+        _t = time.time_ns()
         make_index(data_file)
-        index_times.append(time.time()-_t)
+        index_times.append((time.time_ns()-_t)/(10**9))
 
         # Time pos filtering
-        _t = time.time()
+        _t = time.time_ns()
         out_file = filter_file(data_file,chr,start,stop)
-        pos_filter_times.append(time.time()-_t)
+        pos_filter_times.append((time.time_ns()-_t)/(10**9))
         clear_file(out_file)
 
         # Time pos and quality filtering
-        _t = time.time()
+        _t = time.time_ns()
         out_file = filter_file(data_file,chr,start,stop,min_qual,max_qual)
-        pos_and_qual_filter_times.append(time.time()-_t)
+        pos_and_qual_filter_times.append((time.time_ns()-_t)/(10**9))
         # Time case and control filtering
-        _t = time.time()
+        _t = time.time_ns()
         case_data_path, ctrl_data_path = get_case_ctrl(data_path=out_file, case_path=case_file)
-        case_ctrl_times.append(time.time()-_t)
+        case_ctrl_times.append((time.time_ns()-_t)/(10**9))
         clear_file(case_data_path)
         clear_file(ctrl_data_path)
 
         # Time one shot extraction
-        _t = time.time()
+        _t = time.time_ns()
         case_data_path, ctrl_data_path = filter_case_oneshot(data_file,case_file,chr,start,stop,min_qual,max_qual)
-        oneshot_times.append(time.time()-_t)
+        oneshot_times.append((time.time_ns()-_t)/(10**9))
 
         # Time data reading
         _t = time.time()
         case_data, ctrl_data = read_case_ctrl(case_data_path, ctrl_data_path)
-        read_times.append(time.time()-_t)
+        read_times.append((time.time_ns()-_t)/10**9)
 
         # calculate total times
         split_total_time.append(index_times[_]+pos_and_qual_filter_times[_]+case_ctrl_times[_]+read_times[_])
@@ -132,6 +132,13 @@ def run_bcftools_speedtests(data_file:str, case_file:str, save_file:str|None = o
             writer.writerow(["Total (separate operations)", sum(split_total_time)/n_iters] + split_total_time)
             writer.writerow(["Total (one shot)", sum(oneshot_total_time)/n_iters] + oneshot_total_time)
             f.close()
+    
+    # Clear all files
+    clear_index(data_file)
+    clear_file(OUT_FILE)
+    case_data_path, ctrl_data_path = get_case_ctrl_paths(data_file)
+    clear_file(case_data_path)
+    clear_file(ctrl_data_path)
     return case_data, ctrl_data 
 
 

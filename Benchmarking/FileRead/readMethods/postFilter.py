@@ -70,32 +70,32 @@ def run_al_speedtests(data_file:str, case_file:str, save_file:str|None = os.path
     for _ in range(n_iters):
 
         # Time file reading
-        _t = time.time()
+        _t = time.time_ns()
         data = read_file(data_file, chr, start, stop, tabix=None)
-        read_times_no_tabix.append(time.time()-_t)
-        _t = time.time()
+        read_times_no_tabix.append((time.time_ns()-_t)/(10**9))
+        _t = time.time_ns()
         data = read_file(data_file, chr, start, stop)
-        read_times.append(time.time()-_t)
+        read_times.append((time.time_ns()-_t)/(10**9))
         
         # time making a data frame
-        _t = time.time()
+        _t = time.time_ns()
         df= read_df(data_file, chr, start, stop)
-        df_read_times.append(time.time()-_t)
+        df_read_times.append((time.time_ns()-_t)/(10**9))
         
         # time filtering by quality 
-        _t = time.time()
+        _t = time.time_ns()
         data, df = select_by_qual(data, df, min_qual, max_qual)
-        qual_filter_times.append(time.time()-_t)
+        qual_filter_times.append((time.time_ns()-_t)/(10**9))
 
         # Time case/control reading 
-        _t = time.time()
+        _t = time.time_ns()
         cases = get_case_list(case_file=case_file)
-        case_file_read_times.append(time.time()-_t)
+        case_file_read_times.append((time.time_ns()-_t)/(10**9))
 
         # Time case/control selection
-        _t = time.time()
+        _t = time.time_ns()
         case_data, ctrl_data = select_case_ctrl(data, cases)
-        case_ctrl_times.append(time.time()-_t)
+        case_ctrl_times.append((time.time_ns()-_t)/(10**9))
 
         total_times.append(read_times[_]+df_read_times[_]+qual_filter_times[_]+case_file_read_times[_]+case_ctrl_times[_])
         

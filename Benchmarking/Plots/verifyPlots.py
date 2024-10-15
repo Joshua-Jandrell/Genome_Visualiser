@@ -3,8 +3,9 @@ import os
 
 import numpy as np
 
-from Plots import get_plot_figure, get_random_zygoisty
-from Plots.plotMethods import *
+from  makeRandomData import get_random_zygoisty
+from plotSetup import get_plot_figure
+from plotMethods import *
 
 from config import RESULT_DIR
 

@@ -11,15 +11,13 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg as FigCanvas
 from PIL import Image
 
 import customtkinter as ctk
-import tkinter as tk
 from CTkXYFrame import CTkXYFrame
 
-from .plotSetup import get_plot_figure
-from .plotMethods import *
+from plotSetup import get_plot_figure, scale_figure
+from plotMethods import *
 
 from config import BLOCK_SIZE, RESULT_DIR
-from .makeRandomData import get_random_zygoisty
-from .plotSetup import scale_figure
+from makeRandomData import get_random_zygoisty
 
 APP_X = 500
 APP_Y = 500
@@ -31,6 +29,17 @@ DATA_DIMS = [(500,200)] #,(500,2000)]
 DPIS = [100]#, 100, 150]
 
 SAVE_FOLDER = os.path.join(RESULT_DIR,"Plots","RenderTimes")
+
+
+# NOTE: A nice discussion of conversion speed can be found here: https://stackoverflow.com/questions/57316491/how-to-convert-matplotlib-figure-to-pil-image-object-without-saving-image#:~:text=fig.canvas.tostring_rgb()%20is%20deprecated.%20Use
+
+# Note about images is ctk: (https://customtkinter.tomschimansky.com/documentation/utility-classes/image/#:~:text=The%20CTkImage%20is%20not%20a%20widget%20itself,%20but%20a%20container)
+# The CTkImage is not a widget itself, but a container for up to two PIL Image objects for light and dark mode.
+# There's also a size tuple which describes the width and height of the image independent of scaling.
+# Therefore it's important that the PIL Image's are in a higher resolution than the given size tuple,
+# so that the image is not blurry if rendered on a 4K monitor with 2x scaling.
+# So that the image is displayed in sharp resolution on a 2x scaled monitor,
+# the given OIL Image's must have at least double the resolution than the requested size.
 
 class InfoBar(ctk.CTkFrame):
     """
@@ -729,3 +738,6 @@ def run_all_plot_app_tests():
     ctk_fig.mainloop()
 
     ResultsCSV.close()
+
+if __name__ == "__main__":
+    run_all_plot_app_tests()
