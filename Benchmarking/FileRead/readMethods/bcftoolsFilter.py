@@ -136,8 +136,7 @@ def run_bcftools_speedtests(data_file:str, case_file:str, save_file:str|None = o
             writer.writerow(["Total (one shot)", sum(oneshot_total_time)/n_iters] + oneshot_total_time)
             f.close()
     
-    # Clear all files
-    clear_index(data_file)
+    # Clear all files - except index (often used elsewhere)
     clear_file(OUT_FILE)
     case_data_path, ctrl_data_path = get_case_ctrl_paths(data_file)
     clear_file(case_data_path)

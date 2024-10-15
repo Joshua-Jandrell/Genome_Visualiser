@@ -56,7 +56,7 @@ def track_zygoisty_plots(output_file:str = "zygosity_plotting_memory.csv"):
                 for i, method in enumerate(ZYGO_PLOT_METHODS):
 
                     # skip p color as it is very slow
-                    if method == pcolor_plot and (_v > VAR_COUNTS[0] or _s > VAR_COUNTS[0] or _dpi != DPI_VALS[1]):
+                    if method == pcolor_plot and (_v > VAR_COUNTS[0] or _s > VAR_COUNTS[0] or _dpi == 100):
                         continue
 
                     # time plotting and write to csv row
