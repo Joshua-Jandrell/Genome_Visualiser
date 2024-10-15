@@ -27,6 +27,33 @@ python src/app.py
 > ```
 > If `build.sh` has not been run, follow the [setup instructions](#make-the-virtual-environment) to create a new venv.
 
+## **Features**
+`Version 2.0` of the Genome Visualiser Application supports basic functionality for visualising `.vcf`, `.vcf.gz` and `.bcf` files. Version 2.0 is best suited for Usability Testing, allowing developers to understand which features of the visualiser need to be further developed and improved in future App releases.
+
+## `Version 2.0` Features:
+- [x] User specified data subset management
+- [x] Input validation for acceptable VCF file formats
+- [x] Supports `.bcf` file visualisation, provided bcftools has installed sucessfully
+- [x] Desktop installation with `PyInstaller`
+- [x] Scripts to automatically build **bcftools**
+
+### _Visualization_:
+- [x] Reference and alternate allele sequences (nucleotide-encoded)
+- [x] Variant-Zygosity colourmap 
+- [x] Variant-frequency count and density histograms
+- [x] Variant probability heatmap
+- [x] Comparion of variant proportions between case and control samples
+- [x] Case and control samples colourmap
+- [x] Exploratory view of allele position as a heatmap
+
+**Dataset subset selection using any combination of the following**:
+- [x] Inputting the range of genome positions to be visualised
+- [x] Inputting a range of min and max sample quality values
+- [x] Selecting a `.csv`, `.txt` and `.tsv` file to tag samples as either a case or a control sample
+
+### `Version 2.0 no longer supports:`
+* Sorting - by default the variants are sorted by position (lowest to highest).
+
 
 ## Requirements
 The app requires the following to be already setup in order to be configured:
@@ -45,20 +72,20 @@ The app requires the following to be already setup in order to be configured:
 > In this case, please use `python` instead of `python3` for all commands listed below to ensure that scripts are executed with Python v3.--- .
 
 
-## Setup 
+## **Setup**
 The application must be run in an active [virtual environment](https://docs.python.org/3/library/venv.html) (venv) with the required libraries installed. A build of [bcftools](https://www.htslib.org/download/) must also be configured.
 
 ### Make the Virtual Environment
 To create a [venv](https://docs.python.org/3/library/venv.html) in the `.venv/` directory:
 * Activate it and then,
 * Install all required python libraries using one of the following sets of bash commands (which are operating system dependant) :
-#### Build for Linux/MacOS and other Unix-like systems:
+#### Build for _Linux/MacOS_ and other Unix-like systems:
 ```bash
 python3 -m venv .venv                 # Create venv in .venv/ directory.
 source .venv/bin/activate          # Activate venv.
 pip install -r requirements.txt    # Install requirements.
 ```
-#### Build for Windows:
+#### Build for _Windows_:
 ```bash
 python -m venv .venv                 # Create venv in .venv/ directory.
 source .venv/Scripts/activate     # Activate venv.
@@ -101,26 +128,3 @@ To package the app as an executable use the command:
 ```bash
 pyinstaller app.spec 
 ```
-
-
-
-## Features
-`Version 1.0` of the Genome Visualiser Application supports basic functionality for visualising `.vcf` and `.vcf.gz` files. Unfortunately `.bcf` files are _not_ supported for visualisation. Version 1.0 is best suited for initial Usability Testing, allowing developers to understand which features of the visualiser need to be further developed and improved in future App releases.
-
-## `Version 1.0` Features:
-- [x] User specified data subset management
-- [x] Input validation for acceptable VCF file formats
-
-#### _Visualization_:
-- [x] Reference and alternate genome nucleotide-encoded sequences
-- [x] Zygosity colormap 
-- [x] Mutation count-frequence and density histograms
-- [x] An exploratory macro-view of the genome positions as a "heatmap"
-
-**Dataset subset selection using any combination of the following**:
-- [x] Inputting the range of genome positions shown 
-- [x] Inputting a range of min and max sample quality values
-
-**Sorting the genome dataset by**:
-* [Default] Position (lowest to highest)
-* Quality (high to lowest)
