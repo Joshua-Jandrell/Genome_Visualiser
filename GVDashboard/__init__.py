@@ -1,1 +1,0 @@
-from .VCF import *
