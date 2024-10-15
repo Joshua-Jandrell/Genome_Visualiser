@@ -9,4 +9,4 @@ These tests are:
 > [!NOTE]
 > All benchmarking tests mut be run in an activated virtual environment (`.venv`) with all depenadcaise installed.
 > 
-> For details on how to creat this `.venv` please see the [`README.md`](../../README.md#make-the-virtual-environment) in the repo root.
+> For details on how to creat this `.venv` please see the [`README.md`](../README.md#make-the-virtual-environment) in the repo root.
