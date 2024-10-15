@@ -5,7 +5,7 @@ from readMethods import run_al_speedtests, run_bcftools_speedtests, run_hybrid_s
 DATA_FOLDER = os.path.realpath(CONFIG['directories']['data'])
 RESULT_DIR = os.path.realpath(CONFIG['directories']['results'])
 
-N_SAMPLES = 10
+N_ITERS = 10
 SMALL_FILE = "afr-small"
 MED_FILE = "med"
 LARGE_FILE = "afr"
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     load_all_data()
 
     for test_file in [SMALL_FILE, MED_FILE, LARGE_FILE]:
-        n_iters = N_SAMPLES
+        n_iters = N_ITERS
 
         chr = map_chr(test_file)
         

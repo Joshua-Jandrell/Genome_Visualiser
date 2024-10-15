@@ -1,5 +1,6 @@
 # Used to specify where data can be found
 
+bcftools = "src/assets/bin/bcftools"
 
 [directories]
     results = "Results"

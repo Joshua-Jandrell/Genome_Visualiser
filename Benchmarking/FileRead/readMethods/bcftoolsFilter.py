@@ -5,12 +5,15 @@ import os, time, csv
 import pandas as pd
 pd.set_option('future.no_silent_downcasting', True) # Opt in to future pd dataframe replace behavior used by allel
 import allel as al
+from fetchData import CONFIG
 
 
 OUT_DIR = os.path.realpath('Data')
 OUT_FILE = os.path.join(OUT_DIR, 'out.vcf.gz')
 CASE_FILE = os.path.join(OUT_DIR, 'out.case.vcf.gz')
 CTRL_FILE = os.path.join(OUT_DIR, 'out.ctrl.vcf.gz')
+
+BCFTOOLS_CMD = os.path.realpath(CONFIG['bcftools'])
 
 def clear_index(file_path:str):
     clear_file(file_path+'.csi')
@@ -20,7 +23,7 @@ def clear_file(file_path:str):
         os.remove(file_path)
 
 def make_index(file_path:str):
-    os.system(f"bcftools index {file_path}")
+    os.system(f"{BCFTOOLS_CMD} index {file_path}")
 
 def get_qual_filter(min:float, max:float)->str:
     return f" -i\"QUAL>={min} && QUAL<={max}\""
@@ -34,7 +37,7 @@ def get_filter_str(chrom:int, start:int, stop:int, min_qual:float|None=None, max
 
 def filter_file(data_path:str, chrom:int, start:int, stop:int, min_qual:float|None=None, max_qual:float|None=None)->str:
     query_str = get_filter_str(chrom,start,stop,min_qual, max_qual)
-    os.system("bcftools view " + query_str + " " + data_path+ " -o " + OUT_FILE)
+    os.system(f"{BCFTOOLS_CMD} view " + query_str + " " + data_path+ " -o " + OUT_FILE)
     return OUT_FILE
 
 def get_case_ctrl_paths(data_path:str)->tuple[str,str]:
@@ -46,14 +49,14 @@ def get_case_ctrl_paths(data_path:str)->tuple[str,str]:
 def filter_case_oneshot(data_path:str, case_path:str, chrom:int, start:int, stop:int, min_qual:float|None=None, max_qual:float|None=None):
     filter_str = get_filter_str(chrom,start,stop,min_qual,max_qual)
     case_file, ctrl_file = get_case_ctrl_paths(data_path)
-    os.system(f"bcftools view {filter_str} -S \"{case_path}\" {data_path} -o {case_file}")
-    os.system(f"bcftools view {filter_str} -S \"^{case_path}\" {data_path} -o {ctrl_file}")
+    os.system(f"{BCFTOOLS_CMD} view {filter_str} -S \"{case_path}\" {data_path} -o {case_file}")
+    os.system(f"{BCFTOOLS_CMD} view {filter_str} -S \"^{case_path}\" {data_path} -o {ctrl_file}")
     return case_file, ctrl_file
 
 def get_case_ctrl(data_path:str, case_path:str)->tuple[str, str]:
     case_file, ctrl_file = get_case_ctrl_paths(data_path)
-    os.system(f"bcftools view -S \"{case_path}\" {data_path} -o {case_file}")
-    os.system(f"bcftools view -S\"^{case_path}\" {data_path} -o {ctrl_file}")
+    os.system(f"{BCFTOOLS_CMD} view -S \"{case_path}\" {data_path} -o {case_file}")
+    os.system(f"{BCFTOOLS_CMD} view -S\"^{case_path}\" {data_path} -o {ctrl_file}")
     return  case_file, ctrl_file
     
 
@@ -109,9 +112,9 @@ def run_bcftools_speedtests(data_file:str, case_file:str, save_file:str|None = o
         oneshot_times.append((time.time_ns()-_t)/(10**9))
 
         # Time data reading
-        _t = time.time()
+        _t = time.time_ns()
         case_data, ctrl_data = read_case_ctrl(case_data_path, ctrl_data_path)
-        read_times.append((time.time_ns()-_t)/10**9)
+        read_times.append((time.time_ns()-_t)/(10**9))
 
         # calculate total times
         split_total_time.append(index_times[_]+pos_and_qual_filter_times[_]+case_ctrl_times[_]+read_times[_])
