@@ -309,6 +309,11 @@ class VcfDataWrapper:
         df = self.__get_filtered_df()
         return df["POS"].to_numpy()
     
+    def get_qual(self):
+        """Returns an array of chromosome quality values, for plotting."""
+        df = self.__get_filtered_df()
+        return df["QUAL"].to_numpy()
+    
     def get_id(self)->np.ndarray:
         """Returns a list of variant IDs"""
         df = self.__get_filtered_df()

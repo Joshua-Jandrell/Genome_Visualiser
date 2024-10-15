@@ -287,7 +287,10 @@ class VariantGridView(ViewInfo_base):
             i = int(var_row - self._lim_offset)
             return {
                 'Position':dw.get_pos()[i],
-                'ID':dw.get_id()[i]
+                'ID':dw.get_id()[i],
+                'Ref allele':dw.get_ref()[i],
+                'Alt allele':dw.get_alts()[i],
+                'Quality':dw.get_qual()[i]
             }
         except:
             return {}

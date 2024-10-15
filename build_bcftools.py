@@ -19,7 +19,7 @@ def install_bcftools():
     # Download file
     print(f"> Downloading bcftools version {VERSION}:")
     wget.download(BCFTOOLS_URL)
-    print("Download completed.\n")
+    print("\nDownload completed.\n")
 
     # Extract contents
     BCFTOOLS_FILE = os.path.basename(BCFTOOLS_URL)

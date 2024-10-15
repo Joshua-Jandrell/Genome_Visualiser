@@ -38,16 +38,16 @@ class InspectorPanel(ctk.CTkFrame):
     @classmethod
     def make_label(cls, key:str, value:str)->ctk.CTkLabel:
         instance = cls.get_instance()
-        txt = f"{key}: \t {value}"
+        txt = f"   {key}: {value}   "
         if len(instance._labels) > 0:
             label = instance._labels.pop()
-            label.configure(text=txt)
+            label.configure(text=txt, justify="left", fg_color='light green')
         else:
             label = ctk.CTkLabel(instance,text=txt)
         
 
         #label.grid(row=len(instance._used_labels), column=0, sticky='ew')
-        label.pack(pady=10)
+        label.pack(pady=5)
         instance._used_labels.append(label)
 
         return label
@@ -56,10 +56,10 @@ class InspectorPanel(ctk.CTkFrame):
     ## Add them to labels in use so we can call forget label when done    
         
 
-    def __init__(self, master: Any, width: int = 200, height: int = 200, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
+    def __init__(self, master: Any, width: int = 200, height: int = 400, corner_radius: int | str | None = None, border_width: int | str | None = None, bg_color: str | Tuple[str, str] = "transparent", fg_color: str | Tuple[str, str] | None = None, border_color: str | Tuple[str, str] | None = None, background_corner_colors: Tuple[str | Tuple[str, str]] | None = None, overwrite_preferred_drawing_method: str | None = None, **kwargs):
         super().__init__(master, width, height, corner_radius, border_width, bg_color, fg_color, border_color, background_corner_colors, overwrite_preferred_drawing_method, **kwargs)
 
-        self.title_card = ctk.CTkFrame(self,width=width, height=10, fg_color='transparent')
+        self.title_card = ctk.CTkFrame(self,width=width, height=20, fg_color='transparent')
         self.title_card.pack(side=ctk.TOP, fill=ctk.X, pady=0, padx=0)
         self._labels:list[ctk.CTkLabel] = []
         self._used_labels:list[ctk.CTkLabel] = []
