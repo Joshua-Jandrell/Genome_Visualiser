@@ -1,8 +1,8 @@
-#  Filter and Read Bechnmarking: Bcftools vs Scikit-allel:
+#  Filtering and Reading Bechnmarking — Bcftools vs Scikit-allel:
 
-This disrectory contains files used to test the time taken to read and filter `.vcf` files using different approches.
+This directory contains files used to test the time taken to read and filter `.vcf` files using different approaches.
 
-Each approch usese [bcftools](https://github.com/samtools/bcftools) and/or [scikit-allel](https://github.com/cggh/scikit-allel) to filter genomic datasets stored in `.vcf.gz` files and read their contents into a Python data structre. 
+Each approch uses [bcftools](https://github.com/samtools/bcftools) and/or [scikit-allel](https://github.com/cggh/scikit-allel) to filter genomic datasets stored in `.vcf.gz` files and read their contents into a Python data structure. 
 
 ## Run tests
 The tests can be run (from the repo root) with the following command:
@@ -12,34 +12,35 @@ python Benchmarking/FileRead/timeFileReading.py
 ```
 
 > [!IMPORTANT]
-> These tests require a build bcftools to run.
-> Either [build a local version](../../README.md#local-build) of bcftools or update the `bcftools` field in [`data_config.toml`](data_config.toml) to refferacne and exiting install of bcftools.
+> These tests require a build of bcftools in order to run.
+> Either [build a local version](../../README.md#local-build) of `bcftools`, or update the `bcftools` field in [`data_config.toml`](data_config.toml) to reference an existing installation of bcftools.
 
 > [!NOTE]
 > These tests must be run with the `.venv` (containing sckikit-allel) activated.
 
 > [!NOTE]
-> When running these tests data files will be downloaded and saved to the `./Data` direcotry.
+> When running these tests, data files will be downloaded and saved in the `./Data` directory.
 
-## Methadology
-The times taken to perform filtering and reading operation are recorded using three different apporches: [bcftools filtering](#bcftools-filtering), [scikit-allel filtering](#scikit-allel-filtering), and [hybrid filtering](#hybrid-filtering). 
+## Methodology
+The times taken to perform filtering and reading operation are recorded using three different approaches: [bcftools filtering](#bcftools-filtering), [scikit-allel filtering](#scikit-allel-filtering), and [hybrid filtering](#hybrid-filtering). 
 
-Each filtering apporch ([detailed below](#Filtering-approaches)) is broken into several sub-operations (detailed below) that are timed individually to idneify bottelnecks. Every sub-operation is repeated 10 times and averaged to impove reliabaility.
+Each filtering approach ([detailed below](#Filtering-approaches)) is divided into several sub-operations that are timed individually to identify bottelnecks.
+Each sub-operation is repeated 10 times and averaged to impove the results' reliability.
 
-In general, each filtering approch reads a genomic dataste (stored in a `.vcf.gz.` file) and selects variants in the region of `10000-11000` (on the first chromosome listed) while exclauding variants with a quaility less than `25`.
-The dataset is split into two subsets: one for case samples (listed in a seperate `.tsv` file) and one for control sampless (all othe samples not listed in the `.tsv`).
-Each subset is represented by a seperate Python dictinary (`dict`).
+In general, each filtering approach reads in a genomic dataset (stored in a `.vcf.gz.` file) and selects variants in the region of `10000-11000` (on the first chromosome listed) while exclauding variants with a quality value less than `25`.
+The dataset is split into two subsets: one for case samples (listed in a seperate `.tsv` file) and one for control samples (all other samples not listed in the `.tsv`).
+Each subset is represented by a separate Python dictionary (`dict`).
 
 
 ### Test data
-Three publically-avaible genomic datasets: `afr.vcf.gz` (150 MB), `afr-small.vcf.gz` (98 KB), and `med.vcf.gz` (730 KB) are used during speed tests.
-Each dataset is accompanied by a randomly-generated case `.tsv` file with the namining convenation: `<dataset-name>.case.tsv`.
+Three publically-available genomic datasets: `afr.vcf.gz` (150 MB), `med.vcf.gz` (730 KB), and `afr-small.vcf.gz` (98 KB) are used during these speed tests.
+Each dataset is accompanied by a randomly-generated case `.tsv` file with the naming convention: `<dataset-name>.case.tsv`.
 
-Although case (`.tsv`) files are randomly generated; the same case file is used for all three apporches to ensure that results are comprable.
+Although case (`.tsv`) files are randomly generated, the same case file is used for all three approaches to ensure that results are comparable.
 
 > [!TIP]
-> All files used for testing will be automatically downlaoded when either `Benchmarking/FileRead/timeFileReading.py ` or `Benchmarking/FileRead/verifyFileRead.py` is run.
-> Files can also be downlaoded with the command: `python Benchmarking/FileRead/fetchData.py`.
+> All files used for testing will be automatically downloaded when either `Benchmarking/FileRead/timeFileReading.py ` or `Benchmarking/FileRead/verifyFileRead.py` is run.
+> Files can also be downloaded with the command: `python Benchmarking/FileRead/fetchData.py`.
 
 ### Files generated during testing
 
