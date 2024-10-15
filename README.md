@@ -35,7 +35,7 @@ python src/app.py
 - [x] Input validation for acceptable VCF file formats
 - [x] Supports `.bcf` file visualisation, provided bcftools has installed sucessfully
 - [x] Desktop installation with `PyInstaller`
-- [x] Scripts to automatically build **bcftools**
+- [x] Scripts to automatically build [bcftools](https://www.htslib.org/download/)
 
 ### _Visualization_:
 - [x] Reference and alternate allele sequences (nucleotide-encoded)
