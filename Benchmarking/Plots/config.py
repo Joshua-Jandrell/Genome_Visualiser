@@ -6,12 +6,12 @@ DATA_FOLDER = os.path.realpath("./Data/")
 RESULT_DIR = os.path.realpath("./Results")
 
 #RESULT_FOLDER = os.path()
-BLOCK_SIZE = 18
+BLOCK_SIZE = 10
 
 N_CYCLES = 10
 """The number of times each plot is run, taken as an average to improve reliability."""
 
-VAR_COUNTS = [50, 500, 5000, 50000]
+VAR_COUNTS = [50, 500, 5000]
 """Variant volume counts used for benchmarking."""
 
 SAMPLE_COUNTS = [10, 100, 1000, 10000]
