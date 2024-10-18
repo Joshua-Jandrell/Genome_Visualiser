@@ -8,6 +8,8 @@ pd.set_option('future.no_silent_downcasting', True) # Opt in to future pd datafr
 import numpy as np
 
 OUT_DIR = os.path.realpath('Data')
+DF_PARAMS = ['variants/QUAL', 'variants/CHROM', 'variants/REF', 'variants/ALT', 'variants/POS','variants/ID', 'variants/FILTER_PASS']
+""" The data dict keys which should be extracted and placed in the dataframe"""
 
 def read_file(path:str, chrom:int, start:int, stop:int, tabix='tabix')->dict:
     """
@@ -25,6 +27,18 @@ def read_df(path:str, chrom:int, start:int, stop:int, tabix='tabix')->pd.DataFra
         return al.vcf_to_dataframe(path,region=f"chr{chrom}:{start}-{stop}", tabix=tabix)
     else: return df
 
+def convert_to_df(data:dict):
+    """
+    Converts pre-loaded data into a df rather han re-loading with scikit-allel
+    """
+    df_dict = {key.strip('variants/'):data[key] for key in DF_PARAMS if key in data.keys() and key != 'variants/ALT'}
+
+    # Do special conversion for alt
+    alts = data['variants/ALT']
+    for col_i in range(alts.shape[1]):
+        df_dict[f'ALT_{col_i+1}'] = [alt if alt != '' else np.nan for alt in alts[:,col_i]]
+
+    return pd.DataFrame(df_dict)
 
 def select_by_qual(genome_data:dict, df: pd.DataFrame, min=0, max=100)-> tuple[al.GenotypeArray, pd.DataFrame]:
     df = df[df["QUAL"].between(min, max, inclusive = 'both')]
@@ -59,10 +73,12 @@ def run_al_speedtests(data_file:str, case_file:str, save_file:str|None = os.path
     read_times_no_tabix:list[float] = [] # Time taken tor read file without tabix 
     read_times:list[float] = [] # Times taken to read dataset into memory
     df_read_times:list[float] = [] # Times taken to convert data into pandas data frame
+    df_make_times:list[float] = [] # Times taken to construct a dataframe in memory
     qual_filter_times:list[float] = [] # Times taken to filter data according to quality
     case_file_read_times:list[float] = [] # Time taken to read case control file in to memory
     case_ctrl_times:list[float] = [] # times taken to select case and control datasets
     total_times:list[float] = [] # Total time for filtering.
+    total_no_df_read:list[float] = [] # Total time for filtering without reading to a df.
 
     case_data=None
     ctrl_data=None
@@ -77,10 +93,15 @@ def run_al_speedtests(data_file:str, case_file:str, save_file:str|None = os.path
         data = read_file(data_file, chr, start, stop)
         read_times.append((time.time_ns()-_t)/(10**9))
         
-        # time making a data frame
+        # time reading a data frame
         _t = time.time_ns()
         df= read_df(data_file, chr, start, stop)
         df_read_times.append((time.time_ns()-_t)/(10**9))
+
+        # time making dataframe
+        _t = time.time_ns()
+        other_df = convert_to_df(data)
+        df_make_times.append((time.time_ns()-_t)/(10**9))
         
         # time filtering by quality 
         _t = time.time_ns()
@@ -98,6 +119,7 @@ def run_al_speedtests(data_file:str, case_file:str, save_file:str|None = os.path
         case_ctrl_times.append((time.time_ns()-_t)/(10**9))
 
         total_times.append(read_times[_]+df_read_times[_]+qual_filter_times[_]+case_file_read_times[_]+case_ctrl_times[_])
+        total_no_df_read.append(read_times[_]+df_make_times[_]+qual_filter_times[_]+case_file_read_times[_]+case_ctrl_times[_])
         
     # Write results to csv file
     if save_file is not None:
@@ -108,10 +130,12 @@ def run_al_speedtests(data_file:str, case_file:str, save_file:str|None = os.path
             writer.writerow(["Data reading", sum(read_times)/n_iters] + read_times)
             writer.writerow(["Data reading (no tabix)", sum(read_times_no_tabix)/n_iters] + read_times_no_tabix)
             writer.writerow(["DF reading", sum(df_read_times)/n_iters] + df_read_times)
+            writer.writerow(["DF making", sum(df_make_times)/n_iters] + df_make_times)
             writer.writerow(["Quality filtering", sum(qual_filter_times)/n_iters] + qual_filter_times)
             writer.writerow(["Case file reading", sum(case_file_read_times)/n_iters] + case_file_read_times)
             writer.writerow(["Case-control splitting", sum(case_ctrl_times)/n_iters] + case_ctrl_times)
             writer.writerow(["Total", sum(total_times)/n_iters] + total_times)
+            writer.writerow(["Total (no df)", sum(total_no_df_read)/n_iters] + total_no_df_read)
             f.close()
 
     return case_data, ctrl_data
