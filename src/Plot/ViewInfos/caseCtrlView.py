@@ -36,7 +36,8 @@ class CaseCtrlView(VariantGridView):
         return True
     
     def make_key(self,key_ax:Axes, size:tuple[int,int])->Axes:
-        _case = mpatches.Patch(color=self.CASE_CTRL_COLORS[0], label='Homozygous Ref.')
-        _ctrl = mpatches.Patch(color=self.CASE_CTRL_COLORS[1], label='Heterozygous')
-        key_ax.legend(handles=[_ctrl, _case])
+        _case = mpatches.Patch(color=self.CASE_CTRL_COLORS[0], label='Ctrl.')
+        _ctrl = mpatches.Patch(color=self.CASE_CTRL_COLORS[1], label='Case')
+        key_ax.legend(handles=[_ctrl, _case]
+        )
         key_ax.axis('off')

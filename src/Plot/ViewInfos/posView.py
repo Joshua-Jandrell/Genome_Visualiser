@@ -14,6 +14,7 @@ class VarPosView(VariantGridView):
     def __init__(self) -> None:
         super().__init__()
         self._pos = ViewPos.LEFT
+        self._key_rows = 2
     def _get_samples_size(self) -> list[int]:
         return [self.ideal_block_size]
 
@@ -32,22 +33,19 @@ class VarPosView(VariantGridView):
         return True
     
     def make_key(self, key_ax:Axes, size:tuple[int,int]):
-
         dw = self.dataset_info.get_data()
         assert(dw is not None)
         min, max = dw.get_file_pos_range()
 
         fig = key_ax.figure
         norm = colors.Normalize(vmin=min, vmax=max)
-        prop_size = 2*self.ideal_block_size/size[1]
-        cax = inset_axes(key_ax,width="100%",height=f"{prop_size*100}%")
-        cbar = fig.colorbar(ScalarMappable(norm=norm, cmap='plasma'), cax=cax, orientation='horizontal', fraction=prop_size, label="Variant position")
+        cax = inset_axes(key_ax,width="90%",height=f"{25}%")
+        cbar = fig.colorbar(ScalarMappable(norm=norm, cmap='plasma'), cax=cax, orientation='horizontal', label="Variant position")
         key_ticks = [min, max]
         cbar.set_ticks(key_ticks)
-        #cbar.set_ticklabels([f'{tick}%' for tick in key_ticks])
         key_ax.axis('off')
 
         return super().make_key(key_ax)
     
     def get_plot_names(self) -> list[str]:
-        return ['Pos,']
+        return ['Pos.']
