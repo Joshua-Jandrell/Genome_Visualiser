@@ -73,7 +73,7 @@ class VariantGridView(ViewInfo_base):
         if self.is_on_top():
             axs[0].set_title(self.get_group_title())
             data = self.get_data().get_data()
-            if data is not None:
+            if data is not None and self.get_view_pos() in [ViewPos.MAIN, ViewPos.TOP, ViewPos.TOP_STAND_IN]:
                 labels = data.get_samples()
                 axs[0].xaxis.set_ticks(np.arange(len(labels)),data.get_samples(), rotation=90)
                 axs[0].xaxis.set_tick_params(labeltop=True, labelsize=8)
