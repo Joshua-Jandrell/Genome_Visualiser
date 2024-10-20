@@ -128,7 +128,7 @@ To run the tests use the command:
 python Benchmarking\Plots\runAppTests.py
 ```
 This script will run three [Custom Tkinter](https://github.com/TomSchimansky/CustomTkinter) apps.
-Each of th app will use one of three different system to display a plot (generated with [Matplotlib](https://matplotlib.org/)) in a [Custom Tkinter](https://github.com/TomSchimansky/CustomTkinter) app.
+Each of the apps will use one of three different systems to display a plot (generated with [Matplotlib](https://matplotlib.org/)) in a [Custom Tkinter](https://github.com/TomSchimansky/CustomTkinter) app.
 
 The plot display systems used are:
 1. Plotting on a Matplotlib [TkAgg tkinter canvas](https://matplotlib.org/stable/api/backend_tk_api.html#matplotlib.backends.backend_tkagg.FigureCanvasTkAgg) and displaying the plot on a [CTkXYFrame](https://github.com/Akascape/CTkXYFrame).
@@ -136,20 +136,20 @@ The plot display systems used are:
 3. Saving the plot as an image which is then displayed using as a [Custom Tkinter Image](https://customtkinter.tomschimansky.com/documentation/utility-classes/image/) on a [CTkXYFrame](https://github.com/Akascape/CTkXYFrame) to enable scrolling.
 
 > [!TIP]
-> The display sysem used by an app will be indicated by its name.
+> The display sysem used by each app will be indicated by its name.
 
 > [!IMPORTANT]
 > Custom Tkinter does not have a frame which can be scrolled in both x and y directions.
-> The [CTkXYFrame](https://github.com/Akascape/CTkXYFrame) is an external object developed by Akash Bora ('Akascape`) and distributed under and [MIT licence](https://github.com/Akascape/CTkXYFrame/tree/main?tab=MIT-1-ov-file#).
+> The [CTkXYFrame](https://github.com/Akascape/CTkXYFrame) is an external object developed by Akash Bora ('Akascape`) and distributed under an [MIT licence](https://github.com/Akascape/CTkXYFrame/tree/main?tab=MIT-1-ov-file#).
 
-Each of the plotting methods listen in the [Plot test: methodology](#Methodology) section is used generate a plot.
+Each of the plotting methods listed in the [Plot test: methodology](#Methodology) section is used generate a plot.
 
-When the **plot next** button is clicked, the app will plot random data and display it. The size of the data generated ($500 \times 200$) and the Matplotlib plot method used will also be indicated.
+When the **plot next** button is clicked, the app will plot random data and display it. The size of the data generated ($500 \times 200$) and the Matplotlib plotting function used will also be indicated.
 
-The resercher is able to interact with the plot to see how well it scrolls before clicking the **clear plot** button to reset the Matplotlib figure and canvas.
-Resetting the figure and canvas is important to ensure that all plot methods being with the same initial state: making benchmarking results comparable.
+The researcher is able to interact with the plot to evaluate how well it scrolls before clicking the **clear plot** button to reset the Matplotlib figure and canvas.
+Resetting the figure and canvas is important to ensure that all plot methods being with the same initial state for comparable benchmarking results.
 
-After then final plot method has been used the application will close and an apply using the next display system will open.
+After the final plot method has been used the application will autmatically close and the next display system will open.
 
 ## Verification
 The plot methods used are verified during the [Plot Tests](#plot-tests).
@@ -158,8 +158,7 @@ To ensure that the full plot is scrollable look for the two white blocks which s
 ## Results 
 The render tests do no generate results automatically.
 
-Wall-times were recorded by videoing the applications and identifying the time that passed between clicking the **plot next** button and seeing a (correctly scaled) plot displayed.
-All tests were repeated three times to improve reliability.
+Wall-times were recorded by videoing the applications and (audibly) identifying the time that passed between clicking the **plot next** button (with a mouse) and seeing a correctly scaled plot displayed.
+All tests were repeated three times to improve the reliability if results.
 
-Qualitative observations were also recorded.
-
+Qualitative observations were also recorded in an Excel spreadsheet.
