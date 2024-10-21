@@ -128,3 +128,8 @@ To package the app as an executable use the command:
 ```bash
 pyinstaller app.spec 
 ```
+
+## Tests 
+The [`Benchmarking/`](Benchmarking) folder contains scripts used for tests. For more  details regarding testing, see the testing [`README`](Benchmarking/README.md).
+
+
