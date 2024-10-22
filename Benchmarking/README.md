@@ -1,12 +1,12 @@
 # Benchmarking tests
-The directory contaisn scripts used to conduct several benchamiing tests.
+This directory contains the scripts used to conduct several benchmarking tests.
 
 These tests are:
-- Tests for `.vcf` dataset [reading and filtering](FileRead/README.md) times in the `FileRead/` directroty
-- Tests for data [plotting and rendeing](Plots/README.md) in `Plots/`.
-- Tests for data [filtering](pdvsnp/README.md) with Pandas and NumPy in `pdvsnp/`.
+- Tests for `.vcf` dataset [reading and filtering](FileRead/README.md) times in the `FileRead/` directory.
+- Tests for data [plotting and rendering](Plots/README.md) in `Plots/`.
+- Tests for data [filtering](pdvsnp/README.md) using either a Pandas dataframe or NumPy arrays in `pdvsnp/`.
 
 > [!NOTE]
-> All benchmarking tests mut be run in an activated virtual environment (`.venv`) with all depenadcaise installed.
+> All benchmarking tests must be run in an activated virtual environment (`.venv`) with all dependencies installed.
 > 
-> For details on how to creat this `.venv` please see the [`README.md`](../README.md#make-the-virtual-environment) in the repo root.
+> For details on how to create this `.venv` please see the [`README.md`](../README.md#make-the-virtual-environment) in the repo root.
