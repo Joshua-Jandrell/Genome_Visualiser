@@ -18,8 +18,8 @@ def load_vcf_data():
     os.makedirs(CONFIG['directories']['data'], exist_ok=True)
 
     # Load files
-    files:dict = CONFIG['data']
-    for url in files.values:
+    _files:dict = CONFIG['data']
+    for url in _files.values():
         _dest = get_dest(url)
 
         # Skip file if it already exists.
@@ -38,7 +38,7 @@ def load_case_data():
 
     print("\nDownloading case/ctrl files...\n")
     # Make data directory 
-    os.makedirs(CONFIG['data_dir'], exist_ok=True)
+    os.makedirs(CONFIG['directories']['data'], exist_ok=True)
 
     # Load files
     files:dict = CONFIG['case-ctrl']
