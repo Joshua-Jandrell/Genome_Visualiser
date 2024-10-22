@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Run this file to set up all required venv dependancies
-#pyinstaller --add-data "src/assets/bin/*.exe:assets/bin/" --add-data "src/assets/img/*.ico:assets/img/"  --add-data "src/*.toml:." --icon "src/assets/img/icon.ico" src/app.py
+# Run this file to download some publically avaibale vcf data for testing
 
 VENV=".venv"
 PYTHON='python3'
@@ -16,6 +15,7 @@ if [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "
     BCFTOOLS_PATH='src/assets/bin/bcftools.exe'
 fi
 
+# Make venv if required, otheriwse activate it
 if [ ! -d "$VENV" ]; then
     echo "=== Creating venv ==="
     "$PYTHON" -m venv "$VENV"
@@ -25,10 +25,16 @@ else
     source "$VENV"/"$BIN"/activate
 fi
 
-if [ ! -f $BCFTOOLS_PATH ]; then
-    echo "=== Building bcftools ==="
-    "$PYTHON" build_bcftools.py
+if [ ! -z "$1" ]; then
+    if [ "$1" == 'Local' ]; then 
+        if [ ! -f $BCFTOOLS_PATH ]; then
+            echo "=== Building bcftools ==="
+            "$PYTHON" build_bcftools.py
+        else
+            echo "Bcftools build exists"
+        fi
+    else
+        echo "Use 'bash setup.sh Local' to build bcftools locally"
+    fi
 fi
 
-
-pyinstaller app.spec

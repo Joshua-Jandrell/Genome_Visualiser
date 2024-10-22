@@ -7,7 +7,7 @@ bcftools = "src/assets/bin/bcftools"
     data = "Data"
 
 [data]
-    afr = "http://dept.ee.wits.ac.za/~scott/COMS7059/vcf/afr-small.vcf.gz"
+    afr = "http://dept.ee.wits.ac.za/~scott/COMS7059/vcf/afr.vcf.gz"
     afr-small = "http://dept.ee.wits.ac.za/~scott/COMS7059/vcf/afr-small.vcf.gz"
     med = "http://dept.ee.wits.ac.za/~scott/COMS7059/vcf/med.vcf.gz"
 
