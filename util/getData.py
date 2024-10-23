@@ -87,7 +87,7 @@ if __name__ == "__main__":
     for i, arg in enumerate(sys.argv):
         if arg in ["--random", "--rand", "--random-case"]:
             if(i+1 != len(sys.argv)): # only act if there is an argument value
-                rand_type = sys.argv[i].strip(".")
+                rand_type = sys.argv[i+1].strip(".")
 
                 if rand_type not in ["csv", "tsv", 'none', 'None']:
                     print(f"Case file extension {rand_type} is not recognized.")
