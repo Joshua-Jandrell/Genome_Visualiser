@@ -32,7 +32,7 @@ class DataSetConfig(ctk.CTkToplevel):
         new_file = False
         if get_file_first and dataset is None:
             file_name = FileFetcher.get_vcf_filename()
-            if file_name == "": return
+            if file_name == "" or file_name == (): return
             dataset = DataSetInfo(source_path=file_name)
             new_file = True
 
@@ -120,10 +120,19 @@ class DataSetConfig(ctk.CTkToplevel):
 
     def _configure_title(self):
         # Give the frame an icon 
-        self.after(1, lambda: self.iconbitmap(os.path.join(_config_.IMG_PATH, 'icon.ico')))
+        try:
+            self.after(1, self._set_icon())
+        except:
+            pass
         
         if self.new_dataset: self.title("Create Dataset")
         else: self.title("Edit Dataset")
+
+    def _set_icon(self):
+        try:
+            self.iconbitmap(os.path.join(_config_.IMG_PATH, 'icon.ico'))
+        except:
+            pass
         
 
     def __open_config(self,dataset:DataSetInfo|None = None, command:Callable[[DataSetInfo],Any]|None = None, register_on_create:bool = True, treat_as_new:bool = False):

@@ -7,7 +7,7 @@ from VCF.filterInfo import DataSetInfo
 from UI.filePicker import FilePicker
 
 class FileFetcher:
-    SUPPORTED_TYPES = [('All','*.vcf *.vcf.gz *.bcf'),
+    SUPPORTED_TYPES = [('All','*.vcf *.vcf.gz *.bcf *.bcf.gz'),
                        ('Variant call format','*.vcf *.vcf.gz'),
                        ('Binary call format','*.bcf *.bcf.gz')]
 

@@ -90,7 +90,7 @@ class DatasetFilterFrame(ctk.CTkFrame):
         case_label._font.configure(weight="bold")
         case_label.grid(row=_case_row, column=0, columnspan=1, padx=_padx, pady=_pady)
         self.case_picker = FilePicker(master=self, width=100,
-                                           filetypes=[("any", "*.txt;*.tsv;*.csv"),("text file", "*.txt"), ('tab-separated values', '*.tsv'), ('comma-separated value', '*.csv')],
+                                           filetypes=[("any", "*.txt *.tsv *.csv"),("text file", "*.txt"), ('tab-separated values', '*.tsv'), ('comma-separated value', '*.csv')],
                                            path_variable=self.case_path,
                                            button_text="select",
                                            dialog_title="Select Case/Ctrl file",

@@ -1,4 +1,4 @@
-import os, subprocess, wget, shutil
+import os, subprocess, wget, shutil, sys
 from src import _config_
 
 # bcftools install details
@@ -11,9 +11,8 @@ BCFTOOLS_DIR = f"bcftools-{VERSION}"
 def install_bcftools():
     """Downloads and installs bcftools."""
 
-    _target_path = os.path.realpath(_config_.BCFTOOLS_PATH.strip('.*').strip('.exe')+'.exe')
-
     BASE_PATH = os.path.dirname(__file__)
+    _target_path = os.path.realpath(_config_.BCFTOOLS_PATH)
     print(f"Installing bcftools in {_target_path}")
 
     # Download file
@@ -23,17 +22,18 @@ def install_bcftools():
 
     # Extract contents
     BCFTOOLS_FILE = os.path.basename(BCFTOOLS_URL)
-    subprocess.run(f"tar -xf {BCFTOOLS_FILE}")
+    subprocess.run(f"tar -xf {BCFTOOLS_FILE}", shell=True)
 
     # Try to find make cmd
     make_cmd = 'make'
     try:
-        subprocess.run(f"{make_cmd} --version", stdout = subprocess.DEVNULL)
+        pass
+        subprocess.run(f"{make_cmd} --version", stdout = subprocess.DEVNULL, shell=True)
     except:
         # try again with possible cmd for windows device
         make_cmd = 'mingw32-make'
         try:
-            subprocess.run(f"{make_cmd} --version", stdout = subprocess.DEVNULL)
+            subprocess.run(f"{make_cmd} --version", stdout = subprocess.DEVNULL, shell=True)
             print(f"{make_cmd} detected.")
         except:
             print("No version of cmake detected: cannot build executable.")
@@ -41,19 +41,25 @@ def install_bcftools():
         print(f"> Building executable with {make_cmd}:")
 
         # Configure and build bcftools
-        subprocess.run("bash ./configure", cwd=os.path.join(BASE_PATH,BCFTOOLS_DIR))
-        subprocess.run(make_cmd, cwd=os.path.join(BASE_PATH,BCFTOOLS_DIR))
+        subprocess.run("bash ./configure", cwd=os.path.join(BASE_PATH,BCFTOOLS_DIR), shell=True)
+        subprocess.run(make_cmd, cwd=os.path.join(BASE_PATH,BCFTOOLS_DIR), shell=True)
 
         # Find and move .exe to desired location
-        _tmp_bcf_tool_path = os.path.join(BASE_PATH,BCFTOOLS_DIR,'bcftools.exe')
+        _exe_name = os.path.basename(_target_path)
+
+        # Look for exe
+        _tmp_bcf_tool_path = os.path.join(BASE_PATH, BCFTOOLS_DIR, _exe_name)
         os.makedirs(os.path.dirname(_target_path), exist_ok=True)
-        shutil.move(_tmp_bcf_tool_path, _target_path)
+        try:
+            shutil.move(_tmp_bcf_tool_path, _target_path)
+        except:
+            print(_tmp_bcf_tool_path)
 
         print("=============================================\n")
 
         # Check that build succeeded
         try:
-            subprocess.run(f"{_target_path} --version")
+            subprocess.run(f"{_target_path} --version", shell=True)
         except:
             print("\n=============================================")
             print("Build failed. Please attempt manual install.")
