@@ -75,7 +75,7 @@ Each block is allocated a size of $10 \times 10$ pixels, regardless of DPI.
 #### Measurement Techniques
 Absolute wall-time is measured using the Python [`time`]( https://docs.python.org/3/library/time.html) library while memory allocation is tracked using the [`tracemalloc`]( https://docs.python.org/3/library/tracemalloc.html) library.
 
-Each time/memory test is reaped ten times and averaged to improve reliability.
+Each time/memory test is repeated ten times and averaged to improve reliability.
 
 The python garbage collector ([`gc`]( https://docs.python.org/3/library/gc.html) is called between tests (and between each of the 10 repetitions). This ensures that a build-up of uncleared data( and the subsequent time-delay when the garbage collector is automatically called) does not affect test results.
 
@@ -116,6 +116,15 @@ All time values are recorded in seconds and all memory usage values are recorded
 
 The results currently sored in the files (if no tests are run) were recorded on a Dell Inspiron laptop with an intel i7 core @ 1.7 GHz and 15.7 GB of usable RAM.
 The computer was not used for any other tasks during benchmarking to ensure that changes in available resources did not impact test results.
+
+By loading the plotting time results into the (to upload)MATLAB script, the following graphs were generated which show that :
+*<small>Time taken for Matplotlib functions to plot different scales of randomly generated (NumPy) integer arrays </small>*
+![time plots](https://github.com/user-attachments/assets/63eb544a-16fb-40cc-8657-74a5b4799264)
+
+By loading the memory usage plotting results into the (to upload)MATLAB script, the following graphs were generated which show that :
+*<small>Time taken for Matplotlib functions to plot different scales of randomly generated (NumPy) integer arrays </small>*
+![memory usage plots](https://github.com/user-attachments/assets/e8aad650-ed6b-4f75-9aa5-5b0bd7d70bd2)
+
 __________________________________________________________________________________________
 # Render Tests
 Render tests are conducted to identify which plot display system is the most appropriate in terms of absolute time (quantitative) and quality of display (qualitative).
@@ -158,8 +167,14 @@ To ensure that the full plot is scrollable look for the two white blocks which s
 ## Results 
 The render tests do no generate results automatically.
 
-Wall-times were recorded by videoing the applications and identifying the time that passed between clicking the **plot next** button and seeing a (correctly scaled) plot displayed.
+Wall-times were recorded by videoing the applications and identifying the time that passed between clicking the **plot next** button and seeing a (correctly scaled) plot displayed. These times and qualitative observations were recorded in the (insert excel spreadsheet).
 All tests were repeated three times to improve reliability.
 
-Qualitative observations were also recorded.
+The main findings were graphed in Excel which show that :
+*<small>Time taken for Matplotlib functions to plot different scales of randomly generated (NumPy) integer arrays </small>*
+
+![render times - smollr](https://github.com/user-attachments/assets/a9f71746-3165-4a55-b5e3-7264e502ada9)
+
+
+
 
