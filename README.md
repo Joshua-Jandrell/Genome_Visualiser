@@ -103,7 +103,7 @@ python build_bcftools.py          # Replace python with python3 if required.
 > [!TIP]
 > If this above method fails, the bcftools source code can be downloaded [here](https://www.htslib.org/download/) and manually compiled.
 > The executable must be copied to `src/assets/bin/` after compilation.
-
+> 
 #### Existing build
 To use a pre-existing install of bcftools set `local = false` in [`config.toml`](config.toml).
 
@@ -123,13 +123,68 @@ To run the app user the command:
 python src/app.py         # Replace python with python3 if required.
 ```
 
+## Example Data for Visualisation
+If you do not have access to `.vcf.gz` files to use or test the app's visualisation with, you can download some publicly available data which will load 3 `.vcf.gz` files into the `Data` directory along with 6 case/control files (3 case/control files that were used to obtain the results the [`Benchmarking/`](Benchmarking) tests and 3 randomly generated case/control files for experimentation). To download this public data use the following command:
+ ```bash
+
+bash get_data.sh
+
+```
+
+### Cases & Controls file format
+Case files can be used to specify which samples are cases (represent the sub-population/individuals who are being researched for the presence of a variant or physical trait) and which are controls (sample who have the specific  variant or trait that being researched).It can be useful to split and sort samples into cases and controls for comparative visualisation.
+> Case files can be `.txt`, `.tsv`, or `.csv` files which define if a sample is a case or a control.
+
+### General Cases/Controls file format
+A cases/control file should contain two columns: one is a list of all samples in the `.vcf` dataset, the other is a list of Boolean values [`True` or `False`] where `True` indicates that the corresponding sample is a **case**.
+For example,
+A case file for a dataset with 4 samples: `s_1`, `s_2`,  `s_3`, and `s_4`;  looks as follows in tsv format:
+```tsv
+
+s_1        False
+
+s_2        True
+
+s_3        False
+
+s_4        True
+
+```
+
+In the above example file, `s_2` is a case while `s_1` and `s_3` are controls.
+
+### Alternative Cases/Controls file format
+Sometimes it is easier to list only the case samples. This can be done by providing a single column which lists only the cases samples:
+```tsv
+
+s_2
+
+s_3
+
+```
+
+The above case file shows that `s_2` and `s_3` are cases while all other samples are controls.
+
 ## Packaging the App
 To package the app as an executable use the command:
 ```bash
 pyinstaller app.spec 
 ```
 
-## Tests 
+## App Optimisation Tests 
 The [`Benchmarking/`](Benchmarking) folder contains scripts used for tests. For more  details regarding testing, see the testing [`README`](Benchmarking/README.md).
 
+## Running Unit Tests 
+To download all required testing files and run unit tests use the command
+```bash
 
+run_tests.sh
+
+```
+
+If the above data has already been downloaded, you can instead use the command:
+```bash
+
+python -m unittest discomver test/
+
+```
