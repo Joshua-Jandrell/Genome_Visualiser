@@ -108,7 +108,7 @@ class DataSetInfo:
     POS_RANGE = 20000
     APPEND = "_subset"
     names = [] # List of all dataset names to help avoid tow datasets having the same name
-    __files = []
+    _files = []
     __FILE_EXTENSION = ".vcf.gz"
     data_wrappers = {} # stores a list of pre-computed data wrappers 
 
@@ -117,10 +117,10 @@ class DataSetInfo:
         """
         Crates a unique save file name for the given data set
         """
-        save_file = os.path.join(dir,'.' +  str(random.randint(0,999999999)))+cls.__FILE_EXTENSION
-        if save_file in cls.__files: return cls.__make_valid_save_file_name()
+        save_file = os.path.join(os.path.relpath(dir),'.' +  str(random.randint(0,999999999)))+cls.__FILE_EXTENSION
+        if save_file in cls._files: return cls.__make_valid_save_file_name()
         else:
-            cls.__files.append(save_file)
+            cls._files.append(save_file)
             return save_file
         
     @classmethod 
@@ -128,8 +128,8 @@ class DataSetInfo:
         """
         clears the given save file name.
         """
-        if name in cls.__files:
-            cls.__files.remove(name)
+        if name in cls._files:
+            cls._files.remove(name)
 
     def add_name(name:str):
         DataSetInfo.names.append(name)

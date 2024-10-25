@@ -25,7 +25,7 @@ def get_base_pathname(file_path:str)->str:
     """
     return file_path.strip('.gz').strip('.vcf').strip('.bcf').strip('.csi')
 
-def get_idex_name(file_path)->str:
+def get_index_name(file_path)->str:
     return file_path+".csi"
 
 def get_conversion_char(output_type:Literal['bcf.gz', 'vcf', 'vcf.gz', 'bcf.gz'])->str:
@@ -54,7 +54,7 @@ def index(file_path:str):
     Make an index for the given file using bcftools.
     """
     # Check if index exists
-    if os.path.isfile(get_idex_name(file_path)): return
+    if os.path.isfile(get_index_name(file_path)): return
     subprocess.call(f"{BCFTOOLS_CMD} index {file_path}", shell=True)
         
 
@@ -67,7 +67,7 @@ def make_dataset_file(data_path:str, new_data_path:str, query_str:str="", output
     output_type = output_type.strip(".") # remove '.' from output type to avoid double dots
     data_path = prep_for_bcftools(data_path)
     new_data_path = get_base_pathname(new_data_path)+"."+output_type # Ensure that output has correct file extension 
-    subprocess.call(f"{BCFTOOLS_CMD} view {query_str.strip(' ')} {data_path} -O {get_conversion_char(output_type)} -o {new_data_path}", shell=True)
+    subprocess.call(f"{BCFTOOLS_CMD} view {query_str.strip(' ')} {os.path.realpath(data_path)} -O {get_conversion_char(output_type)} -o {os.path.realpath(new_data_path)}", shell=True)
     return new_data_path
 
         
