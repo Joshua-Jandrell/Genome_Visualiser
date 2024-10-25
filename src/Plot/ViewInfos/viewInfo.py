@@ -414,7 +414,7 @@ class ViewSetManager:
         h, h_ratios = length_and_ratios([pad_t]+top_hights+[main_h, pad_b])
 
         # Scale figure padding
-        fig.subplots_adjust(left=pad_l/w, right=1-(pad_r-_key_w)/w, top=1-pad_t/h, bottom=pad_b/h)
+        fig.subplots_adjust(left=pad_l/w, right=1-(pad_r)/w, top=1-pad_t/h, bottom=pad_b/h)
         #fig.subplots_adjust(left=pad_l/w, right=1-(pad_r)/w, top=1-pad_t/h, bottom=pad_b/h)
        
         # Make the main plot
@@ -441,6 +441,7 @@ class ViewSetManager:
             view.make_plots(_axes, size=(_x_size, main_h))
 
 
+        top_ax = ax
         if plot_top:
             plot_i = 0
             for view in reversed([view for view in self.top_views if not view.is_main()]):
@@ -448,7 +449,11 @@ class ViewSetManager:
                 _y_size = 0
                 for _ in range(view.get_plot_count()):
                     prop_size =  top_hights[-(1+plot_i)]/main_h
-                    _axes.append(divider.append_axes('top',size=f"{prop_size*100}%",pad=0, sharex=ax))
+                    _ax = divider.append_axes('top',size=f"{prop_size*100}%",pad=0, sharex=ax)
+                    _axes.append(_ax)
+
+                    if top_ax == ax: top_ax = _ax
+
                     _y_size += top_hights[-(1+plot_i)]
                     plot_i += 1
                     _axes.reverse()
@@ -459,20 +464,24 @@ class ViewSetManager:
 
             # Make key axs
             rel_w = _key_w/main_w
-            key_ax:Axes = divider.append_axes('right', size=f"{rel_w*100}%", pad=0)
-            key_ax.axis('off')
+            #key_ax:Axes = divider.append_axes('right', size=f"{rel_w*100}%", pad=0)
+
             key_views = [view for view in full_view_list if view.has_key()]
             key_sizes = [view.get_key_rows() * KEY_HEIGHT for view in key_views]
             key_h = sum(key_sizes) + (len(key_sizes)-1)*KEY_PAD
+            block_h = h-(TOP_PADDING+BOTTOM_PADDING)
             x_spacing = KEY_SIDE_PAD/_key_w
+
+            key_ax:Axes = fig.add_axes([(LEFT_PADDING+main_w)/w, (BOTTOM_PADDING+(block_h-key_h))/h,_key_w/w, key_h/h])
+            key_ax.axis('off')
             
 
             for _i, view in enumerate(key_views):
-                rel_h = (view.get_key_rows() * KEY_HEIGHT)/main_h
-                ax = key_ax.inset_axes([x_spacing,1-sum(key_sizes[:(_i+1)])/main_h,1-x_spacing,rel_h])
+                rel_h = (view.get_key_rows() * KEY_HEIGHT)/block_h
+                _ax = key_ax.inset_axes([x_spacing,1-sum(key_sizes[:(_i+1)])/block_h,1-x_spacing,rel_h])
                 # Make new axes for key 
                 rel_h = (view.get_key_rows() * KEY_HEIGHT)/main_h
-                view.make_key(key_ax=ax, size=(rel_w, rel_h))
+                view.make_key(key_ax=_ax, size=(rel_w, rel_h))
 
 
 

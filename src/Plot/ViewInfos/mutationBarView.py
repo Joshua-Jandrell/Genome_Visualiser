@@ -12,7 +12,7 @@ class MutationBarView(VariantGridView):
         super().__init__()
         self._pos = ViewPos.VAR_STAND_IN
         self._priority = 100
-        self._group_title = "Zygosity Frequency"
+        self._group_title = "Proportional Zygosity"
 
     def _get_samples_size(self) -> list[int]:
         if self._is_main:
@@ -110,6 +110,6 @@ class MutationBarView(VariantGridView):
     
     def get_plot_names(self) -> list[str]:
         if self._is_main:
-            return ["Zygosity Proportion"]
+            return ["Proportional Zygosity"]
         else:
-            return ["Zygo-\nProp."]
+            return ["Proportional\nZygosity"]

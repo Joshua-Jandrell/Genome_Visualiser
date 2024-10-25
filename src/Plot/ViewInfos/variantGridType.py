@@ -76,6 +76,10 @@ class VariantGridView(ViewInfo_base):
                 axs[0].set_xlabel("Variant Position")
                 self.make_var_labels(axs[0])
                 axs[0].xaxis.set_label_position('top')
+
+            if self._is_main:
+                self.make_sample_labels(axs[0])
+                axs[0].set_ylabel("Sample")
         else:
             if self.is_fist_in_set() and pos_is_on_y(self._pos):
             # Set axis title
@@ -85,7 +89,7 @@ class VariantGridView(ViewInfo_base):
         if self.is_on_top():
             axs[0].set_title(self.get_group_title())
             data = self.get_data().get_data()
-            if data is not None and self.get_view_pos() in [ViewPos.MAIN, ViewPos.TOP, ViewPos.TOP_STAND_IN]:
+            if data is not None and self.get_view_pos() in [ViewPos.MAIN, ViewPos.SAMPLE, ViewPos.SAMPLE_STAND_IN]:
                 labels = data.get_samples()
                 axs[0].xaxis.set_ticks(np.arange(len(labels)),data.get_samples(), rotation=90)
                 axs[0].xaxis.set_tick_params(labeltop=True, labelsize=8)
@@ -96,8 +100,13 @@ class VariantGridView(ViewInfo_base):
         if not self._is_main and (self.stack_mode != Y_STACK and self._pos and self._pos in [ViewPos.VAR, ViewPos.VAR_STAND_IN]):
             for _i, _ax in enumerate(axs):
                 if len(_ax_names) > _i:
-                    _ax.set_xlabel(_ax_names[_i], va='top', rotation=90)
+                    _ax.set_xlabel(_ax_names[_i], rotation=90)
                     _ax.xaxis.set_label_position('top')
+        elif not self._is_main and (self.stack_mode == Y_STACK and self._pos and self._pos in [ViewPos.VAR, ViewPos.VAR_STAND_IN]):
+            for _i, _ax in enumerate(axs):
+                if len(_ax_names) > _i:
+                    _ax.set_ylabel(_ax_names[_i], ha='right', rotation='horizontal')
+                    _ax.yaxis.set_label_position('left')
             
 
     def make_sample_labels(self, ax:Axes):
