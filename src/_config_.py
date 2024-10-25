@@ -22,7 +22,6 @@ BCFTOOLS_CMD:str=BCFTOOLS_PATH
 if not config['bcftools']['local']:
     BCFTOOLS_CMD = 'bcftools'
     
-print(BASE_PATH, "is base")
 IMG_PATH:str = os.path.realpath(os.path.join(BASE_PATH, config['assets']['images']))
 """Path to all images (.png and .ico files)"""
 
