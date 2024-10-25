@@ -58,4 +58,4 @@ class MutFreqView(VariantGridView):
         key_ax.axis('off')
 
     def get_plot_names(self) -> list[str]:
-            return ['Variant Frequency']
+            return ['Variant\nFrequency']

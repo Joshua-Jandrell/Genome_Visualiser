@@ -50,6 +50,7 @@ NUCLEOTIDE_DICT = {
     "T":4,
     "":7
 }
+VAR_TYPE_OFFSET = 8
 
 # Conatins vcf query data and returns it in various formats
 class VcfDataWrapper:
@@ -133,7 +134,7 @@ class VcfDataWrapper:
 
         return new_data
     
-    def get_pos_var_ints(self, split=False):
+    def get_pos_var_ints(self, split=False, include_hetro = False):
         """
         Returns and `int` matrix of variation alleles for each sample variant.
         """
@@ -142,6 +143,13 @@ class VcfDataWrapper:
         _zygo_ints = np.zeros((_zygo.shape[0:2]))
         for _i in range(_alts.shape[1]):
             _zygo_ints += ((_zygo.is_hom(_i+1)) * (_i + 1))
+            if include_hetro:
+                het_vars = _zygo.is_het(_i+1)
+                # Remove previous variants to avoid double counting
+                for _j in range(_i):
+                    het_vars *= np.invert(_zygo.is_het(_j+1))
+
+                _zygo_ints += (het_vars * (_i + 1 + VAR_TYPE_OFFSET))
         if split:
             zygo_ctrl, zygo_case = self._split_mat_by_cases(_zygo_ints)
             for _i,row in enumerate(zygo_ctrl):
@@ -160,6 +168,8 @@ class VcfDataWrapper:
             return -1
         if n == -1:
             return -2
+        if n >= len(alt_row):
+            return alt_row[int(n-1-VAR_TYPE_OFFSET)]+VAR_TYPE_OFFSET
         return alt_row[int(n-1)]
 
 
