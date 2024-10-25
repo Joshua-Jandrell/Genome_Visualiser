@@ -117,7 +117,7 @@ class DataSetInfo:
         """
         Crates a unique save file name for the given data set
         """
-        save_file = os.path.join(os.path.relpath(dir),'.' +  str(random.randint(0,999999999)))+cls.__FILE_EXTENSION
+        save_file = os.path.realpath(os.path.join(dir,'.' +  str(random.randint(0,999999999)))+cls.__FILE_EXTENSION)
         if save_file in cls._files: return cls.__make_valid_save_file_name()
         else:
             cls._files.append(save_file)
@@ -161,7 +161,7 @@ class DataSetInfo:
 
 
 
-        self.__save_path = None
+        self._save_path = None
         self.__name = None # Must set name to None here so that set name can use this variable 
 
         # Initial variables (MUST be set later using configure)
@@ -226,8 +226,8 @@ class DataSetInfo:
         if self.__destroyed: return
         
         DataSetInfo.clear_name(self.__name)
-        if self.__save_path is not None:
-            DataSetInfo.__clear_save_file_name(self.__save_path)
+        if self._save_path is not None:
+            DataSetInfo.__clear_save_file_name(self._save_path)
         self.__clear_save()
         self._update_event.remove_all()
         self.__destroyed = True
@@ -247,7 +247,7 @@ class DataSetInfo:
         # Make a save path if it will be required
         if not self.at_end:
             # Peaking did not reveal the full file, that dataset is big and should thus be stored in memory
-            self.__save_path = self.__make_valid_save_file_name(os.path.dirname(source_path))
+            self._save_path = self.__make_valid_save_file_name(os.path.dirname(source_path))
 
         self._update_event.invoke(self, 'source')
 
@@ -255,11 +255,11 @@ class DataSetInfo:
         """
         Remove the save file if it exists.
         """
-        if self.__save_path is None: return
-        if os.path.isfile(self.__save_path):
-            os.remove(self.__save_path)
+        if self._save_path is None: return
+        if os.path.isfile(self._save_path):
+            os.remove(self._save_path)
             self.__save_flag = False
-        self.__save_path = None
+        self._save_path = None
 
     def add_filter(self,filter:DataFilter_base):
         self.filters.append(filter)
@@ -336,17 +336,18 @@ class DataSetInfo:
         if self.__destroyed:
             raise Exception("Trying to get data from destroyed da")
 
-        data_path = self.__save_path
+        data_path = self._save_path
         if data_path is None: data_path = self.source_path
         
         # Pre-load vcf data using bcftools if required 
         if self.__should_make_save_file():
             query_str = get_filter_query_str(self.filters,['-r'], chr_prefix=self.chr_prefix)
             data_path = make_dataset_file(self.source_path,
-                                                   os.path.join(os.path.dirname(self.source_path),self.__save_path),
+                                                   os.path.join(os.path.dirname(self.source_path),self._save_path),
                                                    query_str=query_str,
                                                    output_type=self.__FILE_EXTENSION)
-            assert(data_path == self.__save_path)
+            print("data ", data_path, " and save ", self._save_path)
+            assert(data_path == self._save_path)
             self.__save_flag = True
 
 
