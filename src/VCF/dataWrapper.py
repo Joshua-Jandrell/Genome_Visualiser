@@ -203,8 +203,8 @@ class VcfDataWrapper:
             n_ctrls = self.get_n_ctrls()
             ctrl_data = gt_data[:,:n_ctrls]
             case_data = gt_data[:,n_ctrls:]
-            return [(((ctrl_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult,
-                    (((case_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult]
+            return [(((ctrl_data.is_hom_alt()*1).sum(axis=1))/max(n_ctrls,1))*mult,
+                    (((case_data.is_hom_alt()*1).sum(axis=1))/max(n_cases,1))*mult]
 
         # Frequency of homzygos per position
         zygo_homo_probability = (((gt_data.is_hom_alt()*1).sum(axis=1))/(self.get_n_samples()))*mult
@@ -221,11 +221,11 @@ class VcfDataWrapper:
         gt_data = self.__get_filtered_genotype_array()
         if split:
             n_cases = self.get_n_cases()
-            n_ctrls = n_cases - self.get_n_variants()
+            n_ctrls = self.get_n_samples()-n_cases
             ctrl_data = gt_data[:,:n_ctrls]
             case_data = gt_data[:,n_ctrls:]
-            return [(((ctrl_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*mult,
-                    (((case_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*mult]
+            return [(((ctrl_data.is_het()*1).sum(axis=1))/max(n_ctrls, 1))*mult,
+                    (((case_data.is_het()*1).sum(axis=1))/max(n_cases, 1))*mult]
 
         # Frequency of homzygos per position
         zygo_hetero_probability = (((gt_data.is_het()*1).sum(axis=1))/(self.get_n_samples()))*mult

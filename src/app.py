@@ -57,7 +57,10 @@ class App(ctk.CTk):
         self.title("Genome Visualizer")
 
         # Give app an icon 
-        self.iconbitmap(os.path.join(_config_.IMG_PATH, 'icon.ico'))
+        try:
+            self.iconbitmap(os.path.join(_config_.IMG_PATH, 'icon.ico'))
+        except:
+            pass
 
         # set size app window
         self.geometry(f"{DEFAULT_WIDTH}x{DEFAULT_HIGHT}")
@@ -104,7 +107,10 @@ class App(ctk.CTk):
 
     def __set_size(self):
         # set size app window
-        self.state('zoomed')
+        try:
+            self.state('zoomed')
+        except:
+            self.attributes('-zoomed', True)
         #self.resizable(False, False)
 
     def destroy(self):

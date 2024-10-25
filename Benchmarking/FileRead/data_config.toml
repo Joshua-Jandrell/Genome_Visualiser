@@ -1,0 +1,18 @@
+# Used to specify where data can be found
+
+bcftools = "src/assets/bin/bcftools"
+
+[directories]
+    results = "Results"
+    data = "Data"
+
+[data]
+    afr = "http://dept.ee.wits.ac.za/~scott/COMS7059/vcf/afr.vcf.gz"
+    afr-small = "http://dept.ee.wits.ac.za/~scott/COMS7059/vcf/afr-small.vcf.gz"
+    med = "http://dept.ee.wits.ac.za/~scott/COMS7059/vcf/med.vcf.gz"
+
+[case-ctrl]
+    # Legacy
+    afr = "https://raw.githubusercontent.com/Joshua-Jandrell/visualizer-data/main/case-ctrl/legacy/afr.case.tsv"
+    afr-small = "https://raw.githubusercontent.com/Joshua-Jandrell/visualizer-data/main/case-ctrl/legacy/afr-small.case.tsv"
+    med = "https://raw.githubusercontent.com/Joshua-Jandrell/visualizer-data/main/case-ctrl/legacy/med.case.tsv"

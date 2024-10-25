@@ -68,7 +68,7 @@ class FilePicker(ctk.CTkFrame):
 
     def __open_path_select(self):
         _filepath = ctk.filedialog.askopenfilename(title=self._dialog_title, filetypes=self._filetypes)
-        if _filepath == "": return
+        if _filepath == "" or _filepath == (): return
         self.set_path(_filepath)
 
     def __on_path_change_var(self,*args):
