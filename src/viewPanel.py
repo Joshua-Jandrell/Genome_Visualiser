@@ -66,7 +66,6 @@ class FigureMount(ctk.CTkFrame):
         
         # Get viewinfo display data
         info = self._viewset.get_view_info(event=event)
-        print(info)
         InspectorPanel.display_info(info)
         
         #self.canvas.draw_idle()

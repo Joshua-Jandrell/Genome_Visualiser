@@ -168,7 +168,7 @@ class VcfDataWrapper:
             return -1
         if n == -1:
             return -2
-        if n >= len(alt_row):
+        if n-1 >= len(alt_row):
             return alt_row[int(n-1-VAR_TYPE_OFFSET)]+VAR_TYPE_OFFSET
         return alt_row[int(n-1)]
 
